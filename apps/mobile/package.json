@@ -1,0 +1,17 @@
+{
+  "name": "@yappie/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'mobile build - pending Expo setup (YAP-51)'",
+    "dev": "echo 'mobile dev - pending Expo setup (YAP-51)'",
+    "lint": "echo 'no lint configured yet'",
+    "test": "echo 'no tests configured yet'",
+    "test:coverage": "echo 'no coverage configured yet'",
+    "type-check": "echo 'no type-check configured yet'",
+    "clean": "rm -rf .expo dist"
+  },
+  "dependencies": {
+    "@yappie/shared": "workspace:*"
+  }
+}

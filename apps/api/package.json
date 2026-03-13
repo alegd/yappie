@@ -1,0 +1,17 @@
+{
+  "name": "@yappie/api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'api build - pending NestJS setup (YAP-13)'",
+    "dev": "echo 'api dev - pending NestJS setup (YAP-13)'",
+    "lint": "echo 'no lint configured yet'",
+    "test": "echo 'no tests configured yet'",
+    "test:coverage": "echo 'no coverage configured yet'",
+    "type-check": "echo 'no type-check configured yet'",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@yappie/shared": "workspace:*"
+  }
+}

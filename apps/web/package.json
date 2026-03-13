@@ -1,0 +1,17 @@
+{
+  "name": "@yappie/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'web build - pending Next.js setup (YAP-14)'",
+    "dev": "echo 'web dev - pending Next.js setup (YAP-14)'",
+    "lint": "echo 'no lint configured yet'",
+    "test": "echo 'no tests configured yet'",
+    "test:coverage": "echo 'no coverage configured yet'",
+    "type-check": "echo 'no type-check configured yet'",
+    "clean": "rm -rf .next out"
+  },
+  "dependencies": {
+    "@yappie/shared": "workspace:*"
+  }
+}
