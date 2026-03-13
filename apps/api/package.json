@@ -5,7 +5,7 @@
   "scripts": {
     "build": "echo 'api build - pending NestJS setup (YAP-13)'",
     "dev": "echo 'api dev - pending NestJS setup (YAP-13)'",
-    "lint": "echo 'no lint configured yet'",
+    "lint": "eslint . --no-error-on-unmatched-pattern",
     "test": "echo 'no tests configured yet'",
     "test:coverage": "echo 'no coverage configured yet'",
     "type-check": "echo 'no type-check configured yet'",
