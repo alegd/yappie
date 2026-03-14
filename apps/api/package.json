@@ -3,19 +3,30 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "echo 'api build - pending NestJS setup (YAP-13)'",
-    "dev": "echo 'api dev - pending NestJS setup (YAP-13)'",
-    "lint": "eslint . --no-error-on-unmatched-pattern",
+    "build": "nest build",
+    "dev": "nest start --watch",
+    "start": "node dist/main",
+    "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "type-check": "echo 'no type-check configured yet'",
+    "type-check": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@yappie/shared": "workspace:*"
+    "@nestjs/common": "^11.1.16",
+    "@nestjs/core": "^11.1.16",
+    "@nestjs/platform-express": "^11.1.16",
+    "@yappie/shared": "workspace:*",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
   },
   "devDependencies": {
-    "@yappie/config": "workspace:*"
+    "@nestjs/cli": "^11.0.16",
+    "@nestjs/testing": "^11.1.16",
+    "@types/express": "^5.0.6",
+    "@yappie/config": "workspace:*",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
   }
 }
