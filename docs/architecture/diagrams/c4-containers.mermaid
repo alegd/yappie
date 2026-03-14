@@ -1,0 +1,24 @@
+C4Container
+    title Container Diagram - Yappie
+
+    Person(user, "User")
+
+    Container_Boundary(yappie, "Yappie System") {
+        Container(web, "Web App", "Next.js 16", "Dashboard for managing audios, tickets, and integrations")
+        Container(mobile, "Mobile App", "React Native / Expo", "On-the-go audio recording and ticket review")
+        Container(api, "API Server", "NestJS", "REST API + WebSocket gateway for all business logic")
+        ContainerDb(db, "Database", "PostgreSQL 16", "Users, projects, audios, tickets, integrations")
+        Container(redis, "Cache & Queue", "Redis 7", "BullMQ job queue + response caching")
+    }
+
+    System_Ext(openai, "OpenAI API")
+    System_Ext(jira, "Atlassian Jira")
+
+    Rel(user, web, "Uses", "HTTPS")
+    Rel(user, mobile, "Uses", "HTTPS")
+    Rel(web, api, "API calls", "HTTPS/WSS")
+    Rel(mobile, api, "API calls", "HTTPS")
+    Rel(api, db, "Reads/Writes", "TCP/5432")
+    Rel(api, redis, "Enqueue jobs, cache", "TCP/6379")
+    Rel(api, openai, "Transcribe + Generate", "HTTPS")
+    Rel(api, jira, "Export tickets", "HTTPS")
