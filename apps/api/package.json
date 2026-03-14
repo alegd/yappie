@@ -17,6 +17,7 @@
     "@nestjs/common": "^11.1.16",
     "@nestjs/core": "^11.1.16",
     "@nestjs/platform-express": "^11.1.16",
+    "@prisma/client": "6",
     "@yappie/shared": "workspace:*",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
@@ -27,6 +28,7 @@
     "@nestjs/testing": "^11.1.16",
     "@types/express": "^5.0.6",
     "@yappie/config": "workspace:*",
+    "prisma": "6",
     "ts-node": "^10.9.2",
     "typescript": "^5"
   }

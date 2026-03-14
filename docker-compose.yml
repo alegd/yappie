@@ -9,6 +9,7 @@ services:
       POSTGRES_USER: yappie
       POSTGRES_PASSWORD: yappie_dev
       POSTGRES_DB: yappie
+      POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
