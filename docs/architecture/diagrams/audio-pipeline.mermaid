@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant U as User
+    participant API as NestJS API
+    participant Q as BullMQ (Redis)
+    participant W as Worker
+    participant AI as OpenAI API
+    participant DB as PostgreSQL
+    participant WS as WebSocket
+
+    U->>API: POST /audio/upload (file)
+    API->>DB: Save audio record (status: pending)
+    API->>Q: Enqueue processing job
+    API-->>U: 202 Accepted (audioId)
+
+    Q->>W: Pick up job
+    W->>WS: Emit progress (transcribing)
+    W->>AI: Whisper transcription
+    AI-->>W: Transcription text
+    W->>DB: Save transcription
+
+    W->>WS: Emit progress (analyzing)
+    W->>AI: GPT-4o decompose into tasks
+    AI-->>W: Task array
+    W->>AI: GPT-4o generate tickets
+    AI-->>W: Structured tickets (JSON)
+
+    W->>DB: Save generated tickets
+    W->>DB: Update audio status (completed)
+    W->>WS: Emit progress (completed)
+    WS-->>U: Real-time notification

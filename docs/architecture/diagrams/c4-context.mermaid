@@ -1,0 +1,13 @@
+C4Context
+    title System Context Diagram - Yappie
+
+    Person(user, "User", "Product manager, tech lead, or developer who records audio notes")
+
+    System(yappie, "Yappie", "Turns audio recordings into structured Jira tickets using AI")
+
+    System_Ext(openai, "OpenAI API", "Whisper for transcription, GPT-4o for ticket generation")
+    System_Ext(jira, "Atlassian Jira", "Project management tool where tickets are exported")
+
+    Rel(user, yappie, "Records audio, reviews tickets, exports to Jira")
+    Rel(yappie, openai, "Sends audio for transcription, text for analysis", "HTTPS")
+    Rel(yappie, jira, "Creates issues via OAuth 2.0", "HTTPS")
