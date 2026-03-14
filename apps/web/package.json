@@ -3,15 +3,29 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "echo 'web build - pending Next.js setup (YAP-14)'",
-    "dev": "echo 'web dev - pending Next.js setup (YAP-14)'",
-    "lint": "eslint . --no-error-on-unmatched-pattern",
+    "build": "next build",
+    "dev": "next dev",
+    "start": "next start",
+    "lint": "next lint",
     "test": "echo 'no tests configured yet'",
     "test:coverage": "echo 'no coverage configured yet'",
-    "type-check": "echo 'no type-check configured yet'",
+    "type-check": "tsc --noEmit",
     "clean": "rm -rf .next out"
   },
   "dependencies": {
-    "@yappie/shared": "workspace:*"
+    "@yappie/shared": "workspace:*",
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@yappie/config": "workspace:*",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5"
   }
 }
