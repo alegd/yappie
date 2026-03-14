@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Users ──────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  refreshTokens   RefreshToken[]
+  projects        Project[]
+  audioRecordings AudioRecording[]
+  integrations    Integration[]
+  usageEvents     UsageEvent[]
+  ticketTemplates TicketTemplate[]
+
+  @@map("users")
+}
+
+// ─── Auth ───────────────────────────────────────────────
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  userId    String    @map("user_id")
+  userAgent String?   @map("user_agent")
+  ipAddress String?   @map("ip_address")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+// ─── Projects ───────────────────────────────────────────
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  userId      String   @map("user_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  audioRecordings AudioRecording[]
+  tickets         Ticket[]
+
+  @@index([userId])
+  @@map("projects")
+}
+
+// ─── Audio ──────────────────────────────────────────────
+
+enum AudioStatus {
+  PENDING
+  TRANSCRIBING
+  ANALYZING
+  COMPLETED
+  FAILED
+}
+
+model AudioRecording {
+  id            String      @id @default(cuid())
+  fileName      String      @map("file_name")
+  filePath      String      @map("file_path")
+  fileSize      Int         @map("file_size")
+  mimeType      String      @map("mime_type")
+  duration      Float?
+  status        AudioStatus @default(PENDING)
+  transcription String?
+  errorMessage  String?     @map("error_message")
+  userId        String      @map("user_id")
+  projectId     String?     @map("project_id")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  tickets Ticket[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("audio_recordings")
+}
+
+// ─── Tickets ────────────────────────────────────────────
+
+enum TicketStatus {
+  DRAFT
+  APPROVED
+  EXPORTED
+  REJECTED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model Ticket {
+  id              String         @id @default(cuid())
+  title           String
+  description     String
+  status          TicketStatus   @default(DRAFT)
+  priority        TicketPriority @default(MEDIUM)
+  jiraIssueKey    String?        @map("jira_issue_key")
+  jiraIssueUrl    String?        @map("jira_issue_url")
+  audioRecordingId String        @map("audio_recording_id")
+  projectId       String?        @map("project_id")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  audioRecording AudioRecording @relation(fields: [audioRecordingId], references: [id], onDelete: Cascade)
+  project        Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([audioRecordingId])
+  @@index([status])
+  @@index([projectId])
+  @@map("tickets")
+}
+
+// ─── Templates ──────────────────────────────────────────
+
+model TicketTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  content   String
+  isDefault Boolean  @default(false) @map("is_default")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("ticket_templates")
+}
+
+// ─── Integrations ───────────────────────────────────────
+
+enum IntegrationType {
+  JIRA
+}
+
+model Integration {
+  id               String          @id @default(cuid())
+  type             IntegrationType
+  accessToken      String          @map("access_token")
+  refreshToken     String?         @map("refresh_token")
+  tokenExpiresAt   DateTime?       @map("token_expires_at")
+  cloudId          String?         @map("cloud_id")
+  siteName         String?         @map("site_name")
+  userId           String          @map("user_id")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@map("integrations")
+}
+
+// ─── Analytics ──────────────────────────────────────────
+
+model UsageEvent {
+  id        String   @id @default(cuid())
+  type      String
+  metadata  Json?
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("usage_events")
+}
