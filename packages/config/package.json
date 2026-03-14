@@ -7,6 +7,10 @@
   "types": "./src/index.ts",
   "exports": {
     "./eslint/base": "./eslint/base.js",
+    "./vitest/base": "./vitest/base.ts",
+    "./vitest/setup-msw": "./vitest/setup-msw.ts",
+    "./msw/handlers": "./msw/handlers.ts",
+    "./msw/server": "./msw/server.ts",
     "./typescript/base": "./typescript/base.json",
     "./typescript/nestjs": "./typescript/nestjs.json",
     "./typescript/nextjs": "./typescript/nextjs.json"
