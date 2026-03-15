@@ -16,9 +16,16 @@
   "dependencies": {
     "@nestjs/common": "^11.1.16",
     "@nestjs/core": "^11.1.16",
+    "@nestjs/jwt": "^11.0.2",
+    "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.16",
     "@prisma/client": "6",
     "@yappie/shared": "workspace:*",
+    "bcryptjs": "^3.0.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "zod": "^4.3.6"
@@ -26,7 +33,9 @@
   "devDependencies": {
     "@nestjs/cli": "^11.0.16",
     "@nestjs/testing": "^11.1.16",
+    "@types/bcryptjs": "^3.0.0",
     "@types/express": "^5.0.6",
+    "@types/passport-jwt": "^4.0.1",
     "@yappie/config": "workspace:*",
     "prisma": "6",
     "ts-node": "^10.9.2",
