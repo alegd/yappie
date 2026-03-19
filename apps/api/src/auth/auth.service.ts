@@ -53,6 +53,80 @@ export class AuthService {
     return this.generateTokens(user);
   }
 
+  async refresh(token: string) {
+    const refreshToken = await this.prisma.refreshToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+
+    if (!refreshToken) {
+      throw new UnauthorizedException("Invalid refresh token");
+    }
+
+    if (refreshToken.revokedAt) {
+      throw new UnauthorizedException("Refresh token has been revoked");
+    }
+
+    if (refreshToken.expiresAt < new Date()) {
+      throw new UnauthorizedException("Refresh token has expired");
+    }
+
+    // Revoke old token (rotation)
+    await this.prisma.refreshToken.update({
+      where: { id: refreshToken.id },
+      data: { revokedAt: new Date() },
+    });
+
+    return this.generateTokens(refreshToken.user);
+  }
+
+  async logout(token: string) {
+    const refreshToken = await this.prisma.refreshToken.findUnique({
+      where: { token },
+    });
+
+    if (refreshToken) {
+      await this.prisma.refreshToken.update({
+        where: { id: refreshToken.id },
+        data: { revokedAt: new Date() },
+      });
+    }
+  }
+
+  async getSessions(userId: string) {
+    return this.prisma.refreshToken.findMany({
+      where: {
+        userId,
+        revokedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      select: {
+        id: true,
+        userAgent: true,
+        ipAddress: true,
+        createdAt: true,
+        expiresAt: true,
+      },
+    });
+  }
+
+  async revokeSession(sessionId: string, _userId: string) {
+    await this.prisma.refreshToken.update({
+      where: { id: sessionId },
+      data: { revokedAt: new Date() },
+    });
+  }
+
+  async revokeAllSessions(userId: string) {
+    await this.prisma.refreshToken.updateMany({
+      where: {
+        userId,
+        revokedAt: null,
+      },
+      data: { revokedAt: new Date() },
+    });
+  }
+
   private async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10);
   }
