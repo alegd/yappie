@@ -3,22 +3,26 @@ import { type AuthService } from "./auth.service.js";
 import { type RegisterDto } from "./dto/register.dto.js";
 import { type LoginDto } from "./dto/login.dto.js";
 import { type RefreshDto } from "./dto/refresh.dto.js";
+import { Public } from "./decorators/public.decorator.js";
 
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post("register")
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
 
+  @Public()
   @Post("login")
   @HttpCode(HttpStatus.OK)
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
 
+  @Public()
   @Post("refresh")
   @HttpCode(HttpStatus.OK)
   refresh(@Body() dto: RefreshDto) {
@@ -31,7 +35,6 @@ export class AuthController {
     return this.authService.logout(dto.refreshToken);
   }
 
-  // TODO: These endpoints need JwtAuthGuard (YAP-23)
   @Get("sessions/:userId")
   getSessions(@Param("userId") userId: string) {
     return this.authService.getSessions(userId);
