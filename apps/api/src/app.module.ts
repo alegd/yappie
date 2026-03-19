@@ -7,6 +7,7 @@ import { TicketsModule } from "./tickets/tickets.module.js";
 import { ProjectsModule } from "./projects/projects.module.js";
 import { IntegrationsModule } from "./integrations/integrations.module.js";
 import { AnalyticsModule } from "./analytics/analytics.module.js";
+import { UsersModule } from "./users/users.module.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
 
 @Module({
@@ -18,6 +19,7 @@ import { PrismaModule } from "./prisma/prisma.module.js";
     ProjectsModule,
     IntegrationsModule,
     AnalyticsModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
