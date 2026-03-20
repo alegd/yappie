@@ -6,7 +6,7 @@
     "build": "next build",
     "dev": "next dev",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --no-error-on-unmatched-pattern",
     "test": "echo 'no tests configured yet'",
     "test:coverage": "echo 'no coverage configured yet'",
     "type-check": "tsc --noEmit",
