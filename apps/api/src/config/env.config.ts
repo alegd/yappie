@@ -6,7 +6,11 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3001),
 
   // Database
-  DATABASE_URL: z.string().min(1),
+  DB_HOST: z.string().default("localhost"),
+  DB_PORT: z.coerce.number().default(5432),
+  DB_USER: z.string().default("yappie"),
+  DB_PASSWORD: z.string().default("yappie_dev"),
+  DB_NAME: z.string().default("yappie"),
 
   // Redis
   REDIS_URL: z.string().min(1),
@@ -41,4 +45,8 @@ export function validateEnv(): Env {
   }
 
   return result.data;
+}
+
+export function buildDatabaseUrl(env: Env): string {
+  return `postgresql://${env.DB_USER}:${env.DB_PASSWORD}@${env.DB_HOST}:${env.DB_PORT}/${env.DB_NAME}`;
 }

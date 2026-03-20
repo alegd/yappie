@@ -1,11 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { validateEnv } from "./env.config.js";
+import { validateEnv, buildDatabaseUrl } from "./env.config.js";
 
 describe("validateEnv", () => {
   const validEnv = {
     NODE_ENV: "development",
     PORT: "3001",
-    DATABASE_URL: "postgresql://user:pass@localhost:5432/db",
+    DB_HOST: "localhost",
+    DB_PORT: "5432",
+    DB_USER: "yappie",
+    DB_PASSWORD: "yappie_dev",
+    DB_NAME: "yappie",
     REDIS_URL: "redis://localhost:6379",
     JWT_SECRET: "test-secret",
     OPENAI_API_KEY: "sk-test-key",
@@ -24,7 +28,8 @@ describe("validateEnv", () => {
 
     expect(env.NODE_ENV).toBe("development");
     expect(env.PORT).toBe(3001);
-    expect(env.DATABASE_URL).toBe(validEnv.DATABASE_URL);
+    expect(env.DB_HOST).toBe("localhost");
+    expect(env.DB_NAME).toBe("yappie");
     expect(env.JWT_EXPIRATION).toBe("15m");
   });
 
@@ -48,5 +53,21 @@ describe("validateEnv", () => {
 
     const env = validateEnv();
     expect(env.PORT).toBe(8080);
+  });
+});
+
+describe("buildDatabaseUrl", () => {
+  it("should build a postgresql connection string from DB_* vars", () => {
+    const env = {
+      DB_HOST: "myhost",
+      DB_PORT: 5433,
+      DB_USER: "admin",
+      DB_PASSWORD: "secret",
+      DB_NAME: "mydb",
+    };
+
+    const url = buildDatabaseUrl(env as never);
+
+    expect(url).toBe("postgresql://admin:secret@myhost:5433/mydb");
   });
 });

@@ -1,19 +1,19 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: yappie-postgres
+    container_name: yappie-db
     restart: unless-stopped
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${DB_PORT:-5432}:5432"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-yappie}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-yappie_dev}
-      POSTGRES_DB: ${POSTGRES_DB:-yappie}
+      POSTGRES_USER: ${DB_USER:-yappie}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-yappie_dev}
+      POSTGRES_DB: ${DB_NAME:-yappie}
       POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-yappie}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-yappie}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -43,9 +43,8 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-yappie}:${POSTGRES_PASSWORD:-yappie_dev}@postgres:5432/${POSTGRES_DB:-yappie}
+      DB_HOST: postgres
       REDIS_URL: redis://redis:6379
-      REDIS_HOST: redis
     volumes:
       - ./apps/api/src:/app/apps/api/src
       - ./packages/shared/src:/app/packages/shared/src
