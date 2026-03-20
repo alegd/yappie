@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { BullModule } from "@nestjs/bullmq";
 import { AppController } from "./app.controller.js";
 import { AppService } from "./app.service.js";
 import { AuthModule } from "./auth/auth.module.js";
@@ -9,10 +10,18 @@ import { IntegrationsModule } from "./integrations/integrations.module.js";
 import { AnalyticsModule } from "./analytics/analytics.module.js";
 import { UsersModule } from "./users/users.module.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
+import { StorageModule } from "./storage/storage.module.js";
 
 @Module({
   imports: [
     PrismaModule,
+    StorageModule,
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST || "localhost",
+        port: parseInt(process.env.REDIS_PORT || "6379", 10),
+      },
+    }),
     AuthModule,
     AudioModule,
     TicketsModule,

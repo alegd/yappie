@@ -15,6 +15,7 @@
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.1.16",
     "@nestjs/core": "^11.1.16",
     "@nestjs/jwt": "^11.0.2",
@@ -24,6 +25,7 @@
     "@prisma/client": "6",
     "@yappie/shared": "workspace:*",
     "bcryptjs": "^3.0.3",
+    "bullmq": "^5.71.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "openai": "^6.32.0",
