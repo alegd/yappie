@@ -9,7 +9,6 @@ services:
       POSTGRES_USER: ${DB_USER:-yappie}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-yappie_dev}
       POSTGRES_DB: ${DB_NAME:-yappie}
-      POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
