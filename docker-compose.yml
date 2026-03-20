@@ -4,16 +4,16 @@ services:
     container_name: yappie-postgres
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     environment:
-      POSTGRES_USER: yappie
-      POSTGRES_PASSWORD: yappie_dev
-      POSTGRES_DB: yappie
+      POSTGRES_USER: ${POSTGRES_USER:-yappie}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-yappie_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-yappie}
       POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U yappie"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-yappie}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -23,7 +23,7 @@ services:
     container_name: yappie-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -39,12 +39,13 @@ services:
     container_name: yappie-api
     restart: unless-stopped
     ports:
-      - "3001:3001"
+      - "${PORT:-3001}:${PORT:-3001}"
+    env_file:
+      - .env
     environment:
-      NODE_ENV: development
-      DATABASE_URL: postgresql://yappie:yappie_dev@postgres:5432/yappie
+      DATABASE_URL: postgresql://${POSTGRES_USER:-yappie}:${POSTGRES_PASSWORD:-yappie_dev}@postgres:5432/${POSTGRES_DB:-yappie}
       REDIS_URL: redis://redis:6379
-      PORT: 3001
+      REDIS_HOST: redis
     volumes:
       - ./apps/api/src:/app/apps/api/src
       - ./packages/shared/src:/app/packages/shared/src
@@ -62,9 +63,10 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
-      NODE_ENV: development
-      NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
     volumes:
       - ./apps/web/src:/app/apps/web/src
       - ./packages/shared/src:/app/packages/shared/src
