@@ -37,6 +37,7 @@
     "@nestjs/testing": "^11.1.16",
     "@types/bcryptjs": "^3.0.0",
     "@types/express": "^5.0.6",
+    "@types/multer": "^2.1.0",
     "@types/passport-jwt": "^4.0.1",
     "@yappie/config": "workspace:*",
     "prisma": "6",
