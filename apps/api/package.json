@@ -21,7 +21,9 @@
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.16",
+    "@nestjs/platform-socket.io": "^11.1.17",
     "@nestjs/swagger": "^11.2.6",
+    "@nestjs/websockets": "^11.1.17",
     "@prisma/client": "6",
     "@yappie/shared": "workspace:*",
     "bcryptjs": "^3.0.3",
@@ -33,6 +35,7 @@
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
+    "socket.io": "^4.8.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {
