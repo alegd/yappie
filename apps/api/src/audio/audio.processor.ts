@@ -1,9 +1,9 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Inject } from "@nestjs/common";
-import { type Job } from "bullmq";
-import { type AudioService } from "./audio.service.js";
-import { type AIService } from "../ai/ai.service.js";
-import { type TicketsService } from "../tickets/tickets.service.js";
+import { Job } from "bullmq";
+import { AudioService } from "./audio.service.js";
+import { AIService } from "../ai/ai.service.js";
+import { TicketsService } from "../tickets/tickets.service.js";
 import { STORAGE_ADAPTER, type StorageAdapter } from "../storage/storage.interface.js";
 
 export interface AudioJobData {

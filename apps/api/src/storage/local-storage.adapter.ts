@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import * as fs from "fs/promises";
 import * as path from "path";
-import { type StorageAdapter } from "./storage.interface.js";
+import { StorageAdapter } from "./storage.interface.js";
 
 @Injectable()
 export class LocalStorageAdapter implements StorageAdapter {

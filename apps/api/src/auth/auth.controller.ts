@@ -1,8 +1,8 @@
 import { Body, Controller, Post, Get, Delete, Param, HttpCode, HttpStatus } from "@nestjs/common";
-import { type AuthService } from "./auth.service.js";
-import { type RegisterDto } from "./dto/register.dto.js";
-import { type LoginDto } from "./dto/login.dto.js";
-import { type RefreshDto } from "./dto/refresh.dto.js";
+import { AuthService } from "./auth.service.js";
+import { RegisterDto } from "./dto/register.dto.js";
+import { LoginDto } from "./dto/login.dto.js";
+import { RefreshDto } from "./dto/refresh.dto.js";
 import { Public } from "./decorators/public.decorator.js";
 
 @Controller("auth")

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Patch, Post, Req, HttpCode, HttpStatus } from "@nestjs/common";
-import { type UsersService } from "./users.service.js";
-import { type UpdateProfileDto } from "./dto/update-profile.dto.js";
-import { type ChangePasswordDto } from "./dto/change-password.dto.js";
+import { UsersService } from "./users.service.js";
+import { UpdateProfileDto } from "./dto/update-profile.dto.js";
+import { ChangePasswordDto } from "./dto/change-password.dto.js";
 
 @Controller("users")
 export class UsersController {

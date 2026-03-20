@@ -1,7 +1,7 @@
-import { Injectable, Logger } from "@nestjs/common";
-import type OpenAI from "openai";
-import { toFile } from "openai";
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import OpenAI, { toFile } from "openai";
 import { z } from "zod";
+import { OPENAI_CLIENT } from "./ai.constants.js";
 
 const TaskSchema = z.object({
   title: z.string(),
@@ -43,7 +43,7 @@ No markdown, no code blocks, no explanation.`;
 export class AIService {
   private readonly logger = new Logger(AIService.name);
 
-  constructor(private readonly openai: OpenAI) {}
+  constructor(@Inject(OPENAI_CLIENT) private readonly openai: OpenAI) {}
 
   async transcribe(audioBuffer: Buffer, fileName: string): Promise<string> {
     const file = await toFile(audioBuffer, fileName);

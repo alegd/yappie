@@ -11,9 +11,9 @@ import {
   HttpCode,
   HttpStatus,
 } from "@nestjs/common";
-import { type ProjectsService } from "./projects.service.js";
-import { type CreateProjectDto } from "./dto/create-project.dto.js";
-import { type UpdateProjectDto } from "./dto/update-project.dto.js";
+import { ProjectsService } from "./projects.service.js";
+import { CreateProjectDto } from "./dto/create-project.dto.js";
+import { UpdateProjectDto } from "./dto/update-project.dto.js";
 
 @Controller("projects")
 export class ProjectsController {

@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { type PrismaService } from "../prisma/prisma.service.js";
+import { PrismaService } from "../prisma/prisma.service";
 
 const ALLOWED_MIMETYPES = [
   "audio/mpeg",

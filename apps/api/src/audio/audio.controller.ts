@@ -9,7 +9,7 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { type AudioService } from "./audio.service.js";
+import { AudioService } from "./audio.service.js";
 
 @Controller("audio")
 export class AudioController {

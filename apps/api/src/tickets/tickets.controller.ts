@@ -10,7 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from "@nestjs/common";
-import { type TicketsService } from "./tickets.service.js";
+import { TicketsService } from "./tickets.service.js";
 
 @Controller("tickets")
 export class TicketsController {

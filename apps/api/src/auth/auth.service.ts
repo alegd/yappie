@@ -1,9 +1,9 @@
 import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
-import { type JwtService } from "@nestjs/jwt";
+import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcryptjs";
-import { type PrismaService } from "../prisma/prisma.service.js";
-import { type RegisterDto } from "./dto/register.dto.js";
-import { type LoginDto } from "./dto/login.dto.js";
+import { PrismaService } from "../prisma/prisma.service.js";
+import { RegisterDto } from "./dto/register.dto.js";
+import { LoginDto } from "./dto/login.dto.js";
 import { randomBytes } from "crypto";
 
 @Injectable()

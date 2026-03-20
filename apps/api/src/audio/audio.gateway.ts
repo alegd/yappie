@@ -5,7 +5,7 @@ import {
   type OnGatewayDisconnect,
 } from "@nestjs/websockets";
 import { Logger } from "@nestjs/common";
-import { type Server, type Socket } from "socket.io";
+import { Server, type Socket } from "socket.io";
 
 @WebSocketGateway({ cors: { origin: "*" } })
 export class AudioGateway implements OnGatewayConnection, OnGatewayDisconnect {
