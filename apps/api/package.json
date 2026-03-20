@@ -3,14 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "nest build",
+    "build": "prisma generate && nest build",
     "dev": "nest start --watch",
     "start": "node dist/main",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "type-check": "tsc --noEmit",
+    "type-check": "prisma generate && tsc --noEmit -p tsconfig.build.json",
     "clean": "rm -rf dist",
     "db:seed": "tsx prisma/seed.ts"
   },
