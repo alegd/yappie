@@ -3,6 +3,9 @@ node_modules/
 
 # Build outputs
 dist/
+
+# Uploads
+uploads/
 .next/
 .expo/
 out/

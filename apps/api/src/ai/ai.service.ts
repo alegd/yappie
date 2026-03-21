@@ -15,17 +15,19 @@ const TicketSchema = z.object({
 });
 
 const DECOMPOSE_PROMPT = `You are a task decomposition assistant for a software project management tool called Yappie.
-Given a transcription of a meeting, standup, voice note, or brainstorming session, extract actionable development tasks.
+Given a transcription of a meeting, standup, voice note, or brainstorming session, extract ALL actionable tasks.
 
 Rules:
+- Extract EVERY actionable item mentioned, even brief or informal ones
 - Each task should be a single, well-defined unit of work
 - Title should be concise (max 80 chars) and action-oriented (start with a verb)
 - Description should explain what needs to be done and why
-- Ignore filler words, small talk, and non-actionable statements
-- If there are no actionable tasks, return an empty array []
+- The transcription may be in any language — always output in English
+- Ignore filler words and small talk, but capture ALL action items
+- If there are no actionable tasks, return an empty array
 
-Return ONLY a valid JSON array of objects with "title" and "description" fields.
-No markdown, no code blocks, no explanation.`;
+You MUST respond with a JSON object containing an "items" array:
+{"items": [{"title": "...", "description": "..."}, ...]}`;
 
 const GENERATE_PROMPT = `You are a Jira ticket generator for a software project management tool.
 Given a list of decomposed tasks, generate well-structured Jira-ready tickets.
@@ -36,8 +38,8 @@ Rules:
 - Priority: assess based on urgency and impact (LOW, MEDIUM, HIGH, CRITICAL)
 - Each ticket should be independently implementable
 
-Return ONLY a valid JSON array of objects with "title", "description", and "priority" fields.
-No markdown, no code blocks, no explanation.`;
+You MUST respond with a JSON object containing an "items" array:
+{"items": [{"title": "...", "description": "...", "priority": "HIGH"}, ...]}`;
 
 @Injectable()
 export class AIService {
@@ -112,16 +114,24 @@ export class AIService {
       const parsed = JSON.parse(content);
       this.logger.debug(`AI raw response: ${content}`);
 
-      // Handle both [...] and { anyKey: [...] } formats
       let array: unknown[];
       if (Array.isArray(parsed)) {
+        // Direct array: [...]
         array = parsed;
       } else {
-        // Find the first array value in the object
+        // Look for an array value inside the object: { tasks: [...] }
         const firstArray = Object.values(parsed).find((v) => Array.isArray(v)) as
           | unknown[]
           | undefined;
-        array = firstArray ?? [];
+
+        if (firstArray) {
+          array = firstArray;
+        } else if (parsed.title || parsed.summary) {
+          // Single item returned as object instead of array
+          array = [parsed];
+        } else {
+          array = [];
+        }
       }
 
       return z.array(schema).parse(array);
