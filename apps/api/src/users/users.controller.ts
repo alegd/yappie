@@ -1,8 +1,10 @@
+import { ApiBearerAuth } from "@nestjs/swagger";
 import { Body, Controller, Get, Patch, Post, Req, HttpCode, HttpStatus } from "@nestjs/common";
 import { UsersService } from "./users.service.js";
 import { UpdateProfileDto } from "./dto/update-profile.dto.js";
 import { ChangePasswordDto } from "./dto/change-password.dto.js";
 
+@ApiBearerAuth()
 @Controller("users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

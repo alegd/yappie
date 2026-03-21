@@ -1,3 +1,4 @@
+import { ApiBearerAuth } from "@nestjs/swagger";
 import {
   Body,
   Controller,
@@ -12,6 +13,7 @@ import {
 } from "@nestjs/common";
 import { TicketsService } from "./tickets.service.js";
 
+@ApiBearerAuth()
 @Controller("tickets")
 export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}

@@ -1,3 +1,4 @@
+import { ApiBearerAuth } from "@nestjs/swagger";
 import {
   Controller,
   Get,
@@ -11,6 +12,7 @@ import {
 import { FileInterceptor } from "@nestjs/platform-express";
 import { AudioService } from "./audio.service.js";
 
+@ApiBearerAuth()
 @Controller("audio")
 export class AudioController {
   constructor(private readonly audioService: AudioService) {}
