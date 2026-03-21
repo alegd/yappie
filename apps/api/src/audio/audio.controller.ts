@@ -1,4 +1,4 @@
-import { ApiBearerAuth } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiConsumes, ApiBody } from "@nestjs/swagger";
 import {
   Controller,
   Get,
@@ -19,6 +19,16 @@ export class AudioController {
 
   @Post("upload")
   @UseInterceptors(FileInterceptor("file"))
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        file: { type: "string", format: "binary" },
+      },
+      required: ["file"],
+    },
+  })
   upload(
     @UploadedFile() file: Express.Multer.File,
     @Req() req: { user: { sub: string } },
