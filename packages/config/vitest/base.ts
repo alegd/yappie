@@ -17,6 +17,9 @@ export const baseVitestConfig = defineConfig({
         "src/**/*.d.ts",
         "src/**/index.ts",
         "src/**/*.module.ts",
+        "src/**/*.controller.ts",
+        "src/**/*.dto.ts",
+        "src/**/constants.ts",
         "src/main.ts",
       ],
       thresholds: {

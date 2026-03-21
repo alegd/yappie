@@ -114,4 +114,102 @@ describe("AIService", () => {
       expect(result[0]).toHaveProperty("priority");
     });
   });
+
+  describe("parseJsonArray edge cases", () => {
+    it("should handle { items: [...] } format", async () => {
+      mockOpenAI.chat.completions.create.mockResolvedValue({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                items: [{ title: "Task 1", description: "Desc 1" }],
+              }),
+            },
+          },
+        ],
+      });
+
+      const result = await service.decompose("some text");
+      expect(result).toHaveLength(1);
+    });
+
+    it("should handle single object response", async () => {
+      mockOpenAI.chat.completions.create.mockResolvedValue({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({ title: "Single task", description: "Only one" }),
+            },
+          },
+        ],
+      });
+
+      const result = await service.decompose("one task");
+      expect(result).toHaveLength(1);
+      expect(result[0].title).toBe("Single task");
+    });
+
+    it("should return empty array on invalid JSON", async () => {
+      mockOpenAI.chat.completions.create.mockResolvedValue({
+        choices: [{ message: { content: "not json at all" } }],
+      });
+
+      const result = await service.decompose("bad response");
+      expect(result).toEqual([]);
+    });
+
+    it("should return empty array on empty object", async () => {
+      mockOpenAI.chat.completions.create.mockResolvedValue({
+        choices: [{ message: { content: "{}" } }],
+      });
+
+      const result = await service.decompose("empty");
+      expect(result).toEqual([]);
+    });
+
+    it("should handle missing content", async () => {
+      mockOpenAI.chat.completions.create.mockResolvedValue({
+        choices: [{ message: { content: null } }],
+      });
+
+      const result = await service.decompose("null content");
+      expect(result).toEqual([]);
+    });
+
+    it("should use project context in decompose prompt", async () => {
+      mockOpenAI.chat.completions.create.mockResolvedValue({
+        choices: [{ message: { content: '{"items": []}' } }],
+      });
+
+      await service.decompose("text", "React e-commerce app");
+
+      expect(mockOpenAI.chat.completions.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          messages: expect.arrayContaining([
+            expect.objectContaining({
+              content: expect.stringContaining("React e-commerce app"),
+            }),
+          ]),
+        }),
+      );
+    });
+
+    it("should use project context in generateTickets prompt", async () => {
+      mockOpenAI.chat.completions.create.mockResolvedValue({
+        choices: [{ message: { content: '{"items": []}' } }],
+      });
+
+      await service.generateTickets([{ title: "t", description: "d" }], "NestJS API");
+
+      expect(mockOpenAI.chat.completions.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          messages: expect.arrayContaining([
+            expect.objectContaining({
+              content: expect.stringContaining("NestJS API"),
+            }),
+          ]),
+        }),
+      );
+    });
+  });
 });
