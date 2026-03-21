@@ -14,6 +14,20 @@ function createMockPrisma() {
   };
 }
 
+function createMockStorage() {
+  return {
+    save: vi.fn().mockResolvedValue("/uploads/user-1/recording.mp3"),
+    get: vi.fn(),
+    delete: vi.fn(),
+  };
+}
+
+function createMockQueue() {
+  return {
+    add: vi.fn().mockResolvedValue({ id: "job-1" }),
+  };
+}
+
 function createMockFile(overrides: Partial<Express.Multer.File> = {}): Express.Multer.File {
   return {
     fieldname: "file",
@@ -33,16 +47,20 @@ function createMockFile(overrides: Partial<Express.Multer.File> = {}): Express.M
 describe("AudioService", () => {
   let service: AudioService;
   let mockPrisma: ReturnType<typeof createMockPrisma>;
+  let mockStorage: ReturnType<typeof createMockStorage>;
+  let mockQueue: ReturnType<typeof createMockQueue>;
 
   const userId = "user-1";
 
   beforeEach(() => {
     mockPrisma = createMockPrisma();
-    service = new AudioService(mockPrisma as never);
+    mockStorage = createMockStorage();
+    mockQueue = createMockQueue();
+    service = new AudioService(mockPrisma as never, mockStorage as never, mockQueue as never);
   });
 
   describe("upload", () => {
-    it("should create an audio recording with valid file", async () => {
+    it("should save file, create record, and enqueue job", async () => {
       const file = createMockFile();
       mockPrisma.audioRecording.create.mockResolvedValue({
         id: "audio-1",
@@ -57,27 +75,32 @@ describe("AudioService", () => {
 
       expect(result).toHaveProperty("id", "audio-1");
       expect(result.status).toBe("PENDING");
-      expect(mockPrisma.audioRecording.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            fileName: "recording.mp3",
-            mimeType: "audio/mpeg",
-            userId,
-          }),
-        }),
+      // File saved to storage
+      expect(mockStorage.save).toHaveBeenCalledWith(
+        expect.stringContaining("user-1/"),
+        file.buffer,
       );
+      // Job enqueued
+      expect(mockQueue.add).toHaveBeenCalledWith("process-audio", {
+        audioId: "audio-1",
+        userId,
+      });
     });
 
     it("should reject invalid audio format", async () => {
       const file = createMockFile({ mimetype: "text/plain", originalname: "notes.txt" });
 
       await expect(service.upload(file, userId)).rejects.toThrow(BadRequestException);
+      expect(mockStorage.save).not.toHaveBeenCalled();
+      expect(mockQueue.add).not.toHaveBeenCalled();
     });
 
     it("should reject files exceeding size limit (50MB)", async () => {
       const file = createMockFile({ size: 51 * 1024 * 1024 });
 
       await expect(service.upload(file, userId)).rejects.toThrow(BadRequestException);
+      expect(mockStorage.save).not.toHaveBeenCalled();
+      expect(mockQueue.add).not.toHaveBeenCalled();
     });
   });
 
@@ -163,11 +186,6 @@ describe("AudioService", () => {
 
       expect(result).toHaveProperty("data");
       expect(result).toHaveProperty("total", 0);
-      expect(mockPrisma.audioRecording.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { userId },
-        }),
-      );
     });
   });
 

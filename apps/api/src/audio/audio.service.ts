@@ -1,5 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
+import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Queue } from "bullmq";
+import { PrismaService } from "../prisma/prisma.service.js";
+import { STORAGE_ADAPTER, StorageAdapter } from "../storage/storage.interface.js";
 
 const ALLOWED_MIMETYPES = [
   "audio/mpeg",
@@ -18,7 +21,11 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 @Injectable()
 export class AudioService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(STORAGE_ADAPTER) private readonly storage: StorageAdapter,
+    @InjectQueue("audio-processing") private readonly audioQueue: Queue,
+  ) {}
 
   async upload(file: Express.Multer.File, userId: string, projectId?: string) {
     if (!ALLOWED_MIMETYPES.includes(file.mimetype)) {
@@ -33,9 +40,13 @@ export class AudioService {
       );
     }
 
-    const filePath = `uploads/${userId}/${Date.now()}-${file.originalname}`;
+    const filePath = `${userId}/${Date.now()}-${file.originalname}`;
 
-    return this.prisma.audioRecording.create({
+    // 1. Save file to storage
+    await this.storage.save(filePath, file.buffer);
+
+    // 2. Create DB record
+    const recording = await this.prisma.audioRecording.create({
       data: {
         fileName: file.originalname,
         filePath,
@@ -46,6 +57,14 @@ export class AudioService {
         projectId,
       },
     });
+
+    // 3. Enqueue processing job
+    await this.audioQueue.add("process-audio", {
+      audioId: recording.id,
+      userId,
+    });
+
+    return recording;
   }
 
   async updateStatus(
