@@ -57,11 +57,18 @@ export class AIService {
     return response.text;
   }
 
-  async decompose(transcription: string): Promise<Array<{ title: string; description: string }>> {
+  async decompose(
+    transcription: string,
+    projectContext?: string,
+  ): Promise<Array<{ title: string; description: string }>> {
+    const systemPrompt = projectContext
+      ? `${DECOMPOSE_PROMPT}\n\nProject context:\n${projectContext}`
+      : DECOMPOSE_PROMPT;
+
     const response = await this.openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: DECOMPOSE_PROMPT },
+        { role: "system", content: systemPrompt },
         { role: "user", content: transcription },
       ],
       temperature: 0.3,
@@ -74,11 +81,16 @@ export class AIService {
 
   async generateTickets(
     tasks: Array<{ title: string; description: string }>,
+    projectContext?: string,
   ): Promise<Array<{ title: string; description: string; priority: string }>> {
+    const systemPrompt = projectContext
+      ? `${GENERATE_PROMPT}\n\nProject context:\n${projectContext}`
+      : GENERATE_PROMPT;
+
     const response = await this.openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
-        { role: "system", content: GENERATE_PROMPT },
+        { role: "system", content: systemPrompt },
         { role: "user", content: JSON.stringify(tasks) },
       ],
       temperature: 0.3,

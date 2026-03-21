@@ -1,9 +1,10 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Inject } from "@nestjs/common";
 import { Job } from "bullmq";
-import { AudioService } from "./audio.service.js";
+import { AudioService } from "./audio.service";
 import { AIService } from "../ai/ai.service.js";
-import { TicketsService } from "../tickets/tickets.service.js";
+import { TicketsService } from "../tickets/tickets.service";
+import { ProjectsService } from "../projects/projects.service";
 import { STORAGE_ADAPTER, type StorageAdapter } from "../storage/storage.interface.js";
 
 export interface AudioJobData {
@@ -17,6 +18,7 @@ export class AudioProcessor extends WorkerHost {
     private readonly audioService: AudioService,
     private readonly aiService: AIService,
     private readonly ticketsService: TicketsService,
+    private readonly projectsService: ProjectsService,
     @Inject(STORAGE_ADAPTER) private readonly storage: StorageAdapter,
   ) {
     super();
@@ -33,10 +35,17 @@ export class AudioProcessor extends WorkerHost {
       const audioBuffer = await this.storage.get(recording.filePath);
       const transcription = await this.aiService.transcribe(audioBuffer!, recording.fileName);
 
-      // Step 2: Decompose + Generate
+      // Get project context if available
+      let projectContext: string | undefined;
+      if (recording.projectId) {
+        const project = await this.projectsService.findOne(recording.projectId, userId);
+        projectContext = project.context ?? undefined;
+      }
+
+      // Step 2: Decompose + Generate (with project context)
       await this.audioService.updateStatus(audioId, "ANALYZING");
-      const tasks = await this.aiService.decompose(transcription);
-      const tickets = await this.aiService.generateTickets(tasks);
+      const tasks = await this.aiService.decompose(transcription, projectContext);
+      const tickets = await this.aiService.generateTickets(tasks, projectContext);
 
       // Step 3: Save tickets
       for (const ticket of tickets) {
