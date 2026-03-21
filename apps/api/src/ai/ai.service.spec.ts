@@ -21,6 +21,9 @@ describe("AIService", () => {
   let mockOpenAI: ReturnType<typeof createMockOpenAI>;
 
   beforeEach(() => {
+    vi.stubEnv("AI_TRANSCRIPTION_MODEL", "whisper-1");
+    vi.stubEnv("AI_DECOMPOSITION_MODEL", "gpt-4o-mini");
+    vi.stubEnv("AI_GENERATION_MODEL", "gpt-4o-mini");
     mockOpenAI = createMockOpenAI();
     service = new AIService(mockOpenAI as never);
   });

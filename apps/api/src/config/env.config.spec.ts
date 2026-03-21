@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { validateEnv, buildDatabaseUrl } from "./env.config.js";
 
 describe("validateEnv", () => {
-  const validEnv = {
+  const validEnv: Record<string, string> = {
     NODE_ENV: "development",
     PORT: "3001",
     DB_HOST: "localhost",
@@ -12,7 +12,14 @@ describe("validateEnv", () => {
     DB_NAME: "yappie",
     REDIS_URL: "redis://localhost:6379",
     JWT_SECRET: "test-secret",
+    JWT_EXPIRATION: "15m",
+    JWT_REFRESH_EXPIRATION: "7d",
     OPENAI_API_KEY: "sk-test-key",
+    AI_TRANSCRIPTION_MODEL: "whisper-1",
+    AI_DECOMPOSITION_MODEL: "gpt-4o-mini",
+    AI_GENERATION_MODEL: "gpt-4o-mini",
+    UPLOAD_PATH: "./uploads",
+    NEXT_PUBLIC_API_URL: "http://localhost:3001",
   };
 
   beforeEach(() => {
@@ -30,7 +37,7 @@ describe("validateEnv", () => {
     expect(env.PORT).toBe(3001);
     expect(env.DB_HOST).toBe("localhost");
     expect(env.DB_NAME).toBe("yappie");
-    expect(env.JWT_EXPIRATION).toBe("15m");
+    expect(env.AI_GENERATION_MODEL).toBe("gpt-4o-mini");
   });
 
   it("should exit with code 1 when required vars are missing", () => {

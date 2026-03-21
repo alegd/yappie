@@ -2,26 +2,35 @@ import { z } from "zod";
 
 const envSchema = z.object({
   // Server
-  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-  PORT: z.coerce.number().default(3001),
+  NODE_ENV: z.enum(["development", "production", "test"]),
+  PORT: z.coerce.number(),
 
   // Database
-  DB_HOST: z.string().default("localhost"),
-  DB_PORT: z.coerce.number().default(5432),
-  DB_USER: z.string().default("yappie"),
-  DB_PASSWORD: z.string().default("yappie_dev"),
-  DB_NAME: z.string().default("yappie"),
+  DB_HOST: z.string().min(1),
+  DB_PORT: z.coerce.number(),
+  DB_USER: z.string().min(1),
+  DB_PASSWORD: z.string().min(1),
+  DB_NAME: z.string().min(1),
 
   // Redis
   REDIS_URL: z.string().min(1),
 
   // JWT
   JWT_SECRET: z.string().min(1),
-  JWT_EXPIRATION: z.string().default("15m"),
-  JWT_REFRESH_EXPIRATION: z.string().default("7d"),
+  JWT_EXPIRATION: z.string().min(1),
+  JWT_REFRESH_EXPIRATION: z.string().min(1),
 
   // OpenAI
   OPENAI_API_KEY: z.string().min(1),
+  AI_TRANSCRIPTION_MODEL: z.string().min(1),
+  AI_DECOMPOSITION_MODEL: z.string().min(1),
+  AI_GENERATION_MODEL: z.string().min(1),
+
+  // Storage
+  UPLOAD_PATH: z.string().min(1),
+
+  // Frontend
+  NEXT_PUBLIC_API_URL: z.string().min(1),
 
   // Jira OAuth
   JIRA_CLIENT_ID: z.string().optional(),

@@ -4,15 +4,15 @@ services:
     container_name: yappie-db
     restart: unless-stopped
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "${DB_PORT}:5432"
     environment:
-      POSTGRES_USER: ${DB_USER:-yappie}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-yappie_dev}
-      POSTGRES_DB: ${DB_NAME:-yappie}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-yappie}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -22,7 +22,7 @@ services:
     container_name: yappie-redis
     restart: unless-stopped
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "${REDIS_PORT}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -38,12 +38,27 @@ services:
     container_name: yappie-api
     restart: unless-stopped
     ports:
-      - "${PORT:-3001}:${PORT:-3001}"
-    env_file:
-      - .env
+      - "${PORT}:${PORT}"
     environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${PORT}
       DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
       REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      AI_TRANSCRIPTION_MODEL: ${AI_TRANSCRIPTION_MODEL}
+      AI_DECOMPOSITION_MODEL: ${AI_DECOMPOSITION_MODEL}
+      AI_GENERATION_MODEL: ${AI_GENERATION_MODEL}
+      UPLOAD_PATH: ${UPLOAD_PATH}
+      JIRA_CLIENT_ID: ${JIRA_CLIENT_ID}
+      JIRA_CLIENT_SECRET: ${JIRA_CLIENT_SECRET}
+      JIRA_CALLBACK_URL: ${JIRA_CALLBACK_URL}
     volumes:
       - ./apps/api/src:/app/apps/api/src
       - ./packages/shared/src:/app/packages/shared/src
@@ -61,10 +76,9 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-    env_file:
-      - .env
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      NODE_ENV: ${NODE_ENV}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     volumes:
       - ./apps/web/src:/app/apps/web/src
       - ./packages/shared/src:/app/packages/shared/src

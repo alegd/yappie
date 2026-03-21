@@ -42,16 +42,22 @@ No markdown, no code blocks, no explanation.`;
 @Injectable()
 export class AIService {
   private readonly logger = new Logger(AIService.name);
+  private readonly transcriptionModel: string;
+  private readonly decompositionModel: string;
+  private readonly generationModel: string;
 
-  constructor(@Inject(OPENAI_CLIENT) private readonly openai: OpenAI) {}
+  constructor(@Inject(OPENAI_CLIENT) private readonly openai: OpenAI) {
+    this.transcriptionModel = process.env.AI_TRANSCRIPTION_MODEL!;
+    this.decompositionModel = process.env.AI_DECOMPOSITION_MODEL!;
+    this.generationModel = process.env.AI_GENERATION_MODEL!;
+  }
 
   async transcribe(audioBuffer: Buffer, fileName: string): Promise<string> {
     const file = await toFile(audioBuffer, fileName);
 
     const response = await this.openai.audio.transcriptions.create({
-      model: "whisper-1",
+      model: this.transcriptionModel,
       file,
-      language: "en",
     });
 
     return response.text;
@@ -66,7 +72,7 @@ export class AIService {
       : DECOMPOSE_PROMPT;
 
     const response = await this.openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: this.decompositionModel,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: transcription },
@@ -88,7 +94,7 @@ export class AIService {
       : GENERATE_PROMPT;
 
     const response = await this.openai.chat.completions.create({
-      model: "gpt-4o",
+      model: this.generationModel,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: JSON.stringify(tasks) },
@@ -104,8 +110,20 @@ export class AIService {
   private parseJsonArray<T>(content: string, schema: z.ZodType<T>): T[] {
     try {
       const parsed = JSON.parse(content);
-      // Handle both { tasks: [...] } and [...] formats
-      const array = Array.isArray(parsed) ? parsed : (parsed.tasks ?? parsed.tickets ?? []);
+      this.logger.debug(`AI raw response: ${content}`);
+
+      // Handle both [...] and { anyKey: [...] } formats
+      let array: unknown[];
+      if (Array.isArray(parsed)) {
+        array = parsed;
+      } else {
+        // Find the first array value in the object
+        const firstArray = Object.values(parsed).find((v) => Array.isArray(v)) as
+          | unknown[]
+          | undefined;
+        array = firstArray ?? [];
+      }
+
       return z.array(schema).parse(array);
     } catch (error) {
       this.logger.error(`Failed to parse AI response: ${content}`, error);
