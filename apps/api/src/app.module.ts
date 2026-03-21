@@ -10,6 +10,7 @@ import { ProjectsModule } from "./projects/projects.module.js";
 import { IntegrationsModule } from "./integrations/integrations.module.js";
 import { AnalyticsModule } from "./analytics/analytics.module.js";
 import { UsersModule } from "./users/users.module.js";
+import { TemplatesModule } from "./templates/templates.module.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
 import { StorageModule } from "./storage/storage.module.js";
 
@@ -37,6 +38,7 @@ import { StorageModule } from "./storage/storage.module.js";
     IntegrationsModule,
     AnalyticsModule,
     UsersModule,
+    TemplatesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
