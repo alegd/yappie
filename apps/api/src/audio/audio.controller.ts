@@ -1,4 +1,5 @@
 import { ApiBearerAuth, ApiConsumes, ApiBody } from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
 import {
   Controller,
   Get,
@@ -18,6 +19,7 @@ export class AudioController {
   constructor(private readonly audioService: AudioService) {}
 
   @Post("upload")
+  @Throttle({ short: { ttl: 60000, limit: 10 } })
   @UseInterceptors(FileInterceptor("file"))
   @ApiConsumes("multipart/form-data")
   @ApiBody({
