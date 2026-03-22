@@ -1,20 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { ProjectList } from "./project-list";
 
-const { mockGet, mockPost, mockDelete } = vi.hoisted(() => ({
+const { mockGet } = vi.hoisted(() => ({
   mockGet: vi.fn(),
-  mockPost: vi.fn(),
-  mockDelete: vi.fn(),
 }));
 
 vi.mock("@/lib/api", () => ({
   api: {
     get: mockGet,
-    post: mockPost,
-    patch: vi.fn(),
-    delete: mockDelete,
+    delete: vi.fn(),
     setToken: vi.fn(),
   },
 }));
@@ -74,39 +69,21 @@ describe("ProjectList", () => {
     expect(await screen.findByText(/no projects/i)).toBeInTheDocument();
   });
 
-  it("should show create project form when clicking new button", async () => {
-    const user = userEvent.setup();
+  it("should have a link to create new project", async () => {
     mockGet.mockResolvedValue({ data: [], total: 0, page: 1, limit: 50 });
     render(<ProjectList />);
 
     await screen.findByText(/no projects/i);
-    await user.click(screen.getByRole("button", { name: /new project/i }));
-
-    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/context/i)).toBeInTheDocument();
+    const newLink = screen.getByRole("link", { name: /new project/i });
+    expect(newLink).toHaveAttribute("href", "/dashboard/projects/new");
   });
 
-  it("should have context textarea with descriptive placeholder", async () => {
-    const user = userEvent.setup();
-    mockGet.mockResolvedValue({ data: [], total: 0, page: 1, limit: 50 });
-    render(<ProjectList />);
-
-    await screen.findByText(/no projects/i);
-    await user.click(screen.getByRole("button", { name: /new project/i }));
-
-    const contextField = screen.getByLabelText(/context/i);
-    expect(contextField.getAttribute("placeholder")).toContain("e-commerce");
-  });
-
-  it("should open edit form when clicking a project", async () => {
-    const user = userEvent.setup();
+  it("should have edit links for each project", async () => {
     mockGet.mockResolvedValue(mockProjects);
     render(<ProjectList />);
 
     await screen.findByText("E-commerce App");
-    await user.click(screen.getByText("E-commerce App"));
-
-    expect(screen.getByDisplayValue("E-commerce App")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Online store")).toBeInTheDocument();
+    const editLinks = screen.getAllByRole("link", { name: /edit/i });
+    expect(editLinks[0]).toHaveAttribute("href", "/dashboard/projects/p-1/edit");
   });
 });
