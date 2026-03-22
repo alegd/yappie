@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { api } from "@/lib/api";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
+  const [isTokenReady, setIsTokenReady] = useState(false);
 
-  // Sync token to API client
+  // Sync token to API client BEFORE rendering children
   useEffect(() => {
     if (session?.accessToken) {
       api.setToken(session.accessToken);
+      setIsTokenReady(true);
     }
   }, [session?.accessToken]);
 
@@ -32,7 +34,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => window.removeEventListener("auth:expired", handleAuthExpired);
   }, []);
 
-  if (status === "loading") {
+  if (status === "loading" || !isTokenReady) {
     return (
       <div className="flex h-screen items-center justify-center">
         <p className="text-zinc-500">Loading...</p>
