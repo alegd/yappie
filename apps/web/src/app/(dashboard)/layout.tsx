@@ -1,29 +1,35 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/features/auth/auth-store";
+import { useSession, signOut } from "next-auth/react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { api } from "@/lib/api";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const { user, isAuthenticated, hydrate, logout } = useAuthStore();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    hydrate();
-  }, [hydrate]);
-
-  useEffect(() => {
-    if (!isAuthenticated && typeof window !== "undefined" && !localStorage.getItem("accessToken")) {
-      router.push("/login");
+    if (session?.accessToken) {
+      api.setToken(session.accessToken);
     }
-  }, [isAuthenticated, router]);
+  }, [session?.accessToken]);
 
-  if (!isAuthenticated) return null;
+  if (status === "loading") {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-zinc-500">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!session) return null; // middleware handles redirect
+
+  const user = session.user
+    ? { name: session.user.name || "", email: session.user.email || "" }
+    : null;
 
   const handleLogout = () => {
-    logout();
-    router.push("/login");
+    signOut({ redirectTo: "/login" });
   };
 
   return (

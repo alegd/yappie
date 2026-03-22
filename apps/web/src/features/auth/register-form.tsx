@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "./auth-store";
+import { signIn } from "next-auth/react";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export function RegisterForm() {
-  const router = useRouter();
-  const register = useAuthStore((s) => s.register);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,11 +19,26 @@ export function RegisterForm() {
     setLoading(true);
 
     try {
-      await register(name, email, password);
-      router.push("/dashboard");
+      // 1. Register on backend
+      const registerResponse = await fetch(`${API_URL}/api/v1/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      if (!registerResponse.ok) {
+        const data = await registerResponse.json().catch(() => ({}));
+        throw new Error(data.message || "Registration failed");
+      }
+
+      // 2. Sign in with Auth.js
+      await signIn("credentials", {
+        email,
+        password,
+        redirectTo: "/dashboard",
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
-    } finally {
       setLoading(false);
     }
   };
