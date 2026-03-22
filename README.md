@@ -16,20 +16,24 @@ Yappie is an open-source tool that uses OpenAI Whisper and GPT-4o to transcribe 
 
 ```bash
 # Clone
-git clone https://github.com/your-org/yappie.git
+git clone https://github.com/alegd/yappie.git
 cd yappie
 
 # Install
 pnpm install
 
-# Start services (Postgres + Redis)
-docker compose up -d postgres redis
+# Setup env files
+cp apps/api/.env.example apps/api/.env   # fill in your values
+cp apps/web/.env.example apps/web/.env   # fill in AUTH_SECRET
 
-# Copy env
-cp .env.example .env
+# Start backend services (Postgres + Redis)
+cd apps/api && docker compose up -d postgres redis
 
-# Run dev
-pnpm dev
+# Run migrations
+pnpm --filter @yappie/api exec prisma migrate deploy
+
+# Run dev (from root)
+cd ../.. && pnpm dev
 ```
 
 ## Project Structure

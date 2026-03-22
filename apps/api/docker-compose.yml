@@ -33,57 +33,26 @@ services:
 
   api:
     build:
-      context: .
+      context: ../..
       dockerfile: apps/api/Dockerfile.dev
     container_name: yappie-api
     restart: unless-stopped
     ports:
       - "${PORT}:${PORT}"
+    env_file:
+      - .env
     environment:
-      NODE_ENV: ${NODE_ENV}
-      PORT: ${PORT}
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
       REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION: ${JWT_EXPIRATION}
-      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      AI_TRANSCRIPTION_MODEL: ${AI_TRANSCRIPTION_MODEL}
-      AI_DECOMPOSITION_MODEL: ${AI_DECOMPOSITION_MODEL}
-      AI_GENERATION_MODEL: ${AI_GENERATION_MODEL}
-      UPLOAD_PATH: ${UPLOAD_PATH}
-      JIRA_CLIENT_ID: ${JIRA_CLIENT_ID}
-      JIRA_CLIENT_SECRET: ${JIRA_CLIENT_SECRET}
-      JIRA_CALLBACK_URL: ${JIRA_CALLBACK_URL}
     volumes:
-      - ./apps/api/src:/app/apps/api/src
-      - ./packages/shared/src:/app/packages/shared/src
+      - ./src:/app/apps/api/src
+      - ../../packages/shared/src:/app/packages/shared/src
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-
-  web:
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile.dev
-    container_name: yappie-web
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      NODE_ENV: ${NODE_ENV}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-    volumes:
-      - ./apps/web/src:/app/apps/web/src
-      - ./packages/shared/src:/app/packages/shared/src
-    depends_on:
-      - api
 
 volumes:
   postgres_data:
