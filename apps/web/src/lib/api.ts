@@ -23,7 +23,7 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      if (response.status === 401 && typeof window !== "undefined") {
+      if (response.status === 401 && this.token && typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("auth:expired"));
       }
       const error = await response.json().catch(() => ({ message: response.statusText }));

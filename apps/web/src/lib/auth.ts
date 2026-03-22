@@ -76,8 +76,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         };
       }
 
-      // Token still valid
-      if (Date.now() < (token.accessTokenExpires as number)) {
+      // Token still valid (or no expiry set yet)
+      if (!token.accessTokenExpires || Date.now() < (token.accessTokenExpires as number)) {
         return token;
       }
 
