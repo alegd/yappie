@@ -8,11 +8,29 @@ import { api } from "@/lib/api";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
 
+  // Sync token to API client
   useEffect(() => {
     if (session?.accessToken) {
       api.setToken(session.accessToken);
     }
   }, [session?.accessToken]);
+
+  // Handle session errors (refresh token expired)
+  useEffect(() => {
+    if (session?.error === "RefreshTokenExpired" || session?.error === "RefreshTokenError") {
+      signOut({ redirectTo: "/login" });
+    }
+  }, [session?.error]);
+
+  // Listen for 401 from API client
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      signOut({ redirectTo: "/login" });
+    };
+
+    window.addEventListener("auth:expired", handleAuthExpired);
+    return () => window.removeEventListener("auth:expired", handleAuthExpired);
+  }, []);
 
   if (status === "loading") {
     return (
@@ -22,7 +40,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  if (!session) return null; // middleware handles redirect
+  if (!session) return null;
 
   const user = session.user
     ? { name: session.user.name || "", email: session.user.email || "" }
