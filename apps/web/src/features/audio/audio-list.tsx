@@ -6,6 +6,7 @@ import { Clock, FileAudio, AlertCircle, CheckCircle2, Loader2 } from "lucide-rea
 import { api } from "@/lib/api";
 import { AudioRecording, AudioListResponse } from "./types";
 import { AudioUpload } from "./audio-upload";
+import { Project } from "../projects/types";
 
 const statusConfig = {
   PENDING: { label: "Pending", color: "text-zinc-400 bg-zinc-400/10", icon: Clock },
@@ -36,21 +37,26 @@ function formatSize(bytes: number) {
 
 export function AudioList() {
   const [audios, setAudios] = useState<AudioRecording[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
-  const fetchAudios = async () => {
-    try {
-      const data = await api.get<AudioListResponse>("/audio?limit=50");
-      setAudios(data.data);
-    } catch {
-      // silently fail on fetch
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchAudios();
+    const fetchData = async () => {
+      try {
+        const [audioData, projectData] = await Promise.all([
+          api.get<AudioListResponse>("/audio?limit=50"),
+          api.get<{ data: Project[] }>("/projects?limit=50"),
+        ]);
+        setAudios(audioData.data);
+        setProjects(projectData.data);
+      } catch {
+        // silently fail
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
   const handleUploaded = (recording: AudioRecording) => {
@@ -69,7 +75,24 @@ export function AudioList() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Audios</h1>
-        <AudioUpload onUploaded={handleUploaded} />
+        <div className="flex items-center gap-3">
+          {projects.length > 0 && (
+            <select
+              value={selectedProjectId}
+              onChange={(e) => setSelectedProjectId(e.target.value)}
+              className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
+              aria-label="Select project"
+            >
+              <option value="">No project</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          )}
+          <AudioUpload projectId={selectedProjectId || undefined} onUploaded={handleUploaded} />
+        </div>
       </div>
 
       {audios.length === 0 ? (
