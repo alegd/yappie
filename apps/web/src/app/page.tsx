@@ -1,5 +1,7 @@
+import { auth } from "@/lib/auth";
 import { LandingPage } from "@/features/landing/landing-page";
 
-export default function Home() {
-  return <LandingPage />;
+export default async function Home() {
+  const session = await auth();
+  return <LandingPage isAuthenticated={!!session} />;
 }
