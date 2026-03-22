@@ -44,11 +44,13 @@ export class AudioController {
     @Req() req: { user: { sub: string } },
     @Query("page") page = "1",
     @Query("limit") limit = "10",
+    @Query("projectId") projectId?: string,
   ) {
-    return this.audioService.findAll(req.user.sub, {
-      page: parseInt(page, 10),
-      limit: parseInt(limit, 10),
-    });
+    return this.audioService.findAll(
+      req.user.sub,
+      { page: parseInt(page, 10), limit: parseInt(limit, 10) },
+      projectId,
+    );
   }
 
   @Get(":id")

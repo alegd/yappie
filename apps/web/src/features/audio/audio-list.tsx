@@ -41,6 +41,16 @@ export function AudioList() {
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
+  const fetchAudios = async (projectId?: string) => {
+    try {
+      const params = projectId ? `&projectId=${projectId}` : "";
+      const data = await api.get<AudioListResponse>(`/audio?limit=50${params}`);
+      setAudios(data.data);
+    } catch {
+      // silently fail
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -58,6 +68,11 @@ export function AudioList() {
     };
     fetchData();
   }, []);
+
+  const handleProjectChange = (projectId: string) => {
+    setSelectedProjectId(projectId);
+    fetchAudios(projectId || undefined);
+  };
 
   const handleUploaded = (recording: AudioRecording) => {
     setAudios((prev) => [recording, ...prev]);
@@ -79,11 +94,11 @@ export function AudioList() {
           {projects.length > 0 && (
             <select
               value={selectedProjectId}
-              onChange={(e) => setSelectedProjectId(e.target.value)}
+              onChange={(e) => handleProjectChange(e.target.value)}
               className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
-              aria-label="Select project"
+              aria-label="Filter by project"
             >
-              <option value="">No project</option>
+              <option value="">All projects</option>
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}

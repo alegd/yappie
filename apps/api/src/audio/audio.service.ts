@@ -83,17 +83,19 @@ export class AudioService {
     });
   }
 
-  async findAll(userId: string, pagination: { page: number; limit: number }) {
+  async findAll(userId: string, pagination: { page: number; limit: number }, projectId?: string) {
     const skip = (pagination.page - 1) * pagination.limit;
+    const where: Record<string, unknown> = { userId };
+    if (projectId) where.projectId = projectId;
 
     const [data, total] = await Promise.all([
       this.prisma.audioRecording.findMany({
-        where: { userId },
+        where,
         skip,
         take: pagination.limit,
         orderBy: { createdAt: "desc" },
       }),
-      this.prisma.audioRecording.count({ where: { userId } }),
+      this.prisma.audioRecording.count({ where }),
     ]);
 
     return { data, total, page: pagination.page, limit: pagination.limit };
