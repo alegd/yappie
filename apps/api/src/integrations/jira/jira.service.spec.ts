@@ -18,7 +18,7 @@ function createMockConfigService() {
       const config: Record<string, string> = {
         JIRA_CLIENT_ID: "test-client-id",
         JIRA_CLIENT_SECRET: "test-client-secret",
-        JIRA_CALLBACK_URL: "http://localhost:3001/api/integrations/jira/callback",
+        JIRA_CALLBACK_URL: "http://localhost:3001/api/v1/integrations/jira/callback",
       };
       return config[key];
     }),
@@ -52,12 +52,13 @@ describe("JiraService", () => {
 
   describe("getAuthUrl", () => {
     it("should return Atlassian OAuth authorization URL", () => {
-      const url = service.getAuthUrl();
+      const url = service.getAuthUrl("user-1");
 
       expect(url).toContain("https://auth.atlassian.com/authorize");
       expect(url).toContain("client_id=test-client-id");
       expect(url).toContain("redirect_uri=");
       expect(url).toContain("scope=");
+      expect(url).toContain("state=user-1");
     });
   });
 

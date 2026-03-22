@@ -16,14 +16,15 @@ export class JiraService {
     private readonly config: ConfigService,
   ) {}
 
-  getAuthUrl(): string {
+  getAuthUrl(userId: string): string {
     const clientId = this.config.get("JIRA_CLIENT_ID");
     const callbackUrl = encodeURIComponent(this.config.get("JIRA_CALLBACK_URL") || "");
     const scopes = encodeURIComponent(
       "read:jira-work write:jira-work read:jira-user offline_access",
     );
+    const state = encodeURIComponent(userId);
 
-    return `https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=${clientId}&scope=${scopes}&redirect_uri=${callbackUrl}&response_type=code&prompt=consent`;
+    return `https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=${clientId}&scope=${scopes}&redirect_uri=${callbackUrl}&response_type=code&prompt=consent&state=${state}`;
   }
 
   async exchangeCode(code: string, userId: string) {

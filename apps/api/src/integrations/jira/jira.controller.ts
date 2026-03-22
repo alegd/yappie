@@ -8,11 +8,14 @@ import {
   Post,
   Query,
   Req,
+  Res,
   HttpCode,
   HttpStatus,
 } from "@nestjs/common";
+import { Response } from "express";
 import { JiraService } from "./jira.service.js";
 import { ExportService } from "./export.service.js";
+import { Public } from "../../auth/decorators/public.decorator.js";
 
 @ApiBearerAuth()
 @Controller("integrations/jira")
@@ -23,8 +26,16 @@ export class JiraController {
   ) {}
 
   @Get("auth")
-  getAuthUrl() {
-    return { url: this.jiraService.getAuthUrl() };
+  getAuthUrl(@Req() req: { user: { sub: string } }) {
+    return { url: this.jiraService.getAuthUrl(req.user.sub) };
+  }
+
+  @Public()
+  @Get("callback")
+  async callback(@Query("code") code: string, @Query("state") state: string, @Res() res: Response) {
+    await this.jiraService.exchangeCode(code, state);
+    const frontendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+    return res.redirect(`${frontendUrl}/dashboard/settings?jira=connected`);
   }
 
   @Post("exchange")
