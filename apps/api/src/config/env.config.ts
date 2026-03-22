@@ -31,6 +31,7 @@ const envSchema = z.object({
 
   // Frontend
   NEXT_PUBLIC_API_URL: z.string().min(1),
+  FRONTEND_URL: z.string().min(1),
 
   // Jira OAuth
   JIRA_CLIENT_ID: z.string().optional(),

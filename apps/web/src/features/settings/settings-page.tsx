@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Link2, FileText, Star, Plus } from "lucide-react";
+import { Link2, FileText, Star, Plus, CheckCircle2, Unlink } from "lucide-react";
 import { api } from "@/lib/api";
 
 interface Template {
@@ -11,27 +11,53 @@ interface Template {
   isDefault: boolean;
 }
 
+interface JiraStatus {
+  connected: boolean;
+  siteName: string | null;
+  connectedAt: string | null;
+}
+
 export function SettingsPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [jiraStatus, setJiraStatus] = useState<JiraStatus | null>(null);
+  const [disconnecting, setDisconnecting] = useState(false);
 
   useEffect(() => {
-    const fetchTemplates = async () => {
+    const fetchData = async () => {
       try {
-        const data = await api.get<Template[]>("/templates");
-        setTemplates(data);
+        const [templatesData, jiraData] = await Promise.all([
+          api.get<Template[]>("/templates"),
+          api.get<JiraStatus>("/integrations/jira/status"),
+        ]);
+        setTemplates(templatesData);
+        setJiraStatus(jiraData);
       } catch {
         // silently fail
       }
     };
-    fetchTemplates();
+    fetchData();
   }, []);
 
   const handleConnectJira = async () => {
     try {
       const data = await api.get<{ url: string }>("/integrations/jira/auth");
-      window.open(data.url, "_blank");
+      window.location.href = data.url;
     } catch {
       // handle error
+    }
+  };
+
+  const handleDisconnectJira = async () => {
+    if (!confirm("Are you sure you want to disconnect Jira?")) return;
+
+    setDisconnecting(true);
+    try {
+      await api.delete("/integrations/jira");
+      setJiraStatus({ connected: false, siteName: null, connectedAt: null });
+    } catch {
+      // handle error
+    } finally {
+      setDisconnecting(false);
     }
   };
 
@@ -48,16 +74,36 @@ export function SettingsPage() {
 
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Jira</p>
-              <p className="text-sm text-zinc-500 mt-0.5">Export tickets to Atlassian Jira</p>
+            <div className="flex items-center gap-3">
+              <div>
+                <p className="font-medium">Jira</p>
+                {jiraStatus?.connected ? (
+                  <p className="text-sm text-emerald-400 mt-0.5 flex items-center gap-1">
+                    <CheckCircle2 size={12} />
+                    Connected to {jiraStatus.siteName || "Atlassian"}
+                  </p>
+                ) : (
+                  <p className="text-sm text-zinc-500 mt-0.5">Export tickets to Atlassian Jira</p>
+                )}
+              </div>
             </div>
-            <button
-              onClick={handleConnectJira}
-              className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg text-sm font-medium transition"
-            >
-              Connect Jira
-            </button>
+            {jiraStatus?.connected ? (
+              <button
+                onClick={handleDisconnectJira}
+                disabled={disconnecting}
+                className="flex items-center gap-1.5 bg-zinc-800 hover:bg-red-600 border border-zinc-700 hover:border-red-600 px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
+              >
+                <Unlink size={14} />
+                {disconnecting ? "Disconnecting..." : "Disconnect"}
+              </button>
+            ) : (
+              <button
+                onClick={handleConnectJira}
+                className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg text-sm font-medium transition"
+              >
+                Connect Jira
+              </button>
+            )}
           </div>
         </div>
       </section>

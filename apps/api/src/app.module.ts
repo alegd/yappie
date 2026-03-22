@@ -20,7 +20,6 @@ import { StorageModule } from "./storage/storage.module.js";
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ".env",
     }),
     ThrottlerModule.forRoot([
       { name: "short", ttl: 1000, limit: 3 },

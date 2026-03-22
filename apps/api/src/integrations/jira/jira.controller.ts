@@ -25,6 +25,11 @@ export class JiraController {
     private readonly exportService: ExportService,
   ) {}
 
+  @Get("status")
+  getStatus(@Req() req: { user: { sub: string } }) {
+    return this.jiraService.getStatus(req.user.sub);
+  }
+
   @Get("auth")
   getAuthUrl(@Req() req: { user: { sub: string } }) {
     return { url: this.jiraService.getAuthUrl(req.user.sub) };
@@ -34,7 +39,7 @@ export class JiraController {
   @Get("callback")
   async callback(@Query("code") code: string, @Query("state") state: string, @Res() res: Response) {
     await this.jiraService.exchangeCode(code, state);
-    const frontendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
     return res.redirect(`${frontendUrl}/dashboard/settings?jira=connected`);
   }
 

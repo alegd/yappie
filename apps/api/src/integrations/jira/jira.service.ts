@@ -130,6 +130,19 @@ export class JiraService {
     }
   }
 
+  async getStatus(userId: string) {
+    const integration = await this.prisma.integration.findUnique({
+      where: { userId_type: { userId, type: "JIRA" } },
+      select: { id: true, siteName: true, cloudId: true, createdAt: true },
+    });
+
+    return {
+      connected: !!integration,
+      siteName: integration?.siteName || null,
+      connectedAt: integration?.createdAt || null,
+    };
+  }
+
   async disconnect(userId: string) {
     await this.prisma.integration.delete({
       where: { userId_type: { userId, type: "JIRA" } },

@@ -1,9 +1,4 @@
 import "reflect-metadata";
-import { config } from "dotenv";
-import { resolve } from "path";
-
-// Load .env before anything else so process.env is populated for all providers
-config({ path: resolve(process.cwd(), ".env") });
 
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";

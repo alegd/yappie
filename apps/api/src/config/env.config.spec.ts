@@ -20,6 +20,7 @@ describe("validateEnv", () => {
     AI_GENERATION_MODEL: "gpt-4o-mini",
     UPLOAD_PATH: "./uploads",
     NEXT_PUBLIC_API_URL: "http://localhost:3001",
+    FRONTEND_URL: "http://localhost:3000",
   };
 
   beforeEach(() => {
