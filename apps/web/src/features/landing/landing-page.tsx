@@ -1,5 +1,6 @@
 import { ArrowRight, CheckCircle, FileText, Mic, Zap } from "lucide-react";
 import Link from "next/link";
+import { PublicNavbar } from "@/components/layout/public-navbar";
 
 const features = [
   {
@@ -36,32 +37,7 @@ interface LandingPageProps {
 export function LandingPage({ isAuthenticated = false }: LandingPageProps) {
   return (
     <main className="min-h-screen">
-      {/* Nav */}
-      <nav className="flex justify-between items-center mx-auto px-6 py-4 max-w-6xl">
-        <span className="font-bold text-xl tracking-tight">Yappie</span>
-        <div className="flex items-center gap-4">
-          {isAuthenticated ? (
-            <Link
-              href="/dashboard"
-              className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg font-medium text-sm transition"
-            >
-              Go to Dashboard
-            </Link>
-          ) : (
-            <>
-              <Link href="/login" className="text-zinc-400 hover:text-zinc-100 text-sm transition">
-                Log in
-              </Link>
-              <Link
-                href="/register"
-                className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg font-medium text-sm transition"
-              >
-                Get Started
-              </Link>
-            </>
-          )}
-        </div>
-      </nav>
+      <PublicNavbar isAuthenticated={isAuthenticated} />
 
       {/* Hero */}
       <section className="mx-auto px-6 py-24 max-w-4xl text-center">
