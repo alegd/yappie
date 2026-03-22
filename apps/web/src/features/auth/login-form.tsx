@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { AUDIOS_PAGE, REGISTER_PAGE } from "@/lib/constants/pages";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
+import { useState } from "react";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -19,7 +20,7 @@ export function LoginForm() {
       await signIn("credentials", {
         email,
         password,
-        redirectTo: "/dashboard",
+        redirectTo: AUDIOS_PAGE,
       });
     } catch {
       setError("Invalid email or password");
@@ -28,19 +29,19 @@ export function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="flex justify-center items-center px-4 min-h-screen">
       <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center mb-8">Log in to Yappie</h1>
+        <h1 className="mb-8 font-bold text-2xl text-center">Log in to Yappie</h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg p-3">
+            <div className="bg-red-500/10 p-3 border border-red-500/20 rounded-lg text-red-400 text-sm">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-zinc-400 mb-1">
+            <label htmlFor="email" className="block mb-1 font-medium text-zinc-400 text-sm">
               Email
             </label>
             <input
@@ -49,12 +50,12 @@ export function LoginForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition"
+              className="bg-zinc-900 px-3 py-2 border border-zinc-700 focus:border-indigo-500 rounded-lg focus:outline-none w-full text-sm transition"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-zinc-400 mb-1">
+            <label htmlFor="password" className="block mb-1 font-medium text-zinc-400 text-sm">
               Password
             </label>
             <input
@@ -63,22 +64,22 @@ export function LoginForm() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition"
+              className="bg-zinc-900 px-3 py-2 border border-zinc-700 focus:border-indigo-500 rounded-lg focus:outline-none w-full text-sm transition"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 px-4 py-2 rounded-lg font-medium text-sm transition"
+            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 px-4 py-2 rounded-lg w-full font-medium text-sm transition"
           >
             {loading ? "Logging in..." : "Log in"}
           </button>
         </form>
 
-        <p className="text-center text-sm text-zinc-500 mt-6">
+        <p className="mt-6 text-zinc-500 text-sm text-center">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-indigo-400 hover:text-indigo-300">
+          <Link href={REGISTER_PAGE} className="text-indigo-400 hover:text-indigo-300">
             Sign up
           </Link>
         </p>

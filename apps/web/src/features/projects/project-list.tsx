@@ -5,6 +5,7 @@ import { FolderOpen, Plus, Loader2, Brain, Trash2, Pencil } from "lucide-react";
 import { api } from "@/lib/api";
 import { useQuery, invalidateQuery } from "@/hooks/use-query";
 import { PROJECTS_LIST, projectDetail } from "@/lib/constants/endpoints";
+import { NEW_PROJECT_PAGE, editProjectPage } from "@/lib/constants/pages";
 import { ProjectListResponse } from "./types";
 
 export function ProjectList() {
@@ -37,7 +38,7 @@ export function ProjectList() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Projects</h1>
         <Link
-          href="/dashboard/projects/new"
+          href={NEW_PROJECT_PAGE}
           className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-sm font-medium transition"
           aria-label="New project"
         >
@@ -63,7 +64,7 @@ export function ProjectList() {
             >
               <div className="flex items-center gap-3">
                 <FolderOpen size={18} className="text-zinc-500 shrink-0" />
-                <Link href={`/dashboard/projects/${project.id}/edit`} className="flex-1 min-w-0">
+                <Link href={editProjectPage(project.id)} className="flex-1 min-w-0">
                   <p className="text-sm font-medium hover:text-indigo-400 transition">
                     {project.name}
                   </p>
@@ -78,7 +79,7 @@ export function ProjectList() {
                   </span>
                 )}
                 <Link
-                  href={`/dashboard/projects/${project.id}/edit`}
+                  href={editProjectPage(project.id)}
                   className="text-zinc-600 hover:text-indigo-400 transition"
                   aria-label={`Edit ${project.name}`}
                 >

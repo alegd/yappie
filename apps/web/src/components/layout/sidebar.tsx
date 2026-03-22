@@ -1,17 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import {
+  ANALYTICS_PAGE,
+  AUDIOS_PAGE,
+  PROJECTS_PAGE,
+  SETTINGS_PAGE,
+  TICKETS_PAGE,
+} from "@/lib/constants/pages";
+import { cn } from "@/lib/utils";
+import { BarChart3, FileText, FolderOpen, LogOut, Menu, Mic, Settings, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Mic, FileText, FolderOpen, Settings, BarChart3, LogOut, Menu, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 const navItems = [
-  { href: "/dashboard/audios", label: "Audios", icon: Mic },
-  { href: "/dashboard/tickets", label: "Tickets", icon: FileText },
-  { href: "/dashboard/projects", label: "Projects", icon: FolderOpen },
-  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  { href: AUDIOS_PAGE, label: "Audios", icon: Mic },
+  { href: TICKETS_PAGE, label: "Tickets", icon: FileText },
+  { href: PROJECTS_PAGE, label: "Projects", icon: FolderOpen },
+  { href: ANALYTICS_PAGE, label: "Analytics", icon: BarChart3 },
+  { href: SETTINGS_PAGE, label: "Settings", icon: Settings },
 ];
 
 interface SidebarProps {
@@ -54,7 +61,7 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
         )}
       >
         <div className="p-4 border-zinc-800 border-b">
-          <Link href="/dashboard" className="font-bold text-lg tracking-tight">
+          <Link href={AUDIOS_PAGE} className="font-bold text-lg tracking-tight">
             Yappie
           </Link>
         </div>

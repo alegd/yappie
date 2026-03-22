@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { HOME_PAGE, LOGIN_PAGE, REGISTER_PAGE } from "./lib/constants/pages";
 import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
 import { CALLBACK_URL_KEY } from "./lib/constants/common";
+import { HOME_PAGE, LOGIN_PAGE, REGISTER_PAGE } from "./lib/constants/pages";
 
 const authPages = [LOGIN_PAGE, REGISTER_PAGE];
 

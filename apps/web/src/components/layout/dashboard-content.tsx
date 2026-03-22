@@ -3,6 +3,7 @@
 import { signOut } from "next-auth/react";
 import { Sidebar } from "./sidebar";
 import { api } from "@/lib/api";
+import { LOGIN_PAGE } from "@/lib/constants/pages";
 
 interface DashboardContentProps {
   accessToken: string;
@@ -15,7 +16,7 @@ export function DashboardContent({ accessToken, user, children }: DashboardConte
   api.setToken(accessToken);
 
   const handleLogout = () => {
-    signOut({ redirectTo: "/login" });
+    signOut({ redirectTo: LOGIN_PAGE });
   };
 
   return (

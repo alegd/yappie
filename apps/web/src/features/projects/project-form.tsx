@@ -6,6 +6,7 @@ import { ArrowLeft, Brain, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { PROJECTS_CREATE, projectDetail } from "@/lib/constants/endpoints";
+import { PROJECTS_PAGE } from "@/lib/constants/pages";
 import { Project } from "./types";
 
 const CONTEXT_PLACEHOLDER = `Describe your project so AI generates better tickets. Example:
@@ -65,7 +66,7 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
         await api.post(PROJECTS_CREATE, body);
       }
 
-      router.push("/dashboard/projects");
+      router.push(PROJECTS_PAGE);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save project");
     } finally {
@@ -85,7 +86,7 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
   return (
     <div className="max-w-2xl">
       <div className="flex items-center gap-4 mb-6">
-        <Link href="/dashboard/projects" className="text-zinc-500 hover:text-zinc-300 transition">
+        <Link href={PROJECTS_PAGE} className="text-zinc-500 hover:text-zinc-300 transition">
           <ArrowLeft size={20} />
         </Link>
         <h1 className="text-2xl font-bold">{isEditing ? "Edit Project" : "New Project"}</h1>
@@ -157,7 +158,7 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
             {saving ? "Saving..." : isEditing ? "Save changes" : "Create project"}
           </button>
           <Link
-            href="/dashboard/projects"
+            href={PROJECTS_PAGE}
             className="bg-zinc-800 hover:bg-zinc-700 px-6 py-2 rounded-lg text-sm font-medium transition"
           >
             Cancel

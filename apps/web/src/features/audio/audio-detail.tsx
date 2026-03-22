@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle2, AlertCircle, Clock, Loader2, FileText } from "lucide-react";
 import { useQuery } from "@/hooks/use-query";
 import { audioDetail } from "@/lib/constants/endpoints";
+import { AUDIOS_PAGE } from "@/lib/constants/pages";
 import { AudioRecording } from "./types";
 import { cn } from "@/lib/utils";
 
@@ -59,7 +60,7 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
         <AlertCircle size={48} className="mx-auto mb-4 text-red-400 opacity-50" />
         <p className="text-red-400">{fetchError?.message || "Not found"}</p>
         <Link
-          href="/dashboard"
+          href={AUDIOS_PAGE}
           className="text-sm text-indigo-400 hover:text-indigo-300 mt-4 inline-block"
         >
           Back to audios
@@ -75,7 +76,7 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
     <div>
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Link href="/dashboard" className="text-zinc-500 hover:text-zinc-300 transition">
+        <Link href={AUDIOS_PAGE} className="text-zinc-500 hover:text-zinc-300 transition">
           <ArrowLeft size={20} />
         </Link>
         <div className="flex-1">

@@ -1,6 +1,7 @@
 import { ArrowRight, CheckCircle, FileText, Mic, Zap } from "lucide-react";
 import Link from "next/link";
 import { PublicNavbar } from "@/components/layout/public-navbar";
+import { REGISTER_PAGE } from "@/lib/constants/pages";
 
 const features = [
   {
@@ -55,7 +56,7 @@ export function LandingPage({ isAuthenticated = false }: LandingPageProps) {
         </p>
         <div className="flex justify-center items-center gap-4 mt-8">
           <Link
-            href="/register"
+            href={REGISTER_PAGE}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold text-base transition"
           >
             Start for free <ArrowRight size={18} />
@@ -117,7 +118,7 @@ export function LandingPage({ isAuthenticated = false }: LandingPageProps) {
             Join teams who save hours every week by turning meetings into actionable Jira tickets.
           </p>
           <Link
-            href="/register"
+            href={REGISTER_PAGE}
             className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 px-8 py-3 rounded-lg font-semibold transition"
           >
             Get started for free <ArrowRight size={18} />

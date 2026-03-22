@@ -2,6 +2,7 @@
 
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { AUDIO_LIST, audioByProject, PROJECTS_LIST } from "@/lib/constants/endpoints";
+import { audioDetailPage } from "@/lib/constants/pages";
 import { AlertCircle, CheckCircle2, Clock, FileAudio, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -103,7 +104,7 @@ export function AudioList() {
             return (
               <Link
                 key={audio.id}
-                href={`/dashboard/audio/${audio.id}`}
+                href={audioDetailPage(audio.id)}
                 className="flex items-center gap-4 bg-zinc-900/50 p-4 border border-zinc-800 hover:border-zinc-700 rounded-lg transition"
               >
                 <FileAudio size={20} className="text-zinc-500 shrink-0" />
