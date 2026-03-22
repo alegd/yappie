@@ -97,4 +97,16 @@ describe("ProjectList", () => {
     const contextField = screen.getByLabelText(/context/i);
     expect(contextField.getAttribute("placeholder")).toContain("e-commerce");
   });
+
+  it("should open edit form when clicking a project", async () => {
+    const user = userEvent.setup();
+    mockGet.mockResolvedValue(mockProjects);
+    render(<ProjectList />);
+
+    await screen.findByText("E-commerce App");
+    await user.click(screen.getByText("E-commerce App"));
+
+    expect(screen.getByDisplayValue("E-commerce App")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Online store")).toBeInTheDocument();
+  });
 });
