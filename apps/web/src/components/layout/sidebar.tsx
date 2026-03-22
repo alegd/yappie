@@ -7,7 +7,7 @@ import { Mic, FileText, FolderOpen, Settings, BarChart3, LogOut, Menu, X } from 
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/dashboard", label: "Audios", icon: Mic },
+  { href: "/dashboard/audios", label: "Audios", icon: Mic },
   { href: "/dashboard/tickets", label: "Tickets", icon: FileText },
   { href: "/dashboard/projects", label: "Projects", icon: FolderOpen },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
@@ -28,7 +28,7 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
       {/* Mobile toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 bg-zinc-800 p-2 rounded-lg"
+        className="md:hidden top-4 left-4 z-50 fixed bg-zinc-800 p-2 rounded-lg"
         aria-label="Toggle menu"
       >
         {isOpen ? <X size={20} /> : <Menu size={20} />}
@@ -37,7 +37,7 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
       {/* Overlay */}
       {isOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          className="md:hidden z-40 fixed inset-0 bg-black/50"
           onClick={() => setIsOpen(false)}
           onKeyDown={() => setIsOpen(false)}
           role="button"
@@ -48,18 +48,18 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
 
       <aside
         className={cn(
-          "w-60 bg-zinc-900/50 border-r border-zinc-800 flex flex-col",
+          "flex flex-col bg-zinc-900/50 border-zinc-800 border-r w-60",
           "fixed md:static inset-y-0 left-0 z-40 transition-transform md:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className="p-4 border-b border-zinc-800">
-          <Link href="/dashboard" className="text-lg font-bold tracking-tight">
+        <div className="p-4 border-zinc-800 border-b">
+          <Link href="/dashboard" className="font-bold text-lg tracking-tight">
             Yappie
           </Link>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 space-y-1 p-3">
           {navItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
@@ -67,7 +67,7 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition",
+                  "flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition",
                   isActive
                     ? "bg-indigo-500/10 text-indigo-400"
                     : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50",
@@ -80,14 +80,14 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
           })}
         </nav>
 
-        <div className="p-3 border-t border-zinc-800">
+        <div className="p-3 border-zinc-800 border-t">
           <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-8 h-8 bg-indigo-500/20 rounded-full flex items-center justify-center text-sm font-bold text-indigo-400">
+            <div className="flex justify-center items-center bg-indigo-500/20 rounded-full w-8 h-8 font-bold text-indigo-400 text-sm">
               {user?.name?.[0]?.toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.name}</p>
-              <p className="text-xs text-zinc-500 truncate">{user?.email}</p>
+              <p className="font-medium text-sm truncate">{user?.name}</p>
+              <p className="text-zinc-500 text-xs truncate">{user?.email}</p>
             </div>
             <button onClick={onLogout} className="text-zinc-500 hover:text-zinc-300 transition">
               <LogOut size={16} />

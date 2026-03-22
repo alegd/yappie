@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, AlertCircle, Clock, Loader2, FileText } from "lucide-react";
-import { api } from "@/lib/api";
+import { useQuery } from "@/hooks/use-query";
+import { audioDetail } from "@/lib/constants/endpoints";
 import { AudioRecording } from "./types";
 import { cn } from "@/lib/utils";
 
@@ -38,26 +38,13 @@ interface AudioDetailProps {
 }
 
 export function AudioDetail({ audioId }: AudioDetailProps) {
-  const [audio, setAudio] = useState<AudioRecording | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const {
+    data: audio,
+    error: fetchError,
+    isLoading,
+  } = useQuery<AudioRecording>(audioDetail(audioId));
 
-  useEffect(() => {
-    const fetchAudio = async () => {
-      try {
-        const data = await api.get<AudioRecording>(`/audio/${audioId}`);
-        setAudio(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Not found");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAudio();
-  }, [audioId]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 size={24} className="animate-spin text-zinc-500" />
@@ -66,11 +53,11 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
     );
   }
 
-  if (error || !audio) {
+  if (fetchError || !audio) {
     return (
       <div className="text-center py-20">
         <AlertCircle size={48} className="mx-auto mb-4 text-red-400 opacity-50" />
-        <p className="text-red-400">{error || "Not found"}</p>
+        <p className="text-red-400">{fetchError?.message || "Not found"}</p>
         <Link
           href="/dashboard"
           className="text-sm text-indigo-400 hover:text-indigo-300 mt-4 inline-block"

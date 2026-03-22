@@ -2,15 +2,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { AudioDetail } from "./audio-detail";
 
-const { mockGet } = vi.hoisted(() => ({
-  mockGet: vi.fn(),
+const { mockUseQuery } = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(),
 }));
 
-vi.mock("@/lib/api", () => ({
-  api: {
-    get: mockGet,
-    setToken: vi.fn(),
-  },
+vi.mock("@/hooks/use-query", () => ({
+  useQuery: mockUseQuery,
+  invalidateQuery: vi.fn(),
 }));
 
 const mockAudio = {
@@ -33,51 +31,52 @@ const mockAudio = {
   ],
 };
 
+const queryResult = (data: unknown, isLoading = false, error?: Error) => ({
+  data,
+  error,
+  isLoading,
+  mutate: vi.fn(),
+});
+
 describe("AudioDetail", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("should show loading state initially", () => {
-    mockGet.mockReturnValue(new Promise(() => {})); // never resolves
+    mockUseQuery.mockReturnValue(queryResult(undefined, true));
     render(<AudioDetail audioId="audio-1" />);
-
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
 
-  it("should display audio file name after loading", async () => {
-    mockGet.mockResolvedValue(mockAudio);
+  it("should display audio file name after loading", () => {
+    mockUseQuery.mockReturnValue(queryResult(mockAudio));
     render(<AudioDetail audioId="audio-1" />);
-
-    expect(await screen.findByText("standup-notes.mp3")).toBeInTheDocument();
+    expect(screen.getByText("standup-notes.mp3")).toBeInTheDocument();
   });
 
-  it("should display transcription text", async () => {
-    mockGet.mockResolvedValue(mockAudio);
+  it("should display transcription text", () => {
+    mockUseQuery.mockReturnValue(queryResult(mockAudio));
     render(<AudioDetail audioId="audio-1" />);
-
-    expect(await screen.findByText("We need to fix the login bug in Safari.")).toBeInTheDocument();
+    expect(screen.getByText("We need to fix the login bug in Safari.")).toBeInTheDocument();
   });
 
-  it("should display generated tickets", async () => {
-    mockGet.mockResolvedValue(mockAudio);
+  it("should display generated tickets", () => {
+    mockUseQuery.mockReturnValue(queryResult(mockAudio));
     render(<AudioDetail audioId="audio-1" />);
-
-    expect(await screen.findByText("Fix Safari login bug")).toBeInTheDocument();
+    expect(screen.getByText("Fix Safari login bug")).toBeInTheDocument();
     expect(screen.getByText("Update button design")).toBeInTheDocument();
   });
 
-  it("should show status badge", async () => {
-    mockGet.mockResolvedValue(mockAudio);
+  it("should show status badge", () => {
+    mockUseQuery.mockReturnValue(queryResult(mockAudio));
     render(<AudioDetail audioId="audio-1" />);
-
-    expect(await screen.findByText("Completed")).toBeInTheDocument();
+    expect(screen.getByText("Completed")).toBeInTheDocument();
   });
 
-  it("should show error state when fetch fails", async () => {
-    mockGet.mockRejectedValue(new Error("Not found"));
+  it("should show error state when fetch fails", () => {
+    mockUseQuery.mockReturnValue(queryResult(undefined, false, new Error("Not found")));
     render(<AudioDetail audioId="audio-1" />);
-
-    expect(await screen.findByText(/not found/i)).toBeInTheDocument();
+    expect(screen.getByText(/not found/i)).toBeInTheDocument();
   });
 });

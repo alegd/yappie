@@ -1,4 +1,4 @@
-import { Mic, Zap, FileText, ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowRight, CheckCircle, FileText, Mic, Zap } from "lucide-react";
 import Link from "next/link";
 
 const features = [
@@ -33,15 +33,15 @@ export function LandingPage() {
   return (
     <main className="min-h-screen">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
-        <span className="text-xl font-bold tracking-tight">Yappie</span>
+      <nav className="flex justify-between items-center mx-auto px-6 py-4 max-w-6xl">
+        <span className="font-bold text-xl tracking-tight">Yappie</span>
         <div className="flex items-center gap-4">
-          <Link href="/login" className="text-sm text-zinc-400 hover:text-zinc-100 transition">
+          <Link href="/login" className="text-zinc-400 hover:text-zinc-100 text-sm transition">
             Log in
           </Link>
           <Link
             href="/register"
-            className="text-sm bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg font-medium transition"
+            className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg font-medium text-sm transition"
           >
             Get Started
           </Link>
@@ -49,29 +49,29 @@ export function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="text-center px-6 py-24 max-w-4xl mx-auto">
-        <div className="inline-block px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-6">
+      <section className="mx-auto px-6 py-24 max-w-4xl text-center">
+        <div className="inline-block bg-indigo-500/10 mb-6 px-3 py-1 border border-indigo-500/20 rounded-full font-semibold text-indigo-400 text-xs uppercase tracking-wider">
           Powered by OpenAI
         </div>
-        <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight leading-tight">
+        <h1 className="font-extrabold text-5xl md:text-6xl leading-tight tracking-tight">
           Turn voice notes into
           <br />
           <span className="text-indigo-500">Jira tickets</span>
         </h1>
-        <p className="mt-6 text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+        <p className="mx-auto mt-6 max-w-2xl text-zinc-400 text-lg leading-relaxed">
           Record your thoughts after a meeting, standup, or brainstorm. Yappie uses AI to extract
           tasks, generate structured tickets, and export them to Jira — in seconds.
         </p>
-        <div className="mt-8 flex items-center justify-center gap-4">
+        <div className="flex justify-center items-center gap-4 mt-8">
           <Link
             href="/register"
-            className="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold text-base transition flex items-center gap-2"
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold text-base transition"
           >
             Start for free <ArrowRight size={18} />
           </Link>
           <Link
             href="#how-it-works"
-            className="border border-zinc-700 hover:border-zinc-500 px-6 py-3 rounded-lg font-medium text-sm text-zinc-300 transition"
+            className="px-6 py-3 border border-zinc-700 hover:border-zinc-500 rounded-lg font-medium text-zinc-300 text-sm transition"
           >
             How it works
           </Link>
@@ -79,35 +79,35 @@ export function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="px-6 py-20 max-w-6xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-12">From audio to action in 3 steps</h2>
-        <div className="grid md:grid-cols-3 gap-8">
+      <section className="mx-auto px-6 py-20 max-w-6xl">
+        <h2 className="mb-12 font-bold text-3xl text-center">From audio to action in 3 steps</h2>
+        <div className="gap-8 grid md:grid-cols-3">
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition"
+              className="bg-zinc-900/50 p-6 border border-zinc-800 hover:border-zinc-700 rounded-xl transition"
             >
-              <div className="w-10 h-10 bg-indigo-500/10 rounded-lg flex items-center justify-center mb-4">
+              <div className="flex justify-center items-center bg-indigo-500/10 mb-4 rounded-lg w-10 h-10">
                 <feature.icon size={20} className="text-indigo-400" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-              <p className="text-sm text-zinc-400 leading-relaxed">{feature.description}</p>
+              <h3 className="mb-2 font-semibold text-lg">{feature.title}</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="px-6 py-20 max-w-4xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-12">How it works</h2>
+      <section id="how-it-works" className="mx-auto px-6 py-20 max-w-4xl">
+        <h2 className="mb-12 font-bold text-3xl text-center">How it works</h2>
         <div className="space-y-4">
           {steps.map((step, i) => (
             <div
               key={i}
-              className="flex items-start gap-4 bg-zinc-900/30 border border-zinc-800/50 rounded-lg p-4"
+              className="flex items-start gap-4 bg-zinc-900/30 p-4 border border-zinc-800/50 rounded-lg"
             >
-              <div className="w-8 h-8 bg-indigo-500/20 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-sm font-bold text-indigo-400">{i + 1}</span>
+              <div className="flex justify-center items-center bg-indigo-500/20 mt-0.5 rounded-full w-8 h-8 shrink-0">
+                <span className="font-bold text-indigo-400 text-sm">{i + 1}</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle size={16} className="text-emerald-500 shrink-0" />
@@ -119,15 +119,15 @@ export function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="px-6 py-20 text-center">
-        <div className="max-w-2xl mx-auto bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-2xl p-12">
-          <h2 className="text-3xl font-bold mb-4">Ready to stop typing tickets?</h2>
-          <p className="text-zinc-400 mb-8">
+      <section className="mx-auto px-6 py-20 max-w-6xl text-center">
+        <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 p-12 border border-indigo-500/20 rounded-2xl">
+          <h2 className="mb-4 font-bold text-3xl">Ready to stop typing tickets?</h2>
+          <p className="mb-8 text-zinc-400">
             Join teams who save hours every week by turning meetings into actionable Jira tickets.
           </p>
           <Link
             href="/register"
-            className="bg-indigo-600 hover:bg-indigo-500 px-8 py-3 rounded-lg font-semibold transition inline-flex items-center gap-2"
+            className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 px-8 py-3 rounded-lg font-semibold transition"
           >
             Get started for free <ArrowRight size={18} />
           </Link>
@@ -135,8 +135,8 @@ export function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-800 px-6 py-8">
-        <div className="max-w-6xl mx-auto flex items-center justify-between text-sm text-zinc-500">
+      <footer className="px-6 py-8 border-zinc-800 border-t">
+        <div className="flex justify-between items-center mx-auto max-w-6xl text-zinc-500 text-sm">
           <span>Yappie — TFM Project</span>
           <span>AGPL-3.0</span>
         </div>

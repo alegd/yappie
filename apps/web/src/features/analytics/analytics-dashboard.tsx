@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Mic, FileText, ExternalLink, Loader2, BarChart3 } from "lucide-react";
-import { api } from "@/lib/api";
+import { useQuery } from "@/hooks/use-query";
+import { analyticsOverview } from "@/lib/constants/endpoints";
 
 interface EventCount {
   type: string;
@@ -28,27 +28,13 @@ const eventLabels: Record<string, { label: string; icon: typeof Mic; color: stri
 };
 
 export function AnalyticsDashboard() {
-  const [events, setEvents] = useState<EventCount[]>([]);
-  const [loading, setLoading] = useState(true);
+  const now = new Date();
+  const from = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const to = now.toISOString();
 
-  useEffect(() => {
-    const fetchAnalytics = async () => {
-      try {
-        const now = new Date();
-        const from = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-        const to = now.toISOString();
-        const data = await api.get<EventCount[]>(`/analytics/overview?from=${from}&to=${to}`);
-        setEvents(data);
-      } catch {
-        // silently fail
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAnalytics();
-  }, []);
+  const { data: events = [], isLoading } = useQuery<EventCount[]>(analyticsOverview(from, to));
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 size={24} className="animate-spin text-zinc-500" />

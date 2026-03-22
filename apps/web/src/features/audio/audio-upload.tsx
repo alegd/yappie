@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Upload, Mic, Square, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
+import { AUDIO_UPLOAD } from "@/lib/constants/endpoints";
 import { AudioRecording } from "./types";
 
 interface AudioUploadProps {
@@ -31,7 +32,7 @@ export function AudioUpload({ projectId, onUploaded }: AudioUploadProps) {
     try {
       const params: Record<string, string> = {};
       if (projectId) params.projectId = projectId;
-      const result = await api.upload<AudioRecording>("/audio/upload", file, params);
+      const result = await api.upload<AudioRecording>(AUDIO_UPLOAD, file, params);
       onUploaded(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");

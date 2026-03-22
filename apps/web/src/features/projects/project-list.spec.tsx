@@ -2,16 +2,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ProjectList } from "./project-list";
 
-const { mockGet } = vi.hoisted(() => ({
-  mockGet: vi.fn(),
+const { mockUseQuery } = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(),
 }));
 
-vi.mock("@/lib/api", () => ({
-  api: {
-    get: mockGet,
-    delete: vi.fn(),
-    setToken: vi.fn(),
-  },
+vi.mock("@/hooks/use-query", () => ({
+  useQuery: mockUseQuery,
+  invalidateQuery: vi.fn(),
 }));
 
 const mockProjects = {
@@ -42,13 +39,23 @@ describe("ProjectList", () => {
   });
 
   it("should show loading state", () => {
-    mockGet.mockReturnValue(new Promise(() => {}));
+    mockUseQuery.mockReturnValue({
+      data: undefined,
+      error: undefined,
+      isLoading: true,
+      mutate: vi.fn(),
+    });
     render(<ProjectList />);
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
 
   it("should display projects after loading", async () => {
-    mockGet.mockResolvedValue(mockProjects);
+    mockUseQuery.mockReturnValue({
+      data: mockProjects,
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
     render(<ProjectList />);
 
     expect(await screen.findByText("E-commerce App")).toBeInTheDocument();
@@ -56,21 +63,36 @@ describe("ProjectList", () => {
   });
 
   it("should show context badge when project has context", async () => {
-    mockGet.mockResolvedValue(mockProjects);
+    mockUseQuery.mockReturnValue({
+      data: mockProjects,
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
     render(<ProjectList />);
 
     expect(await screen.findByText(/AI context/i)).toBeInTheDocument();
   });
 
   it("should show empty state when no projects", async () => {
-    mockGet.mockResolvedValue({ data: [], total: 0, page: 1, limit: 50 });
+    mockUseQuery.mockReturnValue({
+      data: { data: [], total: 0, page: 1, limit: 50 },
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
     render(<ProjectList />);
 
     expect(await screen.findByText(/no projects/i)).toBeInTheDocument();
   });
 
   it("should have a link to create new project", async () => {
-    mockGet.mockResolvedValue({ data: [], total: 0, page: 1, limit: 50 });
+    mockUseQuery.mockReturnValue({
+      data: { data: [], total: 0, page: 1, limit: 50 },
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
     render(<ProjectList />);
 
     await screen.findByText(/no projects/i);
@@ -79,7 +101,12 @@ describe("ProjectList", () => {
   });
 
   it("should have edit links for each project", async () => {
-    mockGet.mockResolvedValue(mockProjects);
+    mockUseQuery.mockReturnValue({
+      data: mockProjects,
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
     render(<ProjectList />);
 
     await screen.findByText("E-commerce App");

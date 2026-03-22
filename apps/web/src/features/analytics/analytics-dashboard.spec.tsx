@@ -2,15 +2,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { AnalyticsDashboard } from "./analytics-dashboard";
 
-const { mockGet } = vi.hoisted(() => ({
-  mockGet: vi.fn(),
+const { mockUseQuery } = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(),
 }));
 
-vi.mock("@/lib/api", () => ({
-  api: {
-    get: mockGet,
-    setToken: vi.fn(),
-  },
+vi.mock("@/hooks/use-query", () => ({
+  useQuery: mockUseQuery,
+  invalidateQuery: vi.fn(),
 }));
 
 describe("AnalyticsDashboard", () => {
@@ -19,17 +17,27 @@ describe("AnalyticsDashboard", () => {
   });
 
   it("should show loading state", () => {
-    mockGet.mockReturnValue(new Promise(() => {}));
+    mockUseQuery.mockReturnValue({
+      data: undefined,
+      error: undefined,
+      isLoading: true,
+      mutate: vi.fn(),
+    });
     render(<AnalyticsDashboard />);
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
 
   it("should display event counts", async () => {
-    mockGet.mockResolvedValue([
-      { type: "audio.uploaded", count: 12 },
-      { type: "ticket.generated", count: 35 },
-      { type: "ticket.exported", count: 8 },
-    ]);
+    mockUseQuery.mockReturnValue({
+      data: [
+        { type: "audio.uploaded", count: 12 },
+        { type: "ticket.generated", count: 35 },
+        { type: "ticket.exported", count: 8 },
+      ],
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
 
     render(<AnalyticsDashboard />);
 
@@ -39,7 +47,7 @@ describe("AnalyticsDashboard", () => {
   });
 
   it("should show empty state when no data", async () => {
-    mockGet.mockResolvedValue([]);
+    mockUseQuery.mockReturnValue({ data: [], error: undefined, isLoading: false, mutate: vi.fn() });
     render(<AnalyticsDashboard />);
     expect(await screen.findByText(/no analytics/i)).toBeInTheDocument();
   });

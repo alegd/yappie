@@ -3,16 +3,13 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TicketList } from "./ticket-list";
 
-const { mockGet } = vi.hoisted(() => ({
-  mockGet: vi.fn(),
+const { mockUseQuery } = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(),
 }));
 
-vi.mock("@/lib/api", () => ({
-  api: {
-    get: mockGet,
-    post: vi.fn(),
-    setToken: vi.fn(),
-  },
+vi.mock("@/hooks/use-query", () => ({
+  useQuery: mockUseQuery,
+  invalidateQuery: vi.fn(),
 }));
 
 const mockTickets = {
@@ -53,13 +50,23 @@ describe("TicketList", () => {
   });
 
   it("should show loading state initially", () => {
-    mockGet.mockReturnValue(new Promise(() => {}));
+    mockUseQuery.mockReturnValue({
+      data: undefined,
+      error: undefined,
+      isLoading: true,
+      mutate: vi.fn(),
+    });
     render(<TicketList />);
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
 
   it("should display tickets after loading", async () => {
-    mockGet.mockResolvedValue(mockTickets);
+    mockUseQuery.mockReturnValue({
+      data: mockTickets,
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
     render(<TicketList />);
 
     expect(await screen.findByText("Fix Safari login bug")).toBeInTheDocument();
@@ -68,13 +75,23 @@ describe("TicketList", () => {
   });
 
   it("should show empty state when no tickets", async () => {
-    mockGet.mockResolvedValue({ data: [], total: 0, page: 1, limit: 50 });
+    mockUseQuery.mockReturnValue({
+      data: { data: [], total: 0, page: 1, limit: 50 },
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
     render(<TicketList />);
     expect(await screen.findByText(/no tickets/i)).toBeInTheDocument();
   });
 
   it("should display priority and status badges", async () => {
-    mockGet.mockResolvedValue(mockTickets);
+    mockUseQuery.mockReturnValue({
+      data: mockTickets,
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
     render(<TicketList />);
 
     expect(await screen.findByText("HIGH")).toBeInTheDocument();
@@ -83,14 +100,24 @@ describe("TicketList", () => {
   });
 
   it("should show Jira key for exported tickets", async () => {
-    mockGet.mockResolvedValue(mockTickets);
+    mockUseQuery.mockReturnValue({
+      data: mockTickets,
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
     render(<TicketList />);
     expect(await screen.findByText("PROJ-42")).toBeInTheDocument();
   });
 
   it("should allow selecting tickets with checkboxes", async () => {
     const user = userEvent.setup();
-    mockGet.mockResolvedValue(mockTickets);
+    mockUseQuery.mockReturnValue({
+      data: mockTickets,
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
     render(<TicketList />);
 
     await screen.findByText("Fix Safari login bug");

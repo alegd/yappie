@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link2, FileText, Star, Plus, CheckCircle2, Unlink } from "lucide-react";
 import { api } from "@/lib/api";
+import { useQuery, invalidateQuery } from "@/hooks/use-query";
+import { TEMPLATES_LIST, JIRA_STATUS, JIRA_AUTH, JIRA_DISCONNECT } from "@/lib/constants/endpoints";
 
 interface Template {
   id: string;
@@ -18,29 +20,13 @@ interface JiraStatus {
 }
 
 export function SettingsPage() {
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [jiraStatus, setJiraStatus] = useState<JiraStatus | null>(null);
+  const { data: templates = [] } = useQuery<Template[]>(TEMPLATES_LIST);
+  const { data: jiraStatus } = useQuery<JiraStatus>(JIRA_STATUS);
   const [disconnecting, setDisconnecting] = useState(false);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [templatesData, jiraData] = await Promise.all([
-          api.get<Template[]>("/templates"),
-          api.get<JiraStatus>("/integrations/jira/status"),
-        ]);
-        setTemplates(templatesData);
-        setJiraStatus(jiraData);
-      } catch {
-        // silently fail
-      }
-    };
-    fetchData();
-  }, []);
 
   const handleConnectJira = async () => {
     try {
-      const data = await api.get<{ url: string }>("/integrations/jira/auth");
+      const data = await api.get<{ url: string }>(JIRA_AUTH);
       window.location.href = data.url;
     } catch {
       // handle error
@@ -52,8 +38,8 @@ export function SettingsPage() {
 
     setDisconnecting(true);
     try {
-      await api.delete("/integrations/jira");
-      setJiraStatus({ connected: false, siteName: null, connectedAt: null });
+      await api.delete(JIRA_DISCONNECT);
+      invalidateQuery(JIRA_STATUS);
     } catch {
       // handle error
     } finally {

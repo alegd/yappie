@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { invalidateQuery, useQuery } from "@/hooks/use-query";
+import { AUDIO_LIST, audioByProject, PROJECTS_LIST } from "@/lib/constants/endpoints";
+import { AlertCircle, CheckCircle2, Clock, FileAudio, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { Clock, FileAudio, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
-import { api } from "@/lib/api";
-import { AudioRecording, AudioListResponse } from "./types";
+import { useState } from "react";
+import { ProjectListResponse } from "../projects/types";
 import { AudioUpload } from "./audio-upload";
-import { Project } from "../projects/types";
+import { AudioListResponse } from "./types";
 
 const statusConfig = {
   PENDING: { label: "Pending", color: "text-zinc-400 bg-zinc-400/10", icon: Clock },
@@ -36,66 +37,42 @@ function formatSize(bytes: number) {
 }
 
 export function AudioList() {
-  const [audios, setAudios] = useState<AudioRecording[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
-  const [loading, setLoading] = useState(true);
 
-  const fetchAudios = async (projectId?: string) => {
-    try {
-      const params = projectId ? `&projectId=${projectId}` : "";
-      const data = await api.get<AudioListResponse>(`/audio?limit=50${params}`);
-      setAudios(data.data);
-    } catch {
-      // silently fail
-    }
-  };
+  const audioKey = selectedProjectId ? audioByProject(selectedProjectId) : AUDIO_LIST;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [audioData, projectData] = await Promise.all([
-          api.get<AudioListResponse>("/audio?limit=50"),
-          api.get<{ data: Project[] }>("/projects?limit=50"),
-        ]);
-        setAudios(audioData.data);
-        setProjects(projectData.data);
-      } catch {
-        // silently fail
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  const { data: audioData, isLoading: isLoadingAudios } = useQuery<AudioListResponse>(audioKey);
+  const { data: projectData } = useQuery<ProjectListResponse>(PROJECTS_LIST);
+
+  const audios = audioData?.data ?? [];
+  const projects = projectData?.data ?? [];
 
   const handleProjectChange = (projectId: string) => {
     setSelectedProjectId(projectId);
-    fetchAudios(projectId || undefined);
   };
 
-  const handleUploaded = (recording: AudioRecording) => {
-    setAudios((prev) => [recording, ...prev]);
+  const handleUploaded = () => {
+    invalidateQuery(audioKey);
   };
 
-  if (loading) {
+  if (isLoadingAudios) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 size={24} className="animate-spin text-zinc-500" />
+      <div className="flex justify-center items-center py-20">
+        <Loader2 size={24} className="text-zinc-500 animate-spin" />
       </div>
     );
   }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Audios</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="font-bold text-2xl">Audios</h1>
         <div className="flex items-center gap-3">
           {projects.length > 0 && (
             <select
               value={selectedProjectId}
               onChange={(e) => handleProjectChange(e.target.value)}
-              className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
+              className="bg-zinc-900 px-3 py-2 border border-zinc-700 focus:border-indigo-500 rounded-lg focus:outline-none text-sm"
               aria-label="Filter by project"
             >
               <option value="">All projects</option>
@@ -111,10 +88,10 @@ export function AudioList() {
       </div>
 
       {audios.length === 0 ? (
-        <div className="text-center py-20 text-zinc-500">
-          <FileAudio size={48} className="mx-auto mb-4 opacity-50" />
+        <div className="py-20 text-zinc-500 text-center">
+          <FileAudio size={48} className="opacity-50 mx-auto mb-4" />
           <p>No audio recordings yet.</p>
-          <p className="text-sm mt-1">
+          <p className="mt-1 text-sm">
             Upload an audio file or record a voice note to get started.
           </p>
         </div>
@@ -127,12 +104,12 @@ export function AudioList() {
               <Link
                 key={audio.id}
                 href={`/dashboard/audio/${audio.id}`}
-                className="flex items-center gap-4 bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition"
+                className="flex items-center gap-4 bg-zinc-900/50 p-4 border border-zinc-800 hover:border-zinc-700 rounded-lg transition"
               >
                 <FileAudio size={20} className="text-zinc-500 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{audio.fileName}</p>
-                  <p className="text-xs text-zinc-500 mt-0.5">
+                  <p className="font-medium text-sm truncate">{audio.fileName}</p>
+                  <p className="mt-0.5 text-zinc-500 text-xs">
                     {formatSize(audio.fileSize)} · {formatDate(audio.createdAt)}
                   </p>
                 </div>

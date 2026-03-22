@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef } from "react";
 import { signOut } from "next-auth/react";
 import { Sidebar } from "./sidebar";
 import { api } from "@/lib/api";
@@ -12,12 +11,8 @@ interface DashboardContentProps {
 }
 
 export function DashboardContent({ accessToken, user, children }: DashboardContentProps) {
-  const initialized = useRef(false);
-
-  if (!initialized.current) {
-    api.setToken(accessToken);
-    initialized.current = true;
-  }
+  // Sync token on every render — picks up refreshed tokens from server
+  api.setToken(accessToken);
 
   const handleLogout = () => {
     signOut({ redirectTo: "/login" });

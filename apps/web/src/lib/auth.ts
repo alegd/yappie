@@ -3,11 +3,13 @@ import Credentials from "next-auth/providers/credentials";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-// Access token lifetime minus 60s buffer for safe refresh
-const ACCESS_TOKEN_MAX_AGE = 14 * 60 * 1000; // 14 minutes (JWT_EXPIRATION is 15m)
+// Refresh 60 seconds before actual expiry to avoid edge cases
+const ACCESS_TOKEN_MAX_AGE = 14 * 60 * 1000; // 14 min (backend JWT_EXPIRATION is 15m)
 
 async function refreshAccessToken(token: Record<string, unknown>) {
   try {
+    console.log("[Auth] Refreshing access token...");
+
     const response = await fetch(`${API_URL}/api/v1/auth/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -15,10 +17,12 @@ async function refreshAccessToken(token: Record<string, unknown>) {
     });
 
     if (!response.ok) {
+      console.log("[Auth] Refresh failed:", response.status);
       return { ...token, error: "RefreshTokenExpired" };
     }
 
     const data = await response.json();
+    console.log("[Auth] Token refreshed successfully");
 
     return {
       ...token,
@@ -27,7 +31,8 @@ async function refreshAccessToken(token: Record<string, unknown>) {
       accessTokenExpires: Date.now() + ACCESS_TOKEN_MAX_AGE,
       error: undefined,
     };
-  } catch {
+  } catch (err) {
+    console.error("[Auth] Refresh error:", err);
     return { ...token, error: "RefreshTokenError" };
   }
 }
@@ -65,8 +70,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user }) {
-      // Initial sign in
+      // Initial sign in — store tokens and expiry
       if (user) {
+        console.log("[Auth] Initial sign in, setting tokens");
         return {
           ...token,
           accessToken: user.accessToken,
@@ -76,13 +82,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         };
       }
 
-      // Token still valid (or no expiry set yet)
-      if (!token.accessTokenExpires || Date.now() < (token.accessTokenExpires as number)) {
-        return token;
+      // Check if token needs refresh
+      const expiresAt = token.accessTokenExpires as number | undefined;
+
+      if (expiresAt && Date.now() >= expiresAt) {
+        console.log("[Auth] Token expired, refreshing...");
+        return refreshAccessToken(token);
       }
 
-      // Token expired, refresh it
-      return refreshAccessToken(token);
+      return token;
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken as string;

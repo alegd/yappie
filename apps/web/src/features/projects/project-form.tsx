@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Brain, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { PROJECTS_CREATE, projectDetail } from "@/lib/constants/endpoints";
 import { Project } from "./types";
 
 const CONTEXT_PLACEHOLDER = `Describe your project so AI generates better tickets. Example:
@@ -31,7 +32,7 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
 
     const fetchProject = async () => {
       try {
-        const project = await api.get<Project>(`/projects/${projectId}`);
+        const project = await api.get<Project>(projectDetail(projectId));
         setName(project.name);
         setDescription(project.description || "");
         setContext(project.context || "");
@@ -59,9 +60,9 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
       };
 
       if (isEditing) {
-        await api.patch(`/projects/${projectId}`, body);
+        await api.patch(projectDetail(projectId!), body);
       } else {
-        await api.post("/projects", body);
+        await api.post(PROJECTS_CREATE, body);
       }
 
       router.push("/dashboard/projects");

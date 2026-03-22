@@ -1,41 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FolderOpen, Plus, Loader2, Brain, Trash2, Pencil } from "lucide-react";
 import { api } from "@/lib/api";
-import { Project, ProjectListResponse } from "./types";
+import { useQuery, invalidateQuery } from "@/hooks/use-query";
+import { PROJECTS_LIST, projectDetail } from "@/lib/constants/endpoints";
+import { ProjectListResponse } from "./types";
 
 export function ProjectList() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: projectData, isLoading } = useQuery<ProjectListResponse>(PROJECTS_LIST);
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const data = await api.get<ProjectListResponse>("/projects?limit=50");
-        setProjects(data.data);
-      } catch {
-        // silently fail
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProjects();
-  }, []);
+  const projects = projectData?.data ?? [];
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this project?")) return;
 
     try {
-      await api.delete(`/projects/${id}`);
-      setProjects((prev) => prev.filter((p) => p.id !== id));
+      await api.delete(projectDetail(id));
+      invalidateQuery(PROJECTS_LIST);
     } catch {
       // handle error
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 size={24} className="animate-spin text-zinc-500" />

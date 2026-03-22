@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FileText, Loader2, ExternalLink } from "lucide-react";
-import { api } from "@/lib/api";
-import { Ticket, TicketListResponse } from "./types";
+import { useQuery } from "@/hooks/use-query";
+import { TICKETS_LIST } from "@/lib/constants/endpoints";
+import { TicketListResponse } from "./types";
 import { cn } from "@/lib/utils";
 
 const priorityColors: Record<string, string> = {
@@ -21,23 +22,10 @@ const statusColors: Record<string, string> = {
 };
 
 export function TicketList() {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: ticketData, isLoading } = useQuery<TicketListResponse>(TICKETS_LIST);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    const fetchTickets = async () => {
-      try {
-        const data = await api.get<TicketListResponse>("/tickets?limit=50");
-        setTickets(data.data);
-      } catch {
-        // silently fail
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTickets();
-  }, []);
+  const tickets = ticketData?.data ?? [];
 
   const handleToggle = (id: string) => {
     setSelected((prev) => {
@@ -56,7 +44,7 @@ export function TicketList() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 size={24} className="animate-spin text-zinc-500" />
