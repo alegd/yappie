@@ -9,6 +9,10 @@ export const audioByProject = (projectId: string) => `/audio?limit=50&projectId=
 
 // ─── Tickets ─────────────────────────────────────────────
 export const TICKETS_LIST = "/tickets?limit=50";
+export const ticketApprove = (id: string) => `/tickets/${id}/approve`;
+export const ticketExport = (id: string, projectKey: string) =>
+  `/integrations/jira/export/${id}?projectKey=${projectKey}`;
+export const TICKETS_EXPORT_BULK = "/integrations/jira/export-bulk";
 
 // ─── Projects ────────────────────────────────────────────
 export const PROJECTS_LIST = "/projects?limit=50";

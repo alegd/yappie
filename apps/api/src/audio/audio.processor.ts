@@ -54,9 +54,9 @@ export class AudioProcessor extends WorkerHost {
       const tasks = await this.aiService.decompose(transcription, projectContext);
       const tickets = await this.aiService.generateTickets(tasks, projectContext);
 
-      // Step 3: Save tickets
+      // Step 3: Save tickets + track each one
       for (const ticket of tickets) {
-        await this.ticketsService.create({
+        const created = await this.ticketsService.create({
           title: ticket.title,
           description: ticket.description,
           priority: ticket.priority,
@@ -64,17 +64,14 @@ export class AudioProcessor extends WorkerHost {
           projectId: recording.projectId ?? undefined,
           userId,
         });
+        await this.analyticsService.track(userId, "ticket.generated", {
+          audioId,
+          ticketId: created.id,
+        });
       }
 
       this.logger.log(`[${audioId}] Completed. ${tickets.length} tickets generated.`);
       await this.audioService.updateStatus(audioId, "COMPLETED");
-
-      if (tickets.length > 0) {
-        await this.analyticsService.track(userId, "ticket.generated", {
-          audioId,
-          count: tickets.length,
-        });
-      }
     } catch (error) {
       this.logger.error(`[${audioId}] Failed: ${error instanceof Error ? error.message : error}`);
       await this.audioService.updateStatus(audioId, "FAILED");

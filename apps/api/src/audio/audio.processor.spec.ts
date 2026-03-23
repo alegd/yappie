@@ -92,7 +92,9 @@ describe("AudioProcessor", () => {
       { title: "Build dashboard", description: "Main dashboard page", priority: "MEDIUM" },
     ]);
     mockAudioService.updateStatus.mockResolvedValue({});
-    mockTicketsService.create.mockResolvedValue({});
+    mockTicketsService.create
+      .mockResolvedValueOnce({ id: "t-1" })
+      .mockResolvedValueOnce({ id: "t-2" });
 
     await processor.process({
       data: { audioId: "audio-1", userId: "user-1" },
@@ -111,6 +113,11 @@ describe("AudioProcessor", () => {
     expect(mockTicketsService.create).toHaveBeenCalledWith(
       expect.objectContaining({ userId: "user-1" }),
     );
+    expect(mockAnalytics.track).toHaveBeenCalledTimes(2);
+    expect(mockAnalytics.track).toHaveBeenCalledWith("user-1", "ticket.generated", {
+      audioId: "audio-1",
+      ticketId: "t-1",
+    });
     expect(mockAudioService.updateStatus).toHaveBeenCalledWith("audio-1", "COMPLETED");
   });
 
