@@ -13,4 +13,5 @@ export const SETTINGS_PAGE = "/dashboard/settings";
 export const NEW_PROJECT_PAGE = "/dashboard/projects/new";
 
 export const audioDetailPage = (id: string) => `/dashboard/audios/${id}`;
+export const ticketDetailPage = (id: string) => `/dashboard/tickets/${id}`;
 export const editProjectPage = (id: string) => `/dashboard/projects/${id}/edit`;
