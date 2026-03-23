@@ -1,15 +1,41 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { SettingsPage } from "./settings-page";
 
-const { mockUseQuery } = vi.hoisted(() => ({
+const { mockUseQuery, mockInvalidateQuery, mockApi } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
+  mockInvalidateQuery: vi.fn(),
+  mockApi: {
+    get: vi.fn(),
+    delete: vi.fn(),
+  },
 }));
 
 vi.mock("@/hooks/use-query", () => ({
   useQuery: mockUseQuery,
-  invalidateQuery: vi.fn(),
+  invalidateQuery: mockInvalidateQuery,
 }));
+
+vi.mock("@/lib/api", () => ({
+  api: mockApi,
+}));
+
+function setupMocks(
+  templates: Array<{ id: string; name: string; isDefault: boolean }> = [],
+  jiraStatus?: { connected: boolean; siteName: string | null; connectedAt: string | null },
+) {
+  let callIndex = 0;
+  const responses = [
+    { data: templates, error: undefined, isLoading: false, mutate: vi.fn() },
+    { data: jiraStatus, error: undefined, isLoading: false, mutate: vi.fn() },
+  ];
+  mockUseQuery.mockImplementation(() => {
+    const response = responses[callIndex % 2];
+    callIndex++;
+    return response;
+  });
+}
 
 describe("SettingsPage", () => {
   beforeEach(() => {
@@ -17,66 +43,128 @@ describe("SettingsPage", () => {
   });
 
   it("should render integrations section", async () => {
-    // 1st call: templates, 2nd call: jiraStatus
-    mockUseQuery
-      .mockReturnValueOnce({ data: [], error: undefined, isLoading: false, mutate: vi.fn() })
-      .mockReturnValueOnce({
-        data: undefined,
-        error: undefined,
-        isLoading: false,
-        mutate: vi.fn(),
-      });
+    setupMocks();
     render(<SettingsPage />);
     expect(await screen.findByText(/integrations/i)).toBeInTheDocument();
   });
 
   it("should render templates section", async () => {
-    mockUseQuery
-      .mockReturnValueOnce({ data: [], error: undefined, isLoading: false, mutate: vi.fn() })
-      .mockReturnValueOnce({
-        data: undefined,
-        error: undefined,
-        isLoading: false,
-        mutate: vi.fn(),
-      });
+    setupMocks();
     render(<SettingsPage />);
     const headings = await screen.findAllByText(/templates/i);
     expect(headings.length).toBeGreaterThanOrEqual(1);
   });
 
   it("should show Jira connect button when not connected", async () => {
-    mockUseQuery
-      .mockReturnValueOnce({ data: [], error: undefined, isLoading: false, mutate: vi.fn() })
-      .mockReturnValueOnce({
-        data: undefined,
-        error: undefined,
-        isLoading: false,
-        mutate: vi.fn(),
-      });
+    setupMocks();
     render(<SettingsPage />);
     expect(await screen.findByText(/connect jira/i)).toBeInTheDocument();
   });
 
-  it("should display templates list", async () => {
-    mockUseQuery
-      .mockReturnValueOnce({
-        data: [
-          { id: "tpl-1", name: "Bug Report", isDefault: true },
-          { id: "tpl-2", name: "Feature Request", isDefault: false },
-        ],
-        error: undefined,
-        isLoading: false,
-        mutate: vi.fn(),
-      })
-      .mockReturnValueOnce({
-        data: undefined,
-        error: undefined,
-        isLoading: false,
-        mutate: vi.fn(),
-      });
+  it("should show export description when not connected", async () => {
+    setupMocks();
+    render(<SettingsPage />);
+    expect(await screen.findByText(/export tickets to atlassian jira/i)).toBeInTheDocument();
+  });
 
+  it("should display templates list", async () => {
+    setupMocks([
+      { id: "tpl-1", name: "Bug Report", isDefault: true },
+      { id: "tpl-2", name: "Feature Request", isDefault: false },
+    ]);
     render(<SettingsPage />);
     expect(await screen.findByText("Bug Report")).toBeInTheDocument();
     expect(screen.getByText("Feature Request")).toBeInTheDocument();
+  });
+
+  it("should show empty templates state", async () => {
+    setupMocks();
+    render(<SettingsPage />);
+    expect(await screen.findByText(/no templates yet/i)).toBeInTheDocument();
+  });
+
+  it("should show connected status with site name when Jira is connected", async () => {
+    setupMocks([], {
+      connected: true,
+      siteName: "my-workspace",
+      connectedAt: "2026-03-20T10:00:00Z",
+    });
+    render(<SettingsPage />);
+    expect(await screen.findByText(/connected to my-workspace/i)).toBeInTheDocument();
+  });
+
+  it("should show disconnect button when Jira is connected", async () => {
+    setupMocks([], {
+      connected: true,
+      siteName: "my-workspace",
+      connectedAt: "2026-03-20T10:00:00Z",
+    });
+    render(<SettingsPage />);
+    expect(await screen.findByText(/disconnect/i)).toBeInTheDocument();
+    expect(screen.queryByText(/connect jira/i)).not.toBeInTheDocument();
+  });
+
+  it("should call api.get and redirect when Connect Jira is clicked", async () => {
+    const user = userEvent.setup();
+    setupMocks();
+    mockApi.get.mockResolvedValue({ url: "https://auth.atlassian.com/authorize?state=abc" });
+
+    const originalLocation = window.location.href;
+    Object.defineProperty(window, "location", {
+      writable: true,
+      value: { ...window.location, href: originalLocation },
+    });
+
+    render(<SettingsPage />);
+    const connectButton = await screen.findByText(/connect jira/i);
+    await user.click(connectButton);
+
+    expect(mockApi.get).toHaveBeenCalledWith("/integrations/jira/auth");
+    expect(window.location.href).toBe("https://auth.atlassian.com/authorize?state=abc");
+  });
+
+  it("should call api.delete when disconnect is confirmed", async () => {
+    const user = userEvent.setup();
+    setupMocks([], {
+      connected: true,
+      siteName: "my-workspace",
+      connectedAt: "2026-03-20T10:00:00Z",
+    });
+    mockApi.delete.mockResolvedValue(undefined);
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    render(<SettingsPage />);
+    const disconnectButton = await screen.findByText(/disconnect/i);
+    await user.click(disconnectButton);
+
+    expect(window.confirm).toHaveBeenCalledWith("Are you sure you want to disconnect Jira?");
+    expect(mockApi.delete).toHaveBeenCalledWith("/integrations/jira");
+  });
+
+  it("should not disconnect when confirm is cancelled", async () => {
+    const user = userEvent.setup();
+    setupMocks([], {
+      connected: true,
+      siteName: "my-workspace",
+      connectedAt: "2026-03-20T10:00:00Z",
+    });
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+
+    render(<SettingsPage />);
+    const disconnectButton = await screen.findByText(/disconnect/i);
+    await user.click(disconnectButton);
+
+    expect(window.confirm).toHaveBeenCalled();
+    expect(mockApi.delete).not.toHaveBeenCalled();
+  });
+
+  it("should show default badge for default template", async () => {
+    setupMocks([
+      { id: "tpl-1", name: "Bug Report", isDefault: true },
+      { id: "tpl-2", name: "Feature Request", isDefault: false },
+    ]);
+    render(<SettingsPage />);
+    await screen.findByText("Bug Report");
+    expect(screen.getByText("Default")).toBeInTheDocument();
   });
 });

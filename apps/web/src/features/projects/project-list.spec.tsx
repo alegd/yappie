@@ -1,14 +1,32 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { ProjectList } from "./project-list";
 
-const { mockUseQuery } = vi.hoisted(() => ({
+const { mockUseQuery, mockInvalidateQuery } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
+  mockInvalidateQuery: vi.fn(),
+}));
+
+const { mockDelete } = vi.hoisted(() => ({
+  mockDelete: vi.fn(),
 }));
 
 vi.mock("@/hooks/use-query", () => ({
   useQuery: mockUseQuery,
-  invalidateQuery: vi.fn(),
+  invalidateQuery: mockInvalidateQuery,
+}));
+
+vi.mock("@/lib/api", () => ({
+  api: { delete: mockDelete },
+}));
+
+vi.mock("next/link", () => ({
+  default: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 const mockProjects = {
@@ -112,5 +130,45 @@ describe("ProjectList", () => {
     await screen.findByText("E-commerce App");
     const editLinks = screen.getAllByRole("link", { name: /edit/i });
     expect(editLinks[0]).toHaveAttribute("href", "/dashboard/projects/p-1/edit");
+  });
+
+  it("should delete project when confirmed", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    mockDelete.mockResolvedValue(undefined);
+
+    mockUseQuery.mockReturnValue({
+      data: mockProjects,
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
+    render(<ProjectList />);
+
+    await screen.findByText("E-commerce App");
+    const deleteButtons = screen.getAllByRole("button", { name: /delete/i });
+    await user.click(deleteButtons[0]);
+
+    expect(mockDelete).toHaveBeenCalled();
+    expect(mockInvalidateQuery).toHaveBeenCalled();
+  });
+
+  it("should not delete project when confirm cancelled", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+
+    mockUseQuery.mockReturnValue({
+      data: mockProjects,
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
+    render(<ProjectList />);
+
+    await screen.findByText("E-commerce App");
+    const deleteButtons = screen.getAllByRole("button", { name: /delete/i });
+    await user.click(deleteButtons[0]);
+
+    expect(mockDelete).not.toHaveBeenCalled();
   });
 });

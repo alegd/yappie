@@ -44,6 +44,15 @@ const mockTickets = {
   limit: 50,
 };
 
+function setupWithTickets() {
+  mockUseQuery.mockReturnValue({
+    data: mockTickets,
+    error: undefined,
+    isLoading: false,
+    mutate: vi.fn(),
+  });
+}
+
 describe("TicketList", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -61,12 +70,7 @@ describe("TicketList", () => {
   });
 
   it("should display tickets after loading", async () => {
-    mockUseQuery.mockReturnValue({
-      data: mockTickets,
-      error: undefined,
-      isLoading: false,
-      mutate: vi.fn(),
-    });
+    setupWithTickets();
     render(<TicketList />);
 
     expect(await screen.findByText("Fix Safari login bug")).toBeInTheDocument();
@@ -86,12 +90,7 @@ describe("TicketList", () => {
   });
 
   it("should display priority and status badges", async () => {
-    mockUseQuery.mockReturnValue({
-      data: mockTickets,
-      error: undefined,
-      isLoading: false,
-      mutate: vi.fn(),
-    });
+    setupWithTickets();
     render(<TicketList />);
 
     expect(await screen.findByText("HIGH")).toBeInTheDocument();
@@ -100,29 +99,71 @@ describe("TicketList", () => {
   });
 
   it("should show Jira key for exported tickets", async () => {
-    mockUseQuery.mockReturnValue({
-      data: mockTickets,
-      error: undefined,
-      isLoading: false,
-      mutate: vi.fn(),
-    });
+    setupWithTickets();
     render(<TicketList />);
     expect(await screen.findByText("PROJ-42")).toBeInTheDocument();
   });
 
   it("should allow selecting tickets with checkboxes", async () => {
     const user = userEvent.setup();
-    mockUseQuery.mockReturnValue({
-      data: mockTickets,
-      error: undefined,
-      isLoading: false,
-      mutate: vi.fn(),
-    });
+    setupWithTickets();
     render(<TicketList />);
 
     await screen.findByText("Fix Safari login bug");
     const checkboxes = screen.getAllByRole("checkbox");
     await user.click(checkboxes[1]);
     expect(checkboxes[1]).toBeChecked();
+  });
+
+  it("should select all tickets when select-all checkbox is clicked", async () => {
+    const user = userEvent.setup();
+    setupWithTickets();
+    render(<TicketList />);
+
+    await screen.findByText("Fix Safari login bug");
+    const checkboxes = screen.getAllByRole("checkbox");
+    const selectAll = checkboxes[0];
+
+    await user.click(selectAll);
+
+    // All individual checkboxes should be checked
+    expect(checkboxes[1]).toBeChecked();
+    expect(checkboxes[2]).toBeChecked();
+    expect(checkboxes[3]).toBeChecked();
+  });
+
+  it("should deselect all tickets when select-all is clicked twice", async () => {
+    const user = userEvent.setup();
+    setupWithTickets();
+    render(<TicketList />);
+
+    await screen.findByText("Fix Safari login bug");
+    const checkboxes = screen.getAllByRole("checkbox");
+    const selectAll = checkboxes[0];
+
+    // Select all
+    await user.click(selectAll);
+    expect(checkboxes[1]).toBeChecked();
+
+    // Deselect all
+    await user.click(selectAll);
+    expect(checkboxes[1]).not.toBeChecked();
+    expect(checkboxes[2]).not.toBeChecked();
+    expect(checkboxes[3]).not.toBeChecked();
+  });
+
+  it("should show selected count text when tickets are selected", async () => {
+    const user = userEvent.setup();
+    setupWithTickets();
+    render(<TicketList />);
+
+    await screen.findByText("Fix Safari login bug");
+    const checkboxes = screen.getAllByRole("checkbox");
+
+    // Select two tickets
+    await user.click(checkboxes[1]);
+    await user.click(checkboxes[2]);
+
+    expect(screen.getByText("2 selected")).toBeInTheDocument();
   });
 });

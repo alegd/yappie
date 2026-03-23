@@ -1,0 +1,25 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { Providers } from "./providers";
+
+vi.mock("next-auth/react", () => ({
+  SessionProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="session-provider">{children}</div>
+  ),
+}));
+
+describe("Providers", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should render children", () => {
+    render(
+      <Providers>
+        <div>App content</div>
+      </Providers>,
+    );
+
+    expect(screen.getByText("App content")).toBeInTheDocument();
+  });
+});
