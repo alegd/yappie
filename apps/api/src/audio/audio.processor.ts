@@ -60,6 +60,7 @@ export class AudioProcessor extends WorkerHost {
           priority: ticket.priority,
           audioRecordingId: audioId,
           projectId: recording.projectId ?? undefined,
+          userId,
         });
       }
 

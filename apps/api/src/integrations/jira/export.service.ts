@@ -18,7 +18,7 @@ export class ExportService {
   ) {}
 
   async exportOne(userId: string, ticketId: string, projectKey: string) {
-    const ticket = await this.ticketsService.findOne(ticketId);
+    const ticket = await this.ticketsService.findOne(ticketId, userId);
 
     const jiraIssue = await this.jiraService.createIssue(userId, {
       projectKey,

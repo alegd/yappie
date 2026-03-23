@@ -20,6 +20,7 @@ model User {
   refreshTokens   RefreshToken[]
   projects        Project[]
   audioRecordings AudioRecording[]
+  tickets         Ticket[]
   integrations    Integration[]
   usageEvents     UsageEvent[]
   ticketTemplates TicketTemplate[]
@@ -125,15 +126,18 @@ model Ticket {
   jiraIssueUrl    String?        @map("jira_issue_url")
   audioRecordingId String        @map("audio_recording_id")
   projectId       String?        @map("project_id")
+  userId          String         @map("user_id")
   createdAt       DateTime       @default(now()) @map("created_at")
   updatedAt       DateTime       @updatedAt @map("updated_at")
 
   audioRecording AudioRecording @relation(fields: [audioRecordingId], references: [id], onDelete: Cascade)
   project        Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([audioRecordingId])
   @@index([status])
   @@index([projectId])
+  @@index([userId])
   @@map("tickets")
 }
 

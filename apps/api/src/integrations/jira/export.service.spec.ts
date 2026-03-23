@@ -43,6 +43,7 @@ describe("ExportService", () => {
         description: "Fix the Safari login issue",
         priority: "HIGH",
         status: "APPROVED",
+        userId: "user-1",
       });
       mockJira.createIssue.mockResolvedValue({
         key: "PROJ-42",
@@ -53,6 +54,7 @@ describe("ExportService", () => {
       const result = await service.exportOne("user-1", "ticket-1", "PROJ");
 
       expect(result.key).toBe("PROJ-42");
+      expect(mockTickets.findOne).toHaveBeenCalledWith("ticket-1", "user-1");
       expect(mockPrisma.ticket.update).toHaveBeenCalledWith({
         where: { id: "ticket-1" },
         data: {

@@ -99,6 +99,9 @@ describe("AudioProcessor", () => {
       "React + NestJS e-commerce app with Stripe payments",
     );
     expect(mockTicketsService.create).toHaveBeenCalledTimes(2);
+    expect(mockTicketsService.create).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: "user-1" }),
+    );
     expect(mockAudioService.updateStatus).toHaveBeenCalledWith("audio-1", "COMPLETED");
   });
 

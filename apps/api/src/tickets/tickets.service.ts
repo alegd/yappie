@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service.js";
 
 interface CreateTicketData {
@@ -7,11 +7,13 @@ interface CreateTicketData {
   priority?: string;
   audioRecordingId: string;
   projectId?: string;
+  userId: string;
 }
 
 interface FindAllOptions {
   page: number;
   limit: number;
+  userId: string;
   status?: string;
   priority?: string;
   projectId?: string;
@@ -29,13 +31,14 @@ export class TicketsService {
         priority: (data.priority as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL") ?? "MEDIUM",
         audioRecordingId: data.audioRecordingId,
         projectId: data.projectId,
+        userId: data.userId,
       },
     });
   }
 
   async findAll(options: FindAllOptions) {
     const skip = (options.page - 1) * options.limit;
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = { userId: options.userId };
 
     if (options.status) where.status = options.status;
     if (options.priority) where.priority = options.priority;
@@ -54,11 +57,15 @@ export class TicketsService {
     return { data, total, page: options.page, limit: options.limit };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, userId: string) {
     const ticket = await this.prisma.ticket.findUnique({ where: { id } });
 
     if (!ticket) {
       throw new NotFoundException("Ticket not found");
+    }
+
+    if (ticket.userId !== userId) {
+      throw new ForbiddenException("Access denied");
     }
 
     return ticket;
@@ -66,13 +73,14 @@ export class TicketsService {
 
   async update(
     id: string,
+    userId: string,
     data: {
       title?: string;
       description?: string;
       priority?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
     },
   ) {
-    await this.findOne(id);
+    await this.findOne(id, userId);
 
     return this.prisma.ticket.update({
       where: { id },
@@ -80,8 +88,8 @@ export class TicketsService {
     });
   }
 
-  async approve(id: string) {
-    await this.findOne(id);
+  async approve(id: string, userId: string) {
+    await this.findOne(id, userId);
 
     return this.prisma.ticket.update({
       where: { id },
@@ -89,8 +97,8 @@ export class TicketsService {
     });
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
+  async remove(id: string, userId: string) {
+    await this.findOne(id, userId);
 
     return this.prisma.ticket.delete({ where: { id } });
   }

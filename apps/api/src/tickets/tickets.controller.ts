@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   HttpCode,
   HttpStatus,
 } from "@nestjs/common";
@@ -20,6 +21,7 @@ export class TicketsController {
 
   @Get()
   findAll(
+    @Req() req: { user: { sub: string } },
     @Query("page") page = "1",
     @Query("limit") limit = "10",
     @Query("status") status?: string,
@@ -29,6 +31,7 @@ export class TicketsController {
     return this.ticketsService.findAll({
       page: parseInt(page, 10),
       limit: parseInt(limit, 10),
+      userId: req.user.sub,
       status,
       priority,
       projectId,
@@ -36,24 +39,28 @@ export class TicketsController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.ticketsService.findOne(id);
+  findOne(@Req() req: { user: { sub: string } }, @Param("id") id: string) {
+    return this.ticketsService.findOne(id, req.user.sub);
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() data: { title?: string; description?: string }) {
-    return this.ticketsService.update(id, data);
+  update(
+    @Req() req: { user: { sub: string } },
+    @Param("id") id: string,
+    @Body() data: { title?: string; description?: string },
+  ) {
+    return this.ticketsService.update(id, req.user.sub, data);
   }
 
   @Post(":id/approve")
   @HttpCode(HttpStatus.OK)
-  approve(@Param("id") id: string) {
-    return this.ticketsService.approve(id);
+  approve(@Req() req: { user: { sub: string } }, @Param("id") id: string) {
+    return this.ticketsService.approve(id, req.user.sub);
   }
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param("id") id: string) {
-    return this.ticketsService.remove(id);
+  remove(@Req() req: { user: { sub: string } }, @Param("id") id: string) {
+    return this.ticketsService.remove(id, req.user.sub);
   }
 }
