@@ -1,3 +1,6 @@
+// ─── Auth ────────────────────────────────────────────────
+export const AUTH_REGISTER = "/auth/register";
+
 // ─── Audio ───────────────────────────────────────────────
 export const AUDIO_LIST = "/audio?limit=50";
 export const AUDIO_UPLOAD = "/audio/upload";

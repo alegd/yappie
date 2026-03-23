@@ -7,12 +7,25 @@ const { mockSignIn } = vi.hoisted(() => ({
   mockSignIn: vi.fn(),
 }));
 
+const { mockPost } = vi.hoisted(() => ({
+  mockPost: vi.fn(),
+}));
+
 vi.mock("next-auth/react", () => ({
   signIn: mockSignIn,
 }));
 
-const mockFetch = vi.fn();
-globalThis.fetch = mockFetch;
+vi.mock("@/lib/api", () => ({
+  api: { post: mockPost, setToken: vi.fn() },
+}));
+
+vi.mock("next/link", () => ({
+  default: ({ children, href, ...props }: Record<string, unknown>) => (
+    <a href={href as string} {...props}>
+      {children as React.ReactNode}
+    </a>
+  ),
+}));
 
 describe("RegisterForm", () => {
   beforeEach(() => {
@@ -37,13 +50,12 @@ describe("RegisterForm", () => {
     render(<RegisterForm />);
 
     const link = screen.getByRole("link", { name: "Log in" });
-    expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute("href", "/login");
   });
 
   it("should show 'Creating account...' while submitting", async () => {
     const user = userEvent.setup();
-    mockFetch.mockReturnValue(new Promise(() => {})); // never resolves
+    mockPost.mockReturnValue(new Promise(() => {}));
 
     render(<RegisterForm />);
 
@@ -55,12 +67,9 @@ describe("RegisterForm", () => {
     expect(screen.getByRole("button", { name: "Creating account..." })).toBeInTheDocument();
   });
 
-  it("should call fetch then signIn on successful registration", async () => {
+  it("should call api.post then signIn on successful registration", async () => {
     const user = userEvent.setup();
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ id: "user-1" }),
-    });
+    mockPost.mockResolvedValue({ id: "user-1" });
     mockSignIn.mockResolvedValue(undefined);
 
     render(<RegisterForm />);
@@ -71,14 +80,10 @@ describe("RegisterForm", () => {
     await user.click(screen.getByRole("button", { name: "Create account" }));
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith("http://localhost:3001/api/v1/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: "John Doe",
-          email: "john@example.com",
-          password: "password123",
-        }),
+      expect(mockPost).toHaveBeenCalledWith("/auth/register", {
+        name: "John Doe",
+        email: "john@example.com",
+        password: "password123",
       });
     });
 
@@ -93,10 +98,7 @@ describe("RegisterForm", () => {
 
   it("should show error when backend returns error", async () => {
     const user = userEvent.setup();
-    mockFetch.mockResolvedValue({
-      ok: false,
-      json: () => Promise.resolve({ message: "Email already in use" }),
-    });
+    mockPost.mockRejectedValue(new Error("Email already in use"));
 
     render(<RegisterForm />);
 
@@ -112,9 +114,9 @@ describe("RegisterForm", () => {
     expect(mockSignIn).not.toHaveBeenCalled();
   });
 
-  it("should show error when fetch throws", async () => {
+  it("should show generic error when non-Error is thrown", async () => {
     const user = userEvent.setup();
-    mockFetch.mockRejectedValue(new Error("Network error"));
+    mockPost.mockRejectedValue("something went wrong");
 
     render(<RegisterForm />);
 
@@ -124,7 +126,7 @@ describe("RegisterForm", () => {
     await user.click(screen.getByRole("button", { name: "Create account" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Network error")).toBeInTheDocument();
+      expect(screen.getByText("Registration failed")).toBeInTheDocument();
     });
   });
 

@@ -1,11 +1,11 @@
 "use client";
 
 import { AUDIOS_PAGE, LOGIN_PAGE } from "@/lib/constants/pages";
+import { AUTH_REGISTER } from "@/lib/constants/endpoints";
+import { api } from "@/lib/api";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export function RegisterForm() {
   const [name, setName] = useState("");
@@ -20,19 +20,8 @@ export function RegisterForm() {
     setLoading(true);
 
     try {
-      // 1. Register on backend
-      const registerResponse = await fetch(`${API_URL}/api/v1/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
+      await api.post(AUTH_REGISTER, { name, email, password });
 
-      if (!registerResponse.ok) {
-        const data = await registerResponse.json().catch(() => ({}));
-        throw new Error(data.message || "Registration failed");
-      }
-
-      // 2. Sign in with Auth.js
       await signIn("credentials", {
         email,
         password,
