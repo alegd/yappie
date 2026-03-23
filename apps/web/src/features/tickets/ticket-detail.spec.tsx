@@ -30,13 +30,15 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-const mockTicket = {
+import { Ticket } from "./types";
+
+const mockTicket: Ticket = {
   id: "t-1",
   title: "Fix Safari login bug",
   description:
     "The login form does not work on Safari 17. Users see a blank screen after submitting.",
-  status: "DRAFT" as const,
-  priority: "HIGH" as const,
+  status: "DRAFT",
+  priority: "HIGH",
   jiraIssueKey: null,
   jiraIssueUrl: null,
   audioRecordingId: "a-1",

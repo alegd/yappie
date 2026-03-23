@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TicketList } from "./ticket-list";
 
 const { mockUseQuery, mockInvalidateQuery } = vi.hoisted(() => ({
@@ -56,8 +56,12 @@ const mockTickets = {
   limit: 50,
 };
 
-const jiraConnected = { connected: true, siteName: "My Site" };
-const jiraDisconnected = { connected: false, siteName: null };
+interface JiraMock {
+  connected: boolean;
+  siteName: string | null;
+}
+const jiraConnected: JiraMock = { connected: true, siteName: "My Site" };
+const jiraDisconnected: JiraMock = { connected: false, siteName: null };
 
 function setupWithTickets(jiraStatus = jiraConnected) {
   let callIndex = 0;
