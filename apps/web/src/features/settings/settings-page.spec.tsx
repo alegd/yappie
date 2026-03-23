@@ -25,6 +25,14 @@ vi.mock("@/components/ui/theme-toggle", () => ({
   ThemeToggle: () => <div data-testid="theme-toggle" />,
 }));
 
+vi.mock("./template-form", () => ({
+  TemplateForm: ({ onClose }: { onClose: () => void }) => (
+    <div data-testid="template-form">
+      <button onClick={onClose}>Close</button>
+    </div>
+  ),
+}));
+
 function setupMocks(
   templates: Array<{ id: string; name: string; isDefault: boolean }> = [],
   jiraStatus?: { connected: boolean; siteName: string | null; connectedAt: string | null },
@@ -177,5 +185,38 @@ describe("SettingsPage", () => {
     render(<SettingsPage />);
     await screen.findByText("Bug Report");
     expect(screen.getByText("Default")).toBeInTheDocument();
+  });
+
+  it("should show template form when New button clicked", async () => {
+    const user = userEvent.setup();
+    setupMocks();
+    render(<SettingsPage />);
+
+    await user.click(screen.getByRole("button", { name: /new/i }));
+
+    expect(screen.getByTestId("template-form")).toBeInTheDocument();
+  });
+
+  it("should show edit and delete buttons for each template", async () => {
+    setupMocks([{ id: "tpl-1", name: "Bug Report", isDefault: false }]);
+    render(<SettingsPage />);
+
+    await screen.findByText("Bug Report");
+    expect(screen.getByRole("button", { name: /edit bug report/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /delete bug report/i })).toBeInTheDocument();
+  });
+
+  it("should call api.delete when delete template confirmed", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    mockApi.delete.mockResolvedValue(undefined);
+
+    setupMocks([{ id: "tpl-1", name: "Bug Report", isDefault: false }]);
+    render(<SettingsPage />);
+
+    await screen.findByText("Bug Report");
+    await user.click(screen.getByRole("button", { name: /delete bug report/i }));
+
+    expect(mockApi.delete).toHaveBeenCalledWith("/templates/tpl-1");
   });
 });

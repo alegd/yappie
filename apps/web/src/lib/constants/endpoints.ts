@@ -21,6 +21,8 @@ export const projectDetail = (id: string) => `/projects/${id}`;
 
 // ─── Templates ───────────────────────────────────────────
 export const TEMPLATES_LIST = "/templates";
+export const TEMPLATES_CREATE = "/templates";
+export const templateDetail = (id: string) => `/templates/${id}`;
 
 // ─── Analytics ───────────────────────────────────────────
 export const analyticsOverview = (from: string, to: string) =>
