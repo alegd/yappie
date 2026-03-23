@@ -1,1 +1,52 @@
 @import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-surface: var(--accent-surface);
+}
+
+:root {
+  --background: oklch(0.141 0.005 285.823); /* zinc-950 */
+  --foreground: oklch(0.985 0.002 247.839); /* zinc-50 */
+  --muted: oklch(0.705 0.015 286.067); /* zinc-400 */
+  --muted-foreground: oklch(0.553 0.013 257.308); /* zinc-500 */
+  --surface: oklch(0.21 0.006 285.885); /* zinc-900 */
+  --surface-hover: oklch(0.274 0.006 286.033); /* zinc-800 */
+  --border: oklch(0.274 0.006 286.033); /* zinc-800 */
+  --border-hover: oklch(0.37 0.013 257.307); /* zinc-700 */
+  --primary: oklch(0.511 0.262 276.966); /* indigo-600 */
+  --primary-hover: oklch(0.585 0.233 277.117); /* indigo-500 */
+  --primary-foreground: oklch(1 0 0); /* white */
+  --accent: oklch(0.673 0.182 276.935); /* indigo-400 */
+  --accent-foreground: oklch(0.673 0.182 276.935); /* indigo-400 */
+  --accent-surface: oklch(0.585 0.233 277.117 / 0.1); /* indigo-500/10 */
+}
+
+html:not(.dark) {
+  --background: oklch(1 0 0); /* white */
+  --foreground: oklch(0.21 0.006 285.885); /* zinc-900 */
+  --muted: oklch(0.553 0.013 257.308); /* zinc-500 */
+  --muted-foreground: oklch(0.442 0.017 257.281); /* zinc-600 */
+  --surface: oklch(0.967 0.001 264.542); /* zinc-100 */
+  --surface-hover: oklch(0.92 0.004 264.532); /* zinc-200 */
+  --border: oklch(0.92 0.004 264.532); /* zinc-200 */
+  --border-hover: oklch(0.872 0.01 258.338); /* zinc-300 */
+  --primary: oklch(0.511 0.262 276.966); /* indigo-600 */
+  --primary-hover: oklch(0.585 0.233 277.117); /* indigo-500 */
+  --primary-foreground: oklch(1 0 0); /* white */
+  --accent: oklch(0.511 0.262 276.966); /* indigo-600 */
+  --accent-foreground: oklch(0.511 0.262 276.966); /* indigo-600 */
+  --accent-surface: oklch(0.962 0.018 272.314); /* indigo-50 */
+}

@@ -15,21 +15,18 @@ export function PublicNavbar({ isAuthenticated = false }: PublicNavbarProps) {
         {isAuthenticated ? (
           <Link
             href={AUDIOS_PAGE}
-            className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg font-medium text-sm transition"
+            className="bg-primary hover:bg-primary-hover px-4 py-2 rounded-lg font-medium text-sm transition"
           >
             Go to Dashboard
           </Link>
         ) : (
           <>
-            <Link
-              href={LOGIN_PAGE}
-              className="text-zinc-400 hover:text-zinc-100 text-sm transition"
-            >
+            <Link href={LOGIN_PAGE} className="text-muted hover:text-foreground text-sm transition">
               Log in
             </Link>
             <Link
               href={REGISTER_PAGE}
-              className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg font-medium text-sm transition"
+              className="bg-primary hover:bg-primary-hover px-4 py-2 rounded-lg font-medium text-sm transition"
             >
               Get Started
             </Link>

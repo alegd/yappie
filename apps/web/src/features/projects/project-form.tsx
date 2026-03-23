@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Brain, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { PROJECTS_CREATE, projectDetail } from "@/lib/constants/endpoints";
 import { PROJECTS_PAGE } from "@/lib/constants/pages";
@@ -77,8 +78,8 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 size={24} className="animate-spin text-zinc-500" />
-        <span className="ml-2 text-zinc-500">Loading...</span>
+        <Loader2 size={24} className="animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">Loading...</span>
       </div>
     );
   }
@@ -86,7 +87,10 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
   return (
     <div className="max-w-2xl">
       <div className="flex items-center gap-4 mb-6">
-        <Link href={PROJECTS_PAGE} className="text-zinc-500 hover:text-zinc-300 transition">
+        <Link
+          href={PROJECTS_PAGE}
+          className="text-muted-foreground hover:text-foreground transition"
+        >
           <ArrowLeft size={20} />
         </Link>
         <h1 className="text-2xl font-bold">{isEditing ? "Edit Project" : "New Project"}</h1>
@@ -100,7 +104,7 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
         )}
 
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-zinc-400 mb-1">
+          <label htmlFor="name" className="block text-sm font-medium text-muted mb-1">
             Name
           </label>
           <input
@@ -110,12 +114,12 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="My Project"
-            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition"
+            className="w-full bg-surface border border-border-hover rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition"
           />
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-zinc-400 mb-1">
+          <label htmlFor="description" className="block text-sm font-medium text-muted mb-1">
             Description
           </label>
           <input
@@ -124,14 +128,14 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Brief description of the project"
-            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition"
+            className="w-full bg-surface border border-border-hover rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition"
           />
         </div>
 
         <div>
-          <label htmlFor="context" className="block text-sm font-medium text-zinc-400 mb-1">
+          <label htmlFor="context" className="block text-sm font-medium text-muted mb-1">
             <span className="flex items-center gap-1.5">
-              <Brain size={14} className="text-indigo-400" />
+              <Brain size={14} className="text-accent" />
               AI Context
             </span>
           </label>
@@ -141,25 +145,21 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
             onChange={(e) => setContext(e.target.value)}
             placeholder={CONTEXT_PLACEHOLDER}
             rows={8}
-            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition resize-none"
+            className="w-full bg-surface border border-border-hover rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition resize-none"
           />
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             This context is injected into AI prompts when processing audio for this project. The
             more specific you are, the better the generated tickets will be.
           </p>
         </div>
 
         <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={saving || !name.trim()}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 px-6 py-2 rounded-lg text-sm font-medium transition"
-          >
+          <Button type="submit" disabled={saving || !name.trim()}>
             {saving ? "Saving..." : isEditing ? "Save changes" : "Create project"}
-          </button>
+          </Button>
           <Link
             href={PROJECTS_PAGE}
-            className="bg-zinc-800 hover:bg-zinc-700 px-6 py-2 rounded-lg text-sm font-medium transition"
+            className="bg-surface-hover hover:bg-surface-hover px-6 py-2 rounded-lg text-sm font-medium transition"
           >
             Cancel
           </Link>

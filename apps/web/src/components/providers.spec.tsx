@@ -8,6 +8,10 @@ vi.mock("next-auth/react", () => ({
   ),
 }));
 
+vi.mock("next-themes", () => ({
+  ThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 describe("Providers", () => {
   beforeEach(() => {
     vi.clearAllMocks();

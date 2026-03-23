@@ -35,7 +35,7 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
       {/* Mobile toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden top-4 left-4 z-50 fixed bg-zinc-800 p-2 rounded-lg"
+        className="md:hidden top-4 left-4 z-50 fixed bg-surface-hover p-2 rounded-lg"
         aria-label="Toggle menu"
       >
         {isOpen ? <X size={20} /> : <Menu size={20} />}
@@ -55,12 +55,12 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
 
       <aside
         className={cn(
-          "flex flex-col bg-zinc-900/50 border-zinc-800 border-r w-60",
+          "flex flex-col bg-surface/50 border-border border-r w-60",
           "fixed md:static inset-y-0 left-0 z-40 transition-transform md:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className="p-4 border-zinc-800 border-b">
+        <div className="p-4 border-border border-b">
           <Link href={AUDIOS_PAGE} className="font-bold text-lg tracking-tight">
             Yappie
           </Link>
@@ -76,8 +76,8 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition",
                   isActive
-                    ? "bg-indigo-500/10 text-indigo-400"
-                    : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50",
+                    ? "bg-accent-surface text-accent"
+                    : "text-muted hover:text-foreground hover:bg-surface-hover/50",
                 )}
               >
                 <item.icon size={18} />
@@ -87,16 +87,19 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
           })}
         </nav>
 
-        <div className="p-3 border-zinc-800 border-t">
+        <div className="p-3 border-border border-t">
           <div className="flex items-center gap-3 px-3 py-2">
-            <div className="flex justify-center items-center bg-indigo-500/20 rounded-full w-8 h-8 font-bold text-indigo-400 text-sm">
+            <div className="flex justify-center items-center bg-accent-surface rounded-full w-8 h-8 font-bold text-accent text-sm">
               {user?.name?.[0]?.toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm truncate">{user?.name}</p>
-              <p className="text-zinc-500 text-xs truncate">{user?.email}</p>
+              <p className="text-muted-foreground text-xs truncate">{user?.email}</p>
             </div>
-            <button onClick={onLogout} className="text-zinc-500 hover:text-zinc-300 transition">
+            <button
+              onClick={onLogout}
+              className="text-muted-foreground hover:text-foreground transition"
+            >
               <LogOut size={16} />
             </button>
           </div>

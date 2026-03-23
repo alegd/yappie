@@ -21,6 +21,10 @@ vi.mock("@/lib/api", () => ({
   api: mockApi,
 }));
 
+vi.mock("@/components/ui/theme-toggle", () => ({
+  ThemeToggle: () => <div data-testid="theme-toggle" />,
+}));
+
 function setupMocks(
   templates: Array<{ id: string; name: string; isDefault: boolean }> = [],
   jiraStatus?: { connected: boolean; siteName: string | null; connectedAt: string | null },
@@ -40,6 +44,13 @@ function setupMocks(
 describe("SettingsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("should render appearance section with theme toggle", async () => {
+    setupMocks();
+    render(<SettingsPage />);
+    expect(await screen.findByText(/appearance/i)).toBeInTheDocument();
+    expect(screen.getByTestId("theme-toggle")).toBeInTheDocument();
   });
 
   it("should render integrations section", async () => {

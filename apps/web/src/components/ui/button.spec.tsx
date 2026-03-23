@@ -12,13 +12,13 @@ describe("Button", () => {
   it("should apply primary variant by default", () => {
     render(<Button>Primary</Button>);
     const button = screen.getByRole("button");
-    expect(button.className).toContain("bg-indigo-600");
+    expect(button.className).toContain("bg-primary");
   });
 
   it("should apply secondary variant", () => {
     render(<Button variant="secondary">Secondary</Button>);
     const button = screen.getByRole("button");
-    expect(button.className).toContain("bg-zinc-800");
+    expect(button.className).toContain("bg-surface-hover");
   });
 
   it("should apply size classes", () => {

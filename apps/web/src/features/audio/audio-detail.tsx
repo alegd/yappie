@@ -1,37 +1,33 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowLeft, CheckCircle2, AlertCircle, Clock, Loader2, FileText } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@/hooks/use-query";
 import { audioDetail } from "@/lib/constants/endpoints";
 import { AUDIOS_PAGE } from "@/lib/constants/pages";
+import { AlertCircle, ArrowLeft, CheckCircle2, Clock, FileText, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { AudioRecording } from "./types";
-import { cn } from "@/lib/utils";
 
 const statusConfig = {
-  PENDING: { label: "Pending", color: "text-zinc-400 bg-zinc-400/10", icon: Clock },
-  TRANSCRIBING: { label: "Transcribing", color: "text-blue-400 bg-blue-400/10", icon: Loader2 },
-  ANALYZING: { label: "Analyzing", color: "text-purple-400 bg-purple-400/10", icon: Loader2 },
-  COMPLETED: {
-    label: "Completed",
-    color: "text-emerald-400 bg-emerald-400/10",
-    icon: CheckCircle2,
-  },
-  FAILED: { label: "Failed", color: "text-red-400 bg-red-400/10", icon: AlertCircle },
+  PENDING: { label: "Pending", variant: "default" as const, icon: Clock },
+  TRANSCRIBING: { label: "Transcribing", variant: "info" as const, icon: Loader2 },
+  ANALYZING: { label: "Analyzing", variant: "purple" as const, icon: Loader2 },
+  COMPLETED: { label: "Completed", variant: "success" as const, icon: CheckCircle2 },
+  FAILED: { label: "Failed", variant: "danger" as const, icon: AlertCircle },
 };
 
-const priorityColors: Record<string, string> = {
-  LOW: "text-zinc-400 bg-zinc-400/10",
-  MEDIUM: "text-yellow-400 bg-yellow-400/10",
-  HIGH: "text-orange-400 bg-orange-400/10",
-  CRITICAL: "text-red-400 bg-red-400/10",
+const priorityVariants: Record<string, "default" | "warning" | "orange" | "danger"> = {
+  LOW: "default",
+  MEDIUM: "warning",
+  HIGH: "orange",
+  CRITICAL: "danger",
 };
 
-const ticketStatusColors: Record<string, string> = {
-  DRAFT: "text-zinc-400 bg-zinc-400/10",
-  APPROVED: "text-emerald-400 bg-emerald-400/10",
-  EXPORTED: "text-blue-400 bg-blue-400/10",
-  REJECTED: "text-red-400 bg-red-400/10",
+const ticketStatusVariants: Record<string, "default" | "success" | "info" | "danger"> = {
+  DRAFT: "default",
+  APPROVED: "success",
+  EXPORTED: "info",
+  REJECTED: "danger",
 };
 
 interface AudioDetailProps {
@@ -47,21 +43,21 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 size={24} className="animate-spin text-zinc-500" />
-        <span className="ml-2 text-zinc-500">Loading...</span>
+      <div className="flex justify-center items-center py-20">
+        <Loader2 size={24} className="text-muted-foreground animate-spin" />
+        <span className="ml-2 text-muted-foreground">Loading...</span>
       </div>
     );
   }
 
   if (fetchError || !audio) {
     return (
-      <div className="text-center py-20">
-        <AlertCircle size={48} className="mx-auto mb-4 text-red-400 opacity-50" />
+      <div className="py-20 text-center">
+        <AlertCircle size={48} className="opacity-50 mx-auto mb-4 text-red-400" />
         <p className="text-red-400">{fetchError?.message || "Not found"}</p>
         <Link
           href={AUDIOS_PAGE}
-          className="text-sm text-indigo-400 hover:text-indigo-300 mt-4 inline-block"
+          className="inline-block mt-4 text-accent hover:text-accent text-sm"
         >
           Back to audios
         </Link>
@@ -76,34 +72,32 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
     <div>
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Link href={AUDIOS_PAGE} className="text-zinc-500 hover:text-zinc-300 transition">
+        <Link href={AUDIOS_PAGE} className="text-muted-foreground hover:text-foreground transition">
           <ArrowLeft size={20} />
         </Link>
         <div className="flex-1">
-          <h1 className="text-xl font-bold">{audio.fileName}</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <h1 className="font-bold text-xl">{audio.fileName}</h1>
+          <p className="mt-0.5 text-muted-foreground text-xs">
             {new Date(audio.createdAt).toLocaleString()}
           </p>
         </div>
-        <div
-          className={cn(
-            "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
-            status.color,
-          )}
+        <Badge
+          variant={status.variant}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
         >
           <StatusIcon size={12} />
           {status.label}
-        </div>
+        </Badge>
       </div>
 
       {/* Transcription */}
       {audio.transcription && (
         <div className="mb-6">
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+          <h2 className="mb-2 font-semibold text-muted text-sm uppercase tracking-wider">
             Transcription
           </h2>
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
-            <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">
+          <div className="bg-surface/50 p-4 border border-border rounded-lg">
+            <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap">
               {audio.transcription}
             </p>
           </div>
@@ -112,13 +106,13 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
 
       {/* Tickets */}
       <div>
-        <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+        <h2 className="mb-2 font-semibold text-muted text-sm uppercase tracking-wider">
           Generated Tickets ({audio.tickets?.length || 0})
         </h2>
 
         {!audio.tickets?.length ? (
-          <div className="text-center py-10 text-zinc-500">
-            <FileText size={32} className="mx-auto mb-2 opacity-50" />
+          <div className="py-10 text-muted-foreground text-center">
+            <FileText size={32} className="opacity-50 mx-auto mb-2" />
             <p className="text-sm">No tickets generated yet.</p>
           </div>
         ) : (
@@ -126,28 +120,14 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
             {audio.tickets.map((ticket) => (
               <div
                 key={ticket.id}
-                className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition"
+                className="bg-surface/50 p-4 border border-border hover:border-border-hover rounded-lg transition"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{ticket.title}</p>
+                    <p className="font-medium text-sm">{ticket.title}</p>
                   </div>
-                  <span
-                    className={cn(
-                      "px-2 py-0.5 rounded text-xs font-medium",
-                      priorityColors[ticket.priority] || "",
-                    )}
-                  >
-                    {ticket.priority}
-                  </span>
-                  <span
-                    className={cn(
-                      "px-2 py-0.5 rounded text-xs font-medium",
-                      ticketStatusColors[ticket.status] || "",
-                    )}
-                  >
-                    {ticket.status}
-                  </span>
+                  <Badge variant={priorityVariants[ticket.priority]}>{ticket.priority}</Badge>
+                  <Badge variant={ticketStatusVariants[ticket.status]}>{ticket.status}</Badge>
                 </div>
               </div>
             ))}

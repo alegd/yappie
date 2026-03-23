@@ -61,17 +61,18 @@ export function AnalyticsDashboard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 size={24} className="animate-spin text-zinc-500" />
-        <span className="ml-2 text-zinc-500">Loading...</span>
+        <Loader2 size={24} className="animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">Loading...</span>
       </div>
     );
   }
 
-  if (events.length === 0) {
-    return (
-      <div>
-        <h1 className="text-2xl font-bold mb-6">Analytics</h1>
-        <div className="text-center py-20 text-zinc-500">
+  return (
+    <div>
+      <h1 className="text-2xl font-bold mb-6">Analytics</h1>
+
+      {events.length === 0 ? (
+        <div className="text-center py-20 text-muted-foreground">
           <BarChart3 size={48} className="mx-auto mb-4 opacity-50" />
           <p>No analytics data yet.</p>
         </div>
@@ -79,28 +80,15 @@ export function AnalyticsDashboard() {
     );
   }
 
-  const chartData = getChartData(events);
-
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Analytics</h1>
-
-      {/* Stat cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        {events.map((event) => {
-          const config = eventConfig[event.type] || {
-            label: event.type,
-            icon: BarChart3,
-            color: "text-zinc-400 bg-zinc-400/10",
-          };
-          const Icon = config.icon;
-
-          return (
-            <div key={event.type} className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
-              <div
-                className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${config.color}`}
-              >
-                <Icon size={20} />
+            return (
+              <div key={event.type} className="bg-surface/50 border border-border rounded-xl p-6">
+                <div
+                  className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${config.color}`}
+                >
+                  <Icon size={20} />
+                </div>
+                <p className="text-3xl font-bold">{event.count}</p>
+                <p className="text-sm text-muted-foreground mt-1">{config.label}</p>
               </div>
               <p className="text-3xl font-bold">{event.count}</p>
               <p className="text-sm text-zinc-500 mt-1">{config.label}</p>

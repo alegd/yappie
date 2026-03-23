@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Upload, Mic, Square, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { AUDIO_UPLOAD } from "@/lib/constants/endpoints";
 import { AudioRecording } from "./types";
@@ -74,27 +75,19 @@ export function AudioUpload({ projectId, onUploaded }: AudioUploadProps) {
   return (
     <div className="space-y-3">
       <div className="flex gap-3">
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading || recording}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 px-4 py-2 rounded-lg text-sm font-medium transition"
-        >
+        <Button onClick={() => fileInputRef.current?.click()} disabled={uploading || recording}>
           {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
           {uploading ? "Uploading..." : "Upload audio"}
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant={recording ? "danger" : "secondary"}
           onClick={recording ? stopRecording : startRecording}
           disabled={uploading}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
-            recording
-              ? "bg-red-600 hover:bg-red-500"
-              : "bg-zinc-800 hover:bg-zinc-700 border border-zinc-700"
-          }`}
         >
           {recording ? <Square size={16} /> : <Mic size={16} />}
           {recording ? "Stop" : "Record"}
-        </button>
+        </Button>
       </div>
 
       <input

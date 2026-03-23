@@ -2,6 +2,7 @@
 
 import { AUDIOS_PAGE, LOGIN_PAGE } from "@/lib/constants/pages";
 import { AUTH_REGISTER } from "@/lib/constants/endpoints";
+import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
@@ -46,7 +47,7 @@ export function RegisterForm() {
           )}
 
           <div>
-            <label htmlFor="name" className="block mb-1 font-medium text-zinc-400 text-sm">
+            <label htmlFor="name" className="block mb-1 font-medium text-muted text-sm">
               Name
             </label>
             <input
@@ -55,12 +56,12 @@ export function RegisterForm() {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="bg-zinc-900 px-3 py-2 border border-zinc-700 focus:border-indigo-500 rounded-lg focus:outline-none w-full text-sm transition"
+              className="bg-surface px-3 py-2 border border-border-hover focus:border-indigo-500 rounded-lg focus:outline-none w-full text-sm transition"
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block mb-1 font-medium text-zinc-400 text-sm">
+            <label htmlFor="email" className="block mb-1 font-medium text-muted text-sm">
               Email
             </label>
             <input
@@ -69,12 +70,12 @@ export function RegisterForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="bg-zinc-900 px-3 py-2 border border-zinc-700 focus:border-indigo-500 rounded-lg focus:outline-none w-full text-sm transition"
+              className="bg-surface px-3 py-2 border border-border-hover focus:border-indigo-500 rounded-lg focus:outline-none w-full text-sm transition"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block mb-1 font-medium text-zinc-400 text-sm">
+            <label htmlFor="password" className="block mb-1 font-medium text-muted text-sm">
               Password (min 8 characters)
             </label>
             <input
@@ -84,22 +85,18 @@ export function RegisterForm() {
               minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="bg-zinc-900 px-3 py-2 border border-zinc-700 focus:border-indigo-500 rounded-lg focus:outline-none w-full text-sm transition"
+              className="bg-surface px-3 py-2 border border-border-hover focus:border-indigo-500 rounded-lg focus:outline-none w-full text-sm transition"
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 px-4 py-2 rounded-lg w-full font-medium text-sm transition"
-          >
+          <Button type="submit" disabled={loading} className="w-full">
             {loading ? "Creating account..." : "Create account"}
-          </button>
+          </Button>
         </form>
 
-        <p className="mt-6 text-zinc-500 text-sm text-center">
+        <p className="mt-6 text-muted-foreground text-sm text-center">
           Already have an account?{" "}
-          <Link href={LOGIN_PAGE} className="text-indigo-400 hover:text-indigo-300">
+          <Link href={LOGIN_PAGE} className="text-accent hover:text-accent">
             Log in
           </Link>
         </p>

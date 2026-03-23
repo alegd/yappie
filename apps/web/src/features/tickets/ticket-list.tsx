@@ -1,31 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { FileText, Loader2, ExternalLink, CheckCircle2, Upload } from "lucide-react";
-import { useQuery, invalidateQuery } from "@/hooks/use-query";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { api } from "@/lib/api";
 import {
-  TICKETS_LIST,
+  JIRA_STATUS,
   TICKETS_EXPORT_BULK,
+  TICKETS_LIST,
   ticketApprove,
   ticketExport,
-  JIRA_STATUS,
 } from "@/lib/constants/endpoints";
-import { TicketListResponse } from "./types";
 import { cn } from "@/lib/utils";
+import { CheckCircle2, ExternalLink, FileText, Loader2, Upload } from "lucide-react";
+import { useState } from "react";
+import { TicketListResponse } from "./types";
 
-const priorityColors: Record<string, string> = {
-  LOW: "text-zinc-400 bg-zinc-400/10",
-  MEDIUM: "text-yellow-400 bg-yellow-400/10",
-  HIGH: "text-orange-400 bg-orange-400/10",
-  CRITICAL: "text-red-400 bg-red-400/10",
+const priorityVariants: Record<string, "default" | "warning" | "orange" | "danger"> = {
+  LOW: "default",
+  MEDIUM: "warning",
+  HIGH: "orange",
+  CRITICAL: "danger",
 };
 
-const statusColors: Record<string, string> = {
-  DRAFT: "text-zinc-400 bg-zinc-400/10",
-  APPROVED: "text-emerald-400 bg-emerald-400/10",
-  EXPORTED: "text-blue-400 bg-blue-400/10",
-  REJECTED: "text-red-400 bg-red-400/10",
+const statusVariants: Record<string, "default" | "success" | "info" | "danger"> = {
+  DRAFT: "default",
+  APPROVED: "success",
+  EXPORTED: "info",
+  REJECTED: "danger",
 };
 
 interface JiraStatus {
@@ -121,28 +123,29 @@ export function TicketList() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 size={24} className="animate-spin text-zinc-500" />
-        <span className="ml-2 text-zinc-500">Loading...</span>
+      <div className="flex justify-center items-center py-20">
+        <Loader2 size={24} className="text-muted-foreground animate-spin" />
+        <span className="ml-2 text-muted-foreground">Loading...</span>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Tickets</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="font-bold text-2xl">Tickets</h1>
 
         {/* Bulk action bar */}
         {selected.size > 0 && (
           <div className="flex items-center gap-3">
-            <span className="text-sm text-zinc-400">{selected.size} selected</span>
+            <span className="text-muted text-sm">{selected.size} selected</span>
 
             {draftSelected.length > 0 && (
-              <button
+              <Button
+                size="sm"
                 onClick={handleBulkApprove}
                 disabled={bulkActing !== null}
-                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-3 py-1.5 rounded-lg text-xs font-medium transition"
+                className="bg-emerald-600 hover:bg-emerald-500"
               >
                 {bulkActing === "approve" ? (
                   <Loader2 size={12} className="animate-spin" />
@@ -150,14 +153,15 @@ export function TicketList() {
                   <CheckCircle2 size={12} />
                 )}
                 Approve {draftSelected.length}
-              </button>
+              </Button>
             )}
 
             {approvedSelected.length > 0 && isJiraConnected && (
-              <button
+              <Button
+                size="sm"
                 onClick={handleBulkExport}
                 disabled={bulkActing !== null}
-                className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 px-3 py-1.5 rounded-lg text-xs font-medium transition"
+                className="bg-blue-600 hover:bg-blue-500"
               >
                 {bulkActing === "export" ? (
                   <Loader2 size={12} className="animate-spin" />
@@ -165,27 +169,27 @@ export function TicketList() {
                   <Upload size={12} />
                 )}
                 Export {approvedSelected.length}
-              </button>
+              </Button>
             )}
           </div>
         )}
       </div>
 
       {tickets.length === 0 ? (
-        <div className="text-center py-20 text-zinc-500">
-          <FileText size={48} className="mx-auto mb-4 opacity-50" />
+        <div className="py-20 text-muted-foreground text-center">
+          <FileText size={48} className="opacity-50 mx-auto mb-4" />
           <p>No tickets yet.</p>
-          <p className="text-sm mt-1">Upload an audio and tickets will appear here.</p>
+          <p className="mt-1 text-sm">Upload an audio and tickets will appear here.</p>
         </div>
       ) : (
         <div className="space-y-1">
           {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">
+          <div className="flex items-center gap-3 px-4 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
             <input
               type="checkbox"
               checked={selected.size === tickets.length && tickets.length > 0}
               onChange={handleToggleAll}
-              className="rounded border-zinc-600"
+              className="border-zinc-600 rounded"
             />
             <span className="flex-1">Title</span>
             <span className="w-20 text-center">Priority</span>
@@ -202,51 +206,43 @@ export function TicketList() {
               <div
                 key={ticket.id}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg border transition",
+                  "flex items-center gap-3 px-4 py-3 border rounded-lg transition",
                   selected.has(ticket.id)
                     ? "bg-indigo-500/5 border-indigo-500/20"
-                    : "bg-zinc-900/50 border-zinc-800 hover:border-zinc-700",
+                    : "bg-surface/50 border-border hover:border-border-hover",
                 )}
               >
                 <input
                   type="checkbox"
                   checked={selected.has(ticket.id)}
                   onChange={() => handleToggle(ticket.id)}
-                  className="rounded border-zinc-600"
+                  className="border-zinc-600 rounded"
                 />
-                <span className="flex-1 text-sm font-medium truncate">{ticket.title}</span>
-                <span
-                  className={cn(
-                    "w-20 text-center px-2 py-0.5 rounded text-xs font-medium",
-                    priorityColors[ticket.priority],
-                  )}
-                >
+                <span className="flex-1 font-medium text-sm truncate">{ticket.title}</span>
+                <Badge variant={priorityVariants[ticket.priority]} className="w-20 text-center">
                   {ticket.priority}
-                </span>
-                <span
-                  className={cn(
-                    "w-24 text-center px-2 py-0.5 rounded text-xs font-medium",
-                    statusColors[ticket.status],
-                  )}
-                >
+                </Badge>
+                <Badge variant={statusVariants[ticket.status]} className="w-24 text-center">
                   {ticket.status}
-                </span>
+                </Badge>
                 <span className="w-20 text-center">
                   {ticket.jiraIssueKey ? (
-                    <span className="text-xs text-blue-400 flex items-center justify-center gap-1">
+                    <span className="flex justify-center items-center gap-1 text-blue-400 text-xs">
                       {ticket.jiraIssueKey}
                       <ExternalLink size={10} />
                     </span>
                   ) : (
-                    <span className="text-xs text-zinc-600">—</span>
+                    <span className="text-muted-foreground text-xs">—</span>
                   )}
                 </span>
-                <span className="w-24 flex justify-center">
+                <span className="flex justify-center w-24">
                   {ticket.status === "DRAFT" && (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleApprove(ticket.id)}
                       disabled={isActing}
-                      className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 disabled:opacity-50 transition"
+                      className="text-emerald-400 hover:text-emerald-300"
                       aria-label={`Approve ${ticket.title}`}
                     >
                       {isActing ? (
@@ -255,13 +251,15 @@ export function TicketList() {
                         <CheckCircle2 size={12} />
                       )}
                       Approve
-                    </button>
+                    </Button>
                   )}
                   {ticket.status === "APPROVED" && isJiraConnected && (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleExport(ticket.id)}
                       disabled={isActing}
-                      className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50 transition"
+                      className="text-blue-400 hover:text-blue-300"
                       aria-label={`Export ${ticket.title}`}
                     >
                       {isActing ? (
@@ -270,7 +268,7 @@ export function TicketList() {
                         <Upload size={12} />
                       )}
                       Export
-                    </button>
+                    </Button>
                   )}
                 </span>
               </div>
