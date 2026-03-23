@@ -13,6 +13,8 @@ import {
 } from "@/lib/constants/endpoints";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, ExternalLink, FileText, Loader2, Upload } from "lucide-react";
+import Link from "next/link";
+import { ticketDetailPage } from "@/lib/constants/pages";
 import { useState } from "react";
 import { TicketListResponse } from "./types";
 
@@ -218,7 +220,12 @@ export function TicketList() {
                   onChange={() => handleToggle(ticket.id)}
                   className="border-zinc-600 rounded"
                 />
-                <span className="flex-1 font-medium text-sm truncate">{ticket.title}</span>
+                <Link
+                  href={ticketDetailPage(ticket.id)}
+                  className="flex-1 font-medium text-sm truncate hover:text-accent transition"
+                >
+                  {ticket.title}
+                </Link>
                 <Badge variant={priorityVariants[ticket.priority]} className="w-20 text-center">
                   {ticket.priority}
                 </Badge>
