@@ -19,6 +19,14 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
+vi.mock("@/hooks/use-socket", () => ({
+  useSocket: vi.fn(),
+}));
+
+vi.mock("@/components/ui/toast/toast-provider", () => ({
+  ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 vi.mock("./sidebar", () => ({
   Sidebar: ({ user, onLogout }: any) => {
     mockSidebarProps.user = user;

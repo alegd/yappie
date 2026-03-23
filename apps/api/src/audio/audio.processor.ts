@@ -1,12 +1,13 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Inject, Logger } from "@nestjs/common";
 import { Job } from "bullmq";
-import { AudioService } from "./audio.service";
 import { AIService } from "../ai/ai.service.js";
-import { TicketsService } from "../tickets/tickets.service";
-import { ProjectsService } from "../projects/projects.service";
 import { AnalyticsService } from "../analytics/analytics.service.js";
+import { ProjectsService } from "../projects/projects.service";
 import { STORAGE_ADAPTER, type StorageAdapter } from "../storage/storage.interface.js";
+import { TicketsService } from "../tickets/tickets.service";
+import { AudioGateway } from "./audio.gateway.js";
+import { AudioService } from "./audio.service";
 
 export interface AudioJobData {
   audioId: string;
@@ -23,6 +24,7 @@ export class AudioProcessor extends WorkerHost {
     private readonly ticketsService: TicketsService,
     private readonly projectsService: ProjectsService,
     private readonly analyticsService: AnalyticsService,
+    private readonly audioGateway: AudioGateway,
     @Inject(STORAGE_ADAPTER) private readonly storage: StorageAdapter,
   ) {
     super();
@@ -38,6 +40,7 @@ export class AudioProcessor extends WorkerHost {
       // Step 1: Transcribe
       this.logger.log(`[${audioId}] Transcribing...`);
       await this.audioService.updateStatus(audioId, "TRANSCRIBING");
+      this.audioGateway.emitProgress(userId, audioId, "TRANSCRIBING");
       const audioBuffer = await this.storage.get(recording.filePath);
       const transcription = await this.aiService.transcribe(audioBuffer!, recording.fileName);
 
@@ -51,6 +54,8 @@ export class AudioProcessor extends WorkerHost {
       // Step 2: Decompose + Generate (with project context)
       this.logger.log(`[${audioId}] Analyzing with AI...`);
       await this.audioService.updateStatus(audioId, "ANALYZING");
+      this.audioGateway.emitProgress(userId, audioId, "ANALYZING");
+
       const tasks = await this.aiService.decompose(transcription, projectContext);
       const tickets = await this.aiService.generateTickets(tasks, projectContext);
 
@@ -72,9 +77,15 @@ export class AudioProcessor extends WorkerHost {
 
       this.logger.log(`[${audioId}] Completed. ${tickets.length} tickets generated.`);
       await this.audioService.updateStatus(audioId, "COMPLETED");
+      this.audioGateway.emitCompleted(userId, audioId, tickets.length);
     } catch (error) {
       this.logger.error(`[${audioId}] Failed: ${error instanceof Error ? error.message : error}`);
       await this.audioService.updateStatus(audioId, "FAILED");
+      this.audioGateway.emitFailed(
+        userId,
+        audioId,
+        error instanceof Error ? error.message : "Processing failed",
+      );
       throw error;
     }
   }
