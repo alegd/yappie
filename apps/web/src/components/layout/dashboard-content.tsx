@@ -1,8 +1,8 @@
 "use client";
 
 import { signOut } from "next-auth/react";
-import { Toaster } from "sonner";
 import { Sidebar } from "./sidebar";
+import { ToastProvider } from "@/components/ui/toast/toast-provider";
 import { api } from "@/lib/api";
 import { useSocket } from "@/hooks/use-socket";
 import { LOGIN_PAGE } from "@/lib/constants/pages";
@@ -25,10 +25,11 @@ export function DashboardContent({ accessToken, user, children }: DashboardConte
   };
 
   return (
-    <div className="flex h-screen">
-      <Sidebar user={user} onLogout={handleLogout} />
-      <main className="flex-1 overflow-auto p-6">{children}</main>
-      <Toaster theme="dark" position="bottom-right" richColors />
-    </div>
+    <ToastProvider>
+      <div className="flex h-screen">
+        <Sidebar user={user} onLogout={handleLogout} />
+        <main className="flex-1 overflow-auto p-6">{children}</main>
+      </div>
+    </ToastProvider>
   );
 }

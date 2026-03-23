@@ -23,8 +23,8 @@ vi.mock("@/hooks/use-socket", () => ({
   useSocket: vi.fn(),
 }));
 
-vi.mock("sonner", () => ({
-  Toaster: () => <div data-testid="toaster" />,
+vi.mock("@/components/ui/toast/toast-provider", () => ({
+  ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock("./sidebar", () => ({

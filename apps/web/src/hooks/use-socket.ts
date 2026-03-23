@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast/Toast";
 import { invalidateQuery } from "./use-query";
 import { AUDIO_LIST, TICKETS_LIST } from "@/lib/constants/endpoints";
 

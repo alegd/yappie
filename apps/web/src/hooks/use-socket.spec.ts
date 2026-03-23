@@ -13,7 +13,7 @@ vi.mock("socket.io-client", () => ({
   io: mockIo,
 }));
 
-vi.mock("sonner", () => ({
+vi.mock("@/components/ui/toast/Toast", () => ({
   toast: {
     info: vi.fn(),
     success: vi.fn(),
