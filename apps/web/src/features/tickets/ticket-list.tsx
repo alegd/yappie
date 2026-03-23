@@ -122,8 +122,8 @@ export function TicketList() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 size={24} className="animate-spin text-zinc-500" />
-        <span className="ml-2 text-zinc-500">Loading...</span>
+        <Loader2 size={24} className="animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">Loading...</span>
       </div>
     );
   }
@@ -136,7 +136,7 @@ export function TicketList() {
         {/* Bulk action bar */}
         {selected.size > 0 && (
           <div className="flex items-center gap-3">
-            <span className="text-sm text-zinc-400">{selected.size} selected</span>
+            <span className="text-sm text-muted">{selected.size} selected</span>
 
             {draftSelected.length > 0 && (
               <button
@@ -172,7 +172,7 @@ export function TicketList() {
       </div>
 
       {tickets.length === 0 ? (
-        <div className="text-center py-20 text-zinc-500">
+        <div className="text-center py-20 text-muted-foreground">
           <FileText size={48} className="mx-auto mb-4 opacity-50" />
           <p>No tickets yet.</p>
           <p className="text-sm mt-1">Upload an audio and tickets will appear here.</p>
@@ -180,7 +180,7 @@ export function TicketList() {
       ) : (
         <div className="space-y-1">
           {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">
+          <div className="flex items-center gap-3 px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
             <input
               type="checkbox"
               checked={selected.size === tickets.length && tickets.length > 0}
@@ -205,7 +205,7 @@ export function TicketList() {
                   "flex items-center gap-3 px-4 py-3 rounded-lg border transition",
                   selected.has(ticket.id)
                     ? "bg-indigo-500/5 border-indigo-500/20"
-                    : "bg-zinc-900/50 border-zinc-800 hover:border-zinc-700",
+                    : "bg-surface/50 border-border hover:border-border-hover",
                 )}
               >
                 <input
@@ -238,7 +238,7 @@ export function TicketList() {
                       <ExternalLink size={10} />
                     </span>
                   ) : (
-                    <span className="text-xs text-zinc-600">—</span>
+                    <span className="text-xs text-muted-foreground">—</span>
                   )}
                 </span>
                 <span className="w-24 flex justify-center">

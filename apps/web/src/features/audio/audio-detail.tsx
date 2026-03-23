@@ -48,8 +48,8 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 size={24} className="animate-spin text-zinc-500" />
-        <span className="ml-2 text-zinc-500">Loading...</span>
+        <Loader2 size={24} className="animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">Loading...</span>
       </div>
     );
   }
@@ -61,7 +61,7 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
         <p className="text-red-400">{fetchError?.message || "Not found"}</p>
         <Link
           href={AUDIOS_PAGE}
-          className="text-sm text-indigo-400 hover:text-indigo-300 mt-4 inline-block"
+          className="text-sm text-accent hover:text-accent mt-4 inline-block"
         >
           Back to audios
         </Link>
@@ -76,12 +76,12 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
     <div>
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Link href={AUDIOS_PAGE} className="text-zinc-500 hover:text-zinc-300 transition">
+        <Link href={AUDIOS_PAGE} className="text-muted-foreground hover:text-foreground transition">
           <ArrowLeft size={20} />
         </Link>
         <div className="flex-1">
           <h1 className="text-xl font-bold">{audio.fileName}</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             {new Date(audio.createdAt).toLocaleString()}
           </p>
         </div>
@@ -99,11 +99,11 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
       {/* Transcription */}
       {audio.transcription && (
         <div className="mb-6">
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+          <h2 className="text-sm font-semibold text-muted uppercase tracking-wider mb-2">
             Transcription
           </h2>
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
-            <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">
+          <div className="bg-surface/50 border border-border rounded-lg p-4">
+            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
               {audio.transcription}
             </p>
           </div>
@@ -112,12 +112,12 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
 
       {/* Tickets */}
       <div>
-        <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+        <h2 className="text-sm font-semibold text-muted uppercase tracking-wider mb-2">
           Generated Tickets ({audio.tickets?.length || 0})
         </h2>
 
         {!audio.tickets?.length ? (
-          <div className="text-center py-10 text-zinc-500">
+          <div className="text-center py-10 text-muted-foreground">
             <FileText size={32} className="mx-auto mb-2 opacity-50" />
             <p className="text-sm">No tickets generated yet.</p>
           </div>
@@ -126,7 +126,7 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
             {audio.tickets.map((ticket) => (
               <div
                 key={ticket.id}
-                className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition"
+                className="bg-surface/50 border border-border rounded-lg p-4 hover:border-border-hover transition"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">

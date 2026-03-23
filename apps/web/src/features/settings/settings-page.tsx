@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Link2, FileText, Star, Plus, CheckCircle2, Unlink } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { api } from "@/lib/api";
-import { useQuery, invalidateQuery } from "@/hooks/use-query";
-import { TEMPLATES_LIST, JIRA_STATUS, JIRA_AUTH, JIRA_DISCONNECT } from "@/lib/constants/endpoints";
+import { JIRA_AUTH, JIRA_DISCONNECT, JIRA_STATUS, TEMPLATES_LIST } from "@/lib/constants/endpoints";
+import { CheckCircle2, FileText, Link2, Palette, Plus, Star, Unlink } from "lucide-react";
+import { useState } from "react";
 
 interface Template {
   id: string;
@@ -48,28 +49,49 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-8">Settings</h1>
+    <div className="mx-auto max-w-2xl">
+      <h1 className="mb-8 font-bold text-2xl">Settings</h1>
+
+      {/* Appearance */}
+      <section className="mb-10">
+        <h2 className="flex items-center gap-2 mb-4 font-semibold text-lg">
+          <Palette size={18} />
+          Appearance
+        </h2>
+        <div className="bg-surface/50 p-4 border border-border rounded-lg">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="font-medium">Theme</p>
+              <p className="mt-0.5 text-muted-foreground text-sm">
+                Choose light, dark, or system preference
+              </p>
+            </div>
+            <ThemeToggle />
+          </div>
+        </div>
+      </section>
 
       {/* Integrations */}
       <section className="mb-10">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <h2 className="flex items-center gap-2 mb-4 font-semibold text-lg">
           <Link2 size={18} />
           Integrations
         </h2>
 
-        <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
-          <div className="flex items-center justify-between">
+        <div className="bg-surface/50 p-4 border border-border rounded-lg">
+          <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <div>
                 <p className="font-medium">Jira</p>
                 {jiraStatus?.connected ? (
-                  <p className="text-sm text-emerald-400 mt-0.5 flex items-center gap-1">
+                  <p className="flex items-center gap-1 mt-0.5 text-emerald-400 text-sm">
                     <CheckCircle2 size={12} />
                     Connected to {jiraStatus.siteName || "Atlassian"}
                   </p>
                 ) : (
-                  <p className="text-sm text-zinc-500 mt-0.5">Export tickets to Atlassian Jira</p>
+                  <p className="mt-0.5 text-muted-foreground text-sm">
+                    Export tickets to Atlassian Jira
+                  </p>
                 )}
               </div>
             </div>
@@ -77,7 +99,7 @@ export function SettingsPage() {
               <button
                 onClick={handleDisconnectJira}
                 disabled={disconnecting}
-                className="flex items-center gap-1.5 bg-zinc-800 hover:bg-red-600 border border-zinc-700 hover:border-red-600 px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
+                className="flex items-center gap-1.5 bg-surface-hover hover:bg-red-600 disabled:opacity-50 px-4 py-2 border border-border-hover hover:border-red-600 rounded-lg font-medium text-sm transition"
               >
                 <Unlink size={14} />
                 {disconnecting ? "Disconnecting..." : "Disconnect"}
@@ -85,7 +107,7 @@ export function SettingsPage() {
             ) : (
               <button
                 onClick={handleConnectJira}
-                className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg text-sm font-medium transition"
+                className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg font-medium text-sm transition"
               >
                 Connect Jira
               </button>
@@ -96,20 +118,20 @@ export function SettingsPage() {
 
       {/* Templates */}
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="flex items-center gap-2 font-semibold text-lg">
             <FileText size={18} />
             Templates
           </h2>
-          <button className="flex items-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">
+          <button className="flex items-center gap-1.5 bg-surface-hover hover:bg-surface-hover px-3 py-1.5 border border-border-hover rounded-lg font-medium text-sm transition">
             <Plus size={14} />
             New
           </button>
         </div>
 
         {templates.length === 0 ? (
-          <div className="text-center py-10 text-zinc-500 bg-zinc-900/50 border border-zinc-800 rounded-lg">
-            <FileText size={32} className="mx-auto mb-2 opacity-50" />
+          <div className="bg-surface/50 py-10 border border-border rounded-lg text-muted-foreground text-center">
+            <FileText size={32} className="opacity-50 mx-auto mb-2" />
             <p className="text-sm">No templates yet.</p>
           </div>
         ) : (
@@ -117,12 +139,12 @@ export function SettingsPage() {
             {templates.map((template) => (
               <div
                 key={template.id}
-                className="flex items-center gap-3 bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition"
+                className="flex items-center gap-3 bg-surface/50 p-4 border border-border hover:border-border-hover rounded-lg transition"
               >
-                <FileText size={16} className="text-zinc-500 shrink-0" />
-                <span className="flex-1 text-sm font-medium">{template.name}</span>
+                <FileText size={16} className="text-muted-foreground shrink-0" />
+                <span className="flex-1 font-medium text-sm">{template.name}</span>
                 {template.isDefault && (
-                  <span className="flex items-center gap-1 text-xs text-yellow-400">
+                  <span className="flex items-center gap-1 text-yellow-400 text-xs">
                     <Star size={12} />
                     Default
                   </span>

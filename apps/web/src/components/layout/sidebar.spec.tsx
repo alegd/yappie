@@ -110,9 +110,9 @@ describe("Sidebar", () => {
     render(<Sidebar user={defaultUser} onLogout={vi.fn()} />);
 
     const ticketsLink = screen.getByText("Tickets").closest("a");
-    expect(ticketsLink).toHaveClass("text-indigo-400");
+    expect(ticketsLink).toHaveClass("text-accent");
 
     const audiosLink = screen.getByText("Audios").closest("a");
-    expect(audiosLink).not.toHaveClass("text-indigo-400");
+    expect(audiosLink).not.toHaveClass("text-accent");
   });
 });

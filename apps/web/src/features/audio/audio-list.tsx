@@ -59,7 +59,7 @@ export function AudioList() {
   if (isLoadingAudios) {
     return (
       <div className="flex justify-center items-center py-20">
-        <Loader2 size={24} className="text-zinc-500 animate-spin" />
+        <Loader2 size={24} className="text-muted-foreground animate-spin" />
       </div>
     );
   }
@@ -73,7 +73,7 @@ export function AudioList() {
             <select
               value={selectedProjectId}
               onChange={(e) => handleProjectChange(e.target.value)}
-              className="bg-zinc-900 px-3 py-2 border border-zinc-700 focus:border-indigo-500 rounded-lg focus:outline-none text-sm"
+              className="bg-surface px-3 py-2 border border-border-hover focus:border-indigo-500 rounded-lg focus:outline-none text-sm"
               aria-label="Filter by project"
             >
               <option value="">All projects</option>
@@ -89,7 +89,7 @@ export function AudioList() {
       </div>
 
       {audios.length === 0 ? (
-        <div className="py-20 text-zinc-500 text-center">
+        <div className="py-20 text-muted-foreground text-center">
           <FileAudio size={48} className="opacity-50 mx-auto mb-4" />
           <p>No audio recordings yet.</p>
           <p className="mt-1 text-sm">
@@ -105,12 +105,12 @@ export function AudioList() {
               <Link
                 key={audio.id}
                 href={audioDetailPage(audio.id)}
-                className="flex items-center gap-4 bg-zinc-900/50 p-4 border border-zinc-800 hover:border-zinc-700 rounded-lg transition"
+                className="flex items-center gap-4 bg-surface/50 p-4 border border-border hover:border-border-hover rounded-lg transition"
               >
-                <FileAudio size={20} className="text-zinc-500 shrink-0" />
+                <FileAudio size={20} className="text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{audio.fileName}</p>
-                  <p className="mt-0.5 text-zinc-500 text-xs">
+                  <p className="mt-0.5 text-muted-foreground text-xs">
                     {formatSize(audio.fileSize)} · {formatDate(audio.createdAt)}
                   </p>
                 </div>

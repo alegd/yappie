@@ -77,7 +77,7 @@ export function AudioUpload({ projectId, onUploaded }: AudioUploadProps) {
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading || recording}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 px-4 py-2 rounded-lg text-sm font-medium transition"
+          className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-50 px-4 py-2 rounded-lg text-sm font-medium transition"
         >
           {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
           {uploading ? "Uploading..." : "Upload audio"}
@@ -89,7 +89,7 @@ export function AudioUpload({ projectId, onUploaded }: AudioUploadProps) {
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
             recording
               ? "bg-red-600 hover:bg-red-500"
-              : "bg-zinc-800 hover:bg-zinc-700 border border-zinc-700"
+              : "bg-surface-hover hover:bg-surface-hover border border-border-hover"
           }`}
         >
           {recording ? <Square size={16} /> : <Mic size={16} />}
