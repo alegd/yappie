@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FolderOpen, Plus, Loader2, Brain, Trash2, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useQuery, invalidateQuery } from "@/hooks/use-query";
 import { PROJECTS_LIST, projectDetail } from "@/lib/constants/endpoints";
@@ -83,13 +84,15 @@ export function ProjectList() {
                 >
                   <Pencil size={14} />
                 </Link>
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => handleDelete(project.id)}
-                  className="text-muted-foreground hover:text-red-400 transition"
+                  className="hover:text-red-400"
                   aria-label={`Delete ${project.name}`}
                 >
                   <Trash2 size={14} />
-                </button>
+                </Button>
               </div>
             </div>
           ))}

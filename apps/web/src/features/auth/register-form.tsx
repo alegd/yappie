@@ -2,6 +2,7 @@
 
 import { AUDIOS_PAGE, LOGIN_PAGE } from "@/lib/constants/pages";
 import { AUTH_REGISTER } from "@/lib/constants/endpoints";
+import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
@@ -88,13 +89,9 @@ export function RegisterForm() {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-primary hover:bg-primary-hover disabled:opacity-50 px-4 py-2 rounded-lg w-full font-medium text-sm transition"
-          >
+          <Button type="submit" disabled={loading} className="w-full">
             {loading ? "Creating account..." : "Create account"}
-          </button>
+          </Button>
         </form>
 
         <p className="mt-6 text-muted-foreground text-sm text-center">

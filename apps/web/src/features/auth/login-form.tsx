@@ -1,6 +1,7 @@
 "use client";
 
 import { AUDIOS_PAGE, REGISTER_PAGE } from "@/lib/constants/pages";
+import { Button } from "@/components/ui/button";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
@@ -68,13 +69,9 @@ export function LoginForm() {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-primary hover:bg-primary-hover disabled:opacity-50 px-4 py-2 rounded-lg w-full font-medium text-sm transition"
-          >
+          <Button type="submit" disabled={loading} className="w-full">
             {loading ? "Logging in..." : "Log in"}
-          </button>
+          </Button>
         </form>
 
         <p className="mt-6 text-muted-foreground text-sm text-center">

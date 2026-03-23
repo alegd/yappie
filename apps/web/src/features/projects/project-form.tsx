@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Brain, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { PROJECTS_CREATE, projectDetail } from "@/lib/constants/endpoints";
 import { PROJECTS_PAGE } from "@/lib/constants/pages";
@@ -153,13 +154,9 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
         </div>
 
         <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={saving || !name.trim()}
-            className="bg-primary hover:bg-primary-hover disabled:opacity-50 px-6 py-2 rounded-lg text-sm font-medium transition"
-          >
+          <Button type="submit" disabled={saving || !name.trim()}>
             {saving ? "Saving..." : isEditing ? "Save changes" : "Create project"}
-          </button>
+          </Button>
           <Link
             href={PROJECTS_PAGE}
             className="bg-surface-hover hover:bg-surface-hover px-6 py-2 rounded-lg text-sm font-medium transition"

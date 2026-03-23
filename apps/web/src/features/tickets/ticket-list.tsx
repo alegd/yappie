@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { FileText, Loader2, ExternalLink, CheckCircle2, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useQuery, invalidateQuery } from "@/hooks/use-query";
 import { api } from "@/lib/api";
 import {
@@ -139,10 +140,11 @@ export function TicketList() {
             <span className="text-sm text-muted">{selected.size} selected</span>
 
             {draftSelected.length > 0 && (
-              <button
+              <Button
+                size="sm"
                 onClick={handleBulkApprove}
                 disabled={bulkActing !== null}
-                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-3 py-1.5 rounded-lg text-xs font-medium transition"
+                className="bg-emerald-600 hover:bg-emerald-500"
               >
                 {bulkActing === "approve" ? (
                   <Loader2 size={12} className="animate-spin" />
@@ -150,14 +152,15 @@ export function TicketList() {
                   <CheckCircle2 size={12} />
                 )}
                 Approve {draftSelected.length}
-              </button>
+              </Button>
             )}
 
             {approvedSelected.length > 0 && isJiraConnected && (
-              <button
+              <Button
+                size="sm"
                 onClick={handleBulkExport}
                 disabled={bulkActing !== null}
-                className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 px-3 py-1.5 rounded-lg text-xs font-medium transition"
+                className="bg-blue-600 hover:bg-blue-500"
               >
                 {bulkActing === "export" ? (
                   <Loader2 size={12} className="animate-spin" />
@@ -165,7 +168,7 @@ export function TicketList() {
                   <Upload size={12} />
                 )}
                 Export {approvedSelected.length}
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -243,10 +246,12 @@ export function TicketList() {
                 </span>
                 <span className="w-24 flex justify-center">
                   {ticket.status === "DRAFT" && (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleApprove(ticket.id)}
                       disabled={isActing}
-                      className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 disabled:opacity-50 transition"
+                      className="text-emerald-400 hover:text-emerald-300"
                       aria-label={`Approve ${ticket.title}`}
                     >
                       {isActing ? (
@@ -255,13 +260,15 @@ export function TicketList() {
                         <CheckCircle2 size={12} />
                       )}
                       Approve
-                    </button>
+                    </Button>
                   )}
                   {ticket.status === "APPROVED" && isJiraConnected && (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleExport(ticket.id)}
                       disabled={isActing}
-                      className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50 transition"
+                      className="text-blue-400 hover:text-blue-300"
                       aria-label={`Export ${ticket.title}`}
                     >
                       {isActing ? (
@@ -270,7 +277,7 @@ export function TicketList() {
                         <Upload size={12} />
                       )}
                       Export
-                    </button>
+                    </Button>
                   )}
                 </span>
               </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { api } from "@/lib/api";
@@ -96,21 +97,19 @@ export function SettingsPage() {
               </div>
             </div>
             {jiraStatus?.connected ? (
-              <button
+              <Button
+                variant="secondary"
                 onClick={handleDisconnectJira}
                 disabled={disconnecting}
-                className="flex items-center gap-1.5 bg-surface-hover hover:bg-red-600 disabled:opacity-50 px-4 py-2 border border-border-hover hover:border-red-600 rounded-lg font-medium text-sm transition"
+                className="hover:bg-red-600 hover:border-red-600"
               >
                 <Unlink size={14} />
                 {disconnecting ? "Disconnecting..." : "Disconnect"}
-              </button>
+              </Button>
             ) : (
-              <button
-                onClick={handleConnectJira}
-                className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg font-medium text-sm transition"
-              >
+              <Button onClick={handleConnectJira} className="bg-blue-600 hover:bg-blue-500">
                 Connect Jira
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -123,10 +122,10 @@ export function SettingsPage() {
             <FileText size={18} />
             Templates
           </h2>
-          <button className="flex items-center gap-1.5 bg-surface-hover hover:bg-surface-hover px-3 py-1.5 border border-border-hover rounded-lg font-medium text-sm transition">
+          <Button variant="secondary" size="sm">
             <Plus size={14} />
             New
-          </button>
+          </Button>
         </div>
 
         {templates.length === 0 ? (
