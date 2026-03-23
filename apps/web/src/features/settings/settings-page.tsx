@@ -4,9 +4,26 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { api } from "@/lib/api";
-import { JIRA_AUTH, JIRA_DISCONNECT, JIRA_STATUS, TEMPLATES_LIST } from "@/lib/constants/endpoints";
-import { CheckCircle2, FileText, Link2, Palette, Plus, Star, Unlink } from "lucide-react";
+import {
+  JIRA_AUTH,
+  JIRA_DISCONNECT,
+  JIRA_STATUS,
+  TEMPLATES_LIST,
+  templateDetail,
+} from "@/lib/constants/endpoints";
+import {
+  CheckCircle2,
+  FileText,
+  Link2,
+  Palette,
+  Pencil,
+  Plus,
+  Star,
+  Trash2,
+  Unlink,
+} from "lucide-react";
 import { useState } from "react";
+import { TemplateForm } from "./template-form";
 
 interface Template {
   id: string;
@@ -25,6 +42,8 @@ export function SettingsPage() {
   const { data: templates = [] } = useQuery<Template[]>(TEMPLATES_LIST);
   const { data: jiraStatus } = useQuery<JiraStatus>(JIRA_STATUS);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<Template | undefined>();
 
   const handleConnectJira = async () => {
     try {
@@ -47,6 +66,32 @@ export function SettingsPage() {
     } finally {
       setDisconnecting(false);
     }
+  };
+
+  const handleNewTemplate = () => {
+    setEditingTemplate(undefined);
+    setShowForm(true);
+  };
+
+  const handleEditTemplate = (template: Template) => {
+    setEditingTemplate(template);
+    setShowForm(true);
+  };
+
+  const handleDeleteTemplate = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this template?")) return;
+
+    try {
+      await api.delete(templateDetail(id));
+      invalidateQuery(TEMPLATES_LIST);
+    } catch {
+      // handle error
+    }
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingTemplate(undefined);
   };
 
   return (
@@ -122,13 +167,21 @@ export function SettingsPage() {
             <FileText size={18} />
             Templates
           </h2>
-          <Button variant="secondary" size="sm">
-            <Plus size={14} />
-            New
-          </Button>
+          {!showForm && (
+            <Button variant="secondary" size="sm" onClick={handleNewTemplate}>
+              <Plus size={14} />
+              New
+            </Button>
+          )}
         </div>
 
-        {templates.length === 0 ? (
+        {showForm && (
+          <div className="mb-4">
+            <TemplateForm template={editingTemplate} onClose={handleCloseForm} />
+          </div>
+        )}
+
+        {templates.length === 0 && !showForm ? (
           <div className="bg-surface/50 py-10 border border-border rounded-lg text-muted-foreground text-center">
             <FileText size={32} className="opacity-50 mx-auto mb-2" />
             <p className="text-sm">No templates yet.</p>
@@ -148,6 +201,23 @@ export function SettingsPage() {
                     Default
                   </span>
                 )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleEditTemplate(template)}
+                  aria-label={`Edit ${template.name}`}
+                >
+                  <Pencil size={14} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDeleteTemplate(template.id)}
+                  className="hover:text-red-400"
+                  aria-label={`Delete ${template.name}`}
+                >
+                  <Trash2 size={14} />
+                </Button>
               </div>
             ))}
           </div>
