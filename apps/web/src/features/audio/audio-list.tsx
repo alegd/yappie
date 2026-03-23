@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { AUDIO_LIST, audioByProject, PROJECTS_LIST } from "@/lib/constants/endpoints";
 import { audioDetailPage } from "@/lib/constants/pages";
@@ -11,15 +12,11 @@ import { AudioUpload } from "./audio-upload";
 import { AudioListResponse } from "./types";
 
 const statusConfig = {
-  PENDING: { label: "Pending", color: "text-zinc-400 bg-zinc-400/10", icon: Clock },
-  TRANSCRIBING: { label: "Transcribing", color: "text-blue-400 bg-blue-400/10", icon: Loader2 },
-  ANALYZING: { label: "Analyzing", color: "text-purple-400 bg-purple-400/10", icon: Loader2 },
-  COMPLETED: {
-    label: "Completed",
-    color: "text-emerald-400 bg-emerald-400/10",
-    icon: CheckCircle2,
-  },
-  FAILED: { label: "Failed", color: "text-red-400 bg-red-400/10", icon: AlertCircle },
+  PENDING: { label: "Pending", variant: "default" as const, icon: Clock },
+  TRANSCRIBING: { label: "Transcribing", variant: "info" as const, icon: Loader2 },
+  ANALYZING: { label: "Analyzing", variant: "purple" as const, icon: Loader2 },
+  COMPLETED: { label: "Completed", variant: "success" as const, icon: CheckCircle2 },
+  FAILED: { label: "Failed", variant: "danger" as const, icon: AlertCircle },
 };
 
 function formatDate(dateStr: string) {
@@ -114,9 +111,7 @@ export function AudioList() {
                     {formatSize(audio.fileSize)} · {formatDate(audio.createdAt)}
                   </p>
                 </div>
-                <div
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${status.color}`}
-                >
+                <Badge variant={status.variant} className="flex items-center gap-1.5">
                   <StatusIcon
                     size={12}
                     className={
@@ -126,7 +121,7 @@ export function AudioList() {
                     }
                   />
                   {status.label}
-                </div>
+                </Badge>
               </Link>
             );
           })}
