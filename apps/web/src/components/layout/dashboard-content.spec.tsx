@@ -19,6 +19,14 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
+vi.mock("@/hooks/use-socket", () => ({
+  useSocket: vi.fn(),
+}));
+
+vi.mock("sonner", () => ({
+  Toaster: () => <div data-testid="toaster" />,
+}));
+
 vi.mock("./sidebar", () => ({
   Sidebar: ({ user, onLogout }: any) => {
     mockSidebarProps.user = user;
