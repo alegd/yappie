@@ -51,13 +51,13 @@ Ya tienes tu app. Ahora hay que configurar tres cosas: permisos, callback URL, y
 **Para desarrollo local:**
 
 ```
-http://localhost:3001/api/integrations/jira/callback
+http://localhost:3001/api/v1/integrations/jira/callback
 ```
 
 **Para producción (cuando despliegues):**
 
 ```
-https://tu-dominio.com/api/integrations/jira/callback
+https://tu-dominio.com/api/v1/integrations/jira/callback
 ```
 
 4. Haz clic en **"Save changes"**
@@ -86,7 +86,7 @@ https://tu-dominio.com/api/integrations/jira/callback
 # Jira OAuth 2.0
 JIRA_CLIENT_ID=tu-client-id-aquí
 JIRA_CLIENT_SECRET=tu-secret-aquí
-JIRA_REDIRECT_URI=http://localhost:3001/api/integrations/jira/callback
+JIRA_REDIRECT_URI=http://localhost:3001/api/v1/integrations/jira/callback
 ```
 
 3. Reinicia la API:
@@ -161,7 +161,7 @@ Para los curiosos (o para contribuidores que quieran entender el flujo):
    └→ Frontend redirige al usuario a esa URL
 
 2. Usuario autoriza en Atlassian
-   └→ Atlassian redirige a /api/integrations/jira/callback?code=XXX&state=YYY
+   └→ Atlassian redirige a /api/v1/integrations/jira/callback?code=XXX&state=YYY
    └→ API verifica el state (anti-CSRF)
    └→ API intercambia el code por access_token + refresh_token
       POST https://auth.atlassian.com/oauth/token
