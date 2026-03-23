@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card/Card";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { api } from "@/lib/api";
 import {
@@ -11,10 +12,10 @@ import {
   ticketApprove,
   ticketExport,
 } from "@/lib/constants/endpoints";
+import { ticketDetailPage } from "@/lib/constants/pages";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, ExternalLink, FileText, Loader2, Upload } from "lucide-react";
 import Link from "next/link";
-import { ticketDetailPage } from "@/lib/constants/pages";
 import { useState } from "react";
 import { TicketListResponse } from "./types";
 
@@ -184,7 +185,7 @@ export function TicketList() {
           <p className="mt-1 text-sm">Upload an audio and tickets will appear here.</p>
         </div>
       ) : (
-        <div className="space-y-1">
+        <div className="space-y-2">
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
             <input
@@ -205,13 +206,13 @@ export function TicketList() {
             const isActing = acting === ticket.id;
 
             return (
-              <div
+              <Card
                 key={ticket.id}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 border rounded-lg transition",
                   selected.has(ticket.id)
                     ? "bg-indigo-500/5 border-indigo-500/20"
-                    : "bg-surface/50 border-border hover:border-border-hover",
+                    : "border-border hover:border-border-hover",
                 )}
               >
                 <input
@@ -222,7 +223,7 @@ export function TicketList() {
                 />
                 <Link
                   href={ticketDetailPage(ticket.id)}
-                  className="flex-1 font-medium text-sm truncate hover:text-accent transition"
+                  className="flex-1 font-medium hover:text-accent text-sm truncate transition"
                 >
                   {ticket.title}
                 </Link>
@@ -245,11 +246,10 @@ export function TicketList() {
                 <span className="flex justify-center w-24">
                   {ticket.status === "DRAFT" && (
                     <Button
-                      variant="ghost"
+                      variant="outlined"
                       size="sm"
                       onClick={() => handleApprove(ticket.id)}
                       disabled={isActing}
-                      className="text-emerald-400 hover:text-emerald-300"
                       aria-label={`Approve ${ticket.title}`}
                     >
                       {isActing ? (
@@ -262,11 +262,10 @@ export function TicketList() {
                   )}
                   {ticket.status === "APPROVED" && isJiraConnected && (
                     <Button
-                      variant="ghost"
+                      variant="outlined"
                       size="sm"
                       onClick={() => handleExport(ticket.id)}
                       disabled={isActing}
-                      className="text-blue-400 hover:text-blue-300"
                       aria-label={`Export ${ticket.title}`}
                     >
                       {isActing ? (
@@ -278,7 +277,7 @@ export function TicketList() {
                     </Button>
                   )}
                 </span>
-              </div>
+              </Card>
             );
           })}
         </div>

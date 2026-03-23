@@ -55,7 +55,7 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
 
       <aside
         className={cn(
-          "flex flex-col bg-surface/50 border-border border-r w-60",
+          "flex flex-col bg-background border-border border-r w-60",
           "fixed md:static inset-y-0 left-0 z-40 transition-transform md:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
@@ -89,7 +89,7 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
 
         <div className="p-3 border-border border-t">
           <div className="flex items-center gap-3 px-3 py-2">
-            <div className="flex justify-center items-center bg-accent-surface rounded-full w-8 h-8 font-bold text-accent text-sm">
+            <div className="flex justify-center items-center rounded-full w-8 h-8 font-bold text-accent text-sm bg-accent-surface">
               {user?.name?.[0]?.toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">

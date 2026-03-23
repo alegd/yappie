@@ -1,11 +1,11 @@
 "use client";
 
+import { ToastProvider } from "@/components/ui/toast/toast-provider";
+import { useSocket } from "@/hooks/use-socket";
+import { api } from "@/lib/api";
+import { LOGIN_PAGE } from "@/lib/constants/pages";
 import { signOut } from "next-auth/react";
 import { Sidebar } from "./sidebar";
-import { ToastProvider } from "@/components/ui/toast/toast-provider";
-import { api } from "@/lib/api";
-import { useSocket } from "@/hooks/use-socket";
-import { LOGIN_PAGE } from "@/lib/constants/pages";
 
 interface DashboardContentProps {
   accessToken: string;
@@ -26,9 +26,9 @@ export function DashboardContent({ accessToken, user, children }: DashboardConte
 
   return (
     <ToastProvider>
-      <div className="flex h-screen">
+      <div className="flex bg-surface/40 h-screen">
         <Sidebar user={user} onLogout={handleLogout} />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 p-6 overflow-auto">{children}</main>
       </div>
     </ToastProvider>
   );

@@ -26,7 +26,7 @@ export function PublicNavbar({ isAuthenticated = false }: PublicNavbarProps) {
             </Link>
             <Link
               href={REGISTER_PAGE}
-              className="bg-primary hover:bg-primary-hover px-4 py-2 rounded-lg font-medium text-sm transition"
+              className="bg-primary hover:bg-primary-hover px-4 py-2 rounded-lg font-medium text-white text-sm transition"
             >
               Get Started
             </Link>

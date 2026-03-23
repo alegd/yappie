@@ -1,7 +1,7 @@
-import { ArrowRight, CheckCircle, FileText, Mic, Zap } from "lucide-react";
-import Link from "next/link";
 import { PublicNavbar } from "@/components/layout/public-navbar";
 import { REGISTER_PAGE } from "@/lib/constants/pages";
+import { ArrowRight, CheckCircle, FileText, Mic, Zap } from "lucide-react";
+import Link from "next/link";
 
 const features = [
   {
@@ -42,7 +42,7 @@ export function LandingPage({ isAuthenticated = false }: LandingPageProps) {
 
       {/* Hero */}
       <section className="mx-auto px-6 py-24 max-w-4xl text-center">
-        <div className="inline-block bg-accent-surface mb-6 px-3 py-1 border border-indigo-500/20 rounded-full font-semibold text-accent text-xs uppercase tracking-wider">
+        <div className="inline-block mb-6 px-3 py-1 border border-indigo-500/20 rounded-full font-semibold text-accent text-xs uppercase tracking-wider bg-accent-surface">
           Powered by OpenAI
         </div>
         <h1 className="font-extrabold text-5xl md:text-6xl leading-tight tracking-tight">
@@ -57,7 +57,7 @@ export function LandingPage({ isAuthenticated = false }: LandingPageProps) {
         <div className="flex justify-center items-center gap-4 mt-8">
           <Link
             href={REGISTER_PAGE}
-            className="flex items-center gap-2 bg-primary hover:bg-primary-hover px-6 py-3 rounded-lg font-semibold text-base transition"
+            className="flex items-center gap-2 bg-primary hover:bg-primary-hover px-6 py-3 rounded-lg font-semibold text-white text-base transition"
           >
             Start for free <ArrowRight size={18} />
           </Link>
@@ -79,7 +79,7 @@ export function LandingPage({ isAuthenticated = false }: LandingPageProps) {
               key={feature.title}
               className="bg-surface/50 p-6 border border-border hover:border-border-hover rounded-xl transition"
             >
-              <div className="flex justify-center items-center bg-accent-surface mb-4 rounded-lg w-10 h-10">
+              <div className="flex justify-center items-center mb-4 rounded-lg w-10 h-10 bg-accent-surface">
                 <feature.icon size={20} className="text-accent" />
               </div>
               <h3 className="mb-2 font-semibold text-lg">{feature.title}</h3>
@@ -98,7 +98,7 @@ export function LandingPage({ isAuthenticated = false }: LandingPageProps) {
               key={i}
               className="flex items-start gap-4 bg-surface/30 p-4 border border-border/50 rounded-lg"
             >
-              <div className="flex justify-center items-center bg-accent-surface mt-0.5 rounded-full w-8 h-8 shrink-0">
+              <div className="flex justify-center items-center mt-0.5 rounded-full w-8 h-8 bg-accent-surface shrink-0">
                 <span className="font-bold text-accent text-sm">{i + 1}</span>
               </div>
               <div className="flex items-center gap-2">
@@ -119,7 +119,7 @@ export function LandingPage({ isAuthenticated = false }: LandingPageProps) {
           </p>
           <Link
             href={REGISTER_PAGE}
-            className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover px-8 py-3 rounded-lg font-semibold transition"
+            className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover px-8 py-3 rounded-lg font-semibold text-white transition"
           >
             Get started for free <ArrowRight size={18} />
           </Link>

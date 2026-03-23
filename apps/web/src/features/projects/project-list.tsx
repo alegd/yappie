@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { FolderOpen, Plus, Loader2, Brain, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { api } from "@/lib/api";
-import { useQuery, invalidateQuery } from "@/hooks/use-query";
 import { PROJECTS_LIST, projectDetail } from "@/lib/constants/endpoints";
 import { NEW_PROJECT_PAGE, editProjectPage } from "@/lib/constants/pages";
+import { Brain, FolderOpen, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { ProjectListResponse } from "./types";
 
 export function ProjectList() {
@@ -27,8 +27,8 @@ export function ProjectList() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 size={24} className="animate-spin text-muted-foreground" />
+      <div className="flex justify-center items-center py-20">
+        <Loader2 size={24} className="text-muted-foreground animate-spin" />
         <span className="ml-2 text-muted-foreground">Loading...</span>
       </div>
     );
@@ -36,11 +36,11 @@ export function ProjectList() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Projects</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="font-bold text-2xl">Projects</h1>
         <Link
           href={NEW_PROJECT_PAGE}
-          className="flex items-center gap-1.5 bg-primary hover:bg-primary-hover px-4 py-2 rounded-lg text-sm font-medium transition"
+          className="flex items-center gap-1.5 bg-primary hover:bg-primary-hover px-4 py-2 rounded-lg font-medium text-white text-sm transition"
           aria-label="New project"
         >
           <Plus size={16} />
@@ -49,10 +49,10 @@ export function ProjectList() {
       </div>
 
       {projects.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <FolderOpen size={48} className="mx-auto mb-4 opacity-50" />
+        <div className="py-20 text-muted-foreground text-center">
+          <FolderOpen size={48} className="opacity-50 mx-auto mb-4" />
           <p>No projects yet.</p>
-          <p className="text-sm mt-1">
+          <p className="mt-1 text-sm">
             Create a project to give AI context for better ticket generation.
           </p>
         </div>
@@ -61,18 +61,18 @@ export function ProjectList() {
           {projects.map((project) => (
             <div
               key={project.id}
-              className="bg-surface/50 border border-border rounded-lg p-4 hover:border-border-hover transition"
+              className="bg-background p-4 border border-border hover:border-border-hover rounded-lg transition"
             >
               <div className="flex items-center gap-3">
                 <FolderOpen size={18} className="text-muted-foreground shrink-0" />
                 <Link href={editProjectPage(project.id)} className="flex-1 min-w-0">
-                  <p className="text-sm font-medium hover:text-accent transition">{project.name}</p>
+                  <p className="font-medium hover:text-accent text-sm transition">{project.name}</p>
                   {project.description && (
-                    <p className="text-xs text-muted-foreground mt-0.5">{project.description}</p>
+                    <p className="mt-0.5 text-muted-foreground text-xs">{project.description}</p>
                   )}
                 </Link>
                 {project.context && (
-                  <span className="flex items-center gap-1 text-xs text-accent bg-accent-surface px-2 py-0.5 rounded">
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded text-accent text-xs bg-accent-surface">
                     <Brain size={12} />
                     AI context
                   </span>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card/Card";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { AUDIO_LIST, audioByProject, PROJECTS_LIST } from "@/lib/constants/endpoints";
 import { audioDetailPage } from "@/lib/constants/pages";
@@ -99,30 +100,32 @@ export function AudioList() {
             const status = statusConfig[audio.status];
             const StatusIcon = status.icon;
             return (
-              <Link
-                key={audio.id}
-                href={audioDetailPage(audio.id)}
-                className="flex items-center gap-4 bg-surface/50 p-4 border border-border hover:border-border-hover rounded-lg transition"
-              >
-                <FileAudio size={20} className="text-muted-foreground shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{audio.fileName}</p>
-                  <p className="mt-0.5 text-muted-foreground text-xs">
-                    {formatSize(audio.fileSize)} · {formatDate(audio.createdAt)}
-                  </p>
-                </div>
-                <Badge variant={status.variant} className="flex items-center gap-1.5">
-                  <StatusIcon
-                    size={12}
-                    className={
-                      audio.status === "TRANSCRIBING" || audio.status === "ANALYZING"
-                        ? "animate-spin"
-                        : ""
-                    }
-                  />
-                  {status.label}
-                </Badge>
-              </Link>
+              <Card>
+                <Link
+                  key={audio.id}
+                  href={audioDetailPage(audio.id)}
+                  className="flex items-center gap-4 p-4 hover:border-border-hover transition"
+                >
+                  <FileAudio size={20} className="text-muted-foreground shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{audio.fileName}</p>
+                    <p className="mt-0.5 text-muted-foreground text-xs">
+                      {formatSize(audio.fileSize)} · {formatDate(audio.createdAt)}
+                    </p>
+                  </div>
+                  <Badge variant={status.variant} className="flex items-center gap-1.5">
+                    <StatusIcon
+                      size={12}
+                      className={
+                        audio.status === "TRANSCRIBING" || audio.status === "ANALYZING"
+                          ? "animate-spin"
+                          : ""
+                      }
+                    />
+                    {status.label}
+                  </Badge>
+                </Link>
+              </Card>
             );
           })}
         </div>

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Upload, Mic, Square, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { AUDIO_UPLOAD } from "@/lib/constants/endpoints";
+import { Loader2, Mic, Square, Upload } from "lucide-react";
+import { useRef, useState } from "react";
 import { AudioRecording } from "./types";
 
 interface AudioUploadProps {
@@ -81,7 +81,7 @@ export function AudioUpload({ projectId, onUploaded }: AudioUploadProps) {
         </Button>
 
         <Button
-          variant={recording ? "danger" : "secondary"}
+          variant={recording ? "danger" : "outlined"}
           onClick={recording ? stopRecording : startRecording}
           disabled={uploading}
         >
@@ -98,7 +98,7 @@ export function AudioUpload({ projectId, onUploaded }: AudioUploadProps) {
         className="hidden"
       />
 
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-red-400 text-sm">{error}</p>}
     </div>
   );
 }
