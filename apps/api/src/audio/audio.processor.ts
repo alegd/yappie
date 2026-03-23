@@ -5,6 +5,7 @@ import { AudioService } from "./audio.service";
 import { AIService } from "../ai/ai.service.js";
 import { TicketsService } from "../tickets/tickets.service";
 import { ProjectsService } from "../projects/projects.service";
+import { AnalyticsService } from "../analytics/analytics.service.js";
 import { STORAGE_ADAPTER, type StorageAdapter } from "../storage/storage.interface.js";
 
 export interface AudioJobData {
@@ -21,6 +22,7 @@ export class AudioProcessor extends WorkerHost {
     private readonly aiService: AIService,
     private readonly ticketsService: TicketsService,
     private readonly projectsService: ProjectsService,
+    private readonly analyticsService: AnalyticsService,
     @Inject(STORAGE_ADAPTER) private readonly storage: StorageAdapter,
   ) {
     super();
@@ -66,6 +68,13 @@ export class AudioProcessor extends WorkerHost {
 
       this.logger.log(`[${audioId}] Completed. ${tickets.length} tickets generated.`);
       await this.audioService.updateStatus(audioId, "COMPLETED");
+
+      if (tickets.length > 0) {
+        await this.analyticsService.track(userId, "ticket.generated", {
+          audioId,
+          count: tickets.length,
+        });
+      }
     } catch (error) {
       this.logger.error(`[${audioId}] Failed: ${error instanceof Error ? error.message : error}`);
       await this.audioService.updateStatus(audioId, "FAILED");

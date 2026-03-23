@@ -22,17 +22,30 @@ function createMockPrisma() {
   };
 }
 
+function createMockAnalyticsService() {
+  return {
+    track: vi.fn().mockResolvedValue({}),
+  };
+}
+
 describe("ExportService", () => {
   let service: ExportService;
   let mockJira: ReturnType<typeof createMockJiraService>;
   let mockTickets: ReturnType<typeof createMockTicketsService>;
   let mockPrisma: ReturnType<typeof createMockPrisma>;
+  let mockAnalytics: ReturnType<typeof createMockAnalyticsService>;
 
   beforeEach(() => {
     mockJira = createMockJiraService();
     mockTickets = createMockTicketsService();
     mockPrisma = createMockPrisma();
-    service = new ExportService(mockJira as never, mockTickets as never, mockPrisma as never);
+    mockAnalytics = createMockAnalyticsService();
+    service = new ExportService(
+      mockJira as never,
+      mockTickets as never,
+      mockPrisma as never,
+      mockAnalytics as never,
+    );
   });
 
   describe("exportOne", () => {

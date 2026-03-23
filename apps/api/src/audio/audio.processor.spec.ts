@@ -28,6 +28,12 @@ function createMockProjectsService() {
   };
 }
 
+function createMockAnalyticsService() {
+  return {
+    track: vi.fn().mockResolvedValue({}),
+  };
+}
+
 function createMockStorageAdapter() {
   return {
     get: vi.fn(),
@@ -40,6 +46,7 @@ describe("AudioProcessor", () => {
   let mockAIService: ReturnType<typeof createMockAIService>;
   let mockTicketsService: ReturnType<typeof createMockTicketsService>;
   let mockProjectsService: ReturnType<typeof createMockProjectsService>;
+  let mockAnalytics: ReturnType<typeof createMockAnalyticsService>;
   let mockStorage: ReturnType<typeof createMockStorageAdapter>;
 
   beforeEach(() => {
@@ -47,6 +54,7 @@ describe("AudioProcessor", () => {
     mockAIService = createMockAIService();
     mockTicketsService = createMockTicketsService();
     mockProjectsService = createMockProjectsService();
+    mockAnalytics = createMockAnalyticsService();
     mockStorage = createMockStorageAdapter();
 
     processor = new AudioProcessor(
@@ -54,6 +62,7 @@ describe("AudioProcessor", () => {
       mockAIService as never,
       mockTicketsService as never,
       mockProjectsService as never,
+      mockAnalytics as never,
       mockStorage as never,
     );
   });

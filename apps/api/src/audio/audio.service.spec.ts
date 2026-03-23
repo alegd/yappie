@@ -28,6 +28,12 @@ function createMockQueue() {
   };
 }
 
+function createMockAnalyticsService() {
+  return {
+    track: vi.fn().mockResolvedValue({}),
+  };
+}
+
 function createMockFile(overrides: Partial<Express.Multer.File> = {}): Express.Multer.File {
   return {
     fieldname: "file",
@@ -49,6 +55,7 @@ describe("AudioService", () => {
   let mockPrisma: ReturnType<typeof createMockPrisma>;
   let mockStorage: ReturnType<typeof createMockStorage>;
   let mockQueue: ReturnType<typeof createMockQueue>;
+  let mockAnalytics: ReturnType<typeof createMockAnalyticsService>;
 
   const userId = "user-1";
 
@@ -56,7 +63,13 @@ describe("AudioService", () => {
     mockPrisma = createMockPrisma();
     mockStorage = createMockStorage();
     mockQueue = createMockQueue();
-    service = new AudioService(mockPrisma as never, mockStorage as never, mockQueue as never);
+    mockAnalytics = createMockAnalyticsService();
+    service = new AudioService(
+      mockPrisma as never,
+      mockStorage as never,
+      mockQueue as never,
+      mockAnalytics as never,
+    );
   });
 
   describe("upload", () => {

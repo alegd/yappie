@@ -3,6 +3,7 @@ import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { STORAGE_ADAPTER, StorageAdapter } from "../storage/storage.interface.js";
+import { AnalyticsService } from "../analytics/analytics.service.js";
 
 const ALLOWED_MIMETYPES = [
   "audio/mpeg",
@@ -25,6 +26,7 @@ export class AudioService {
     private readonly prisma: PrismaService,
     @Inject(STORAGE_ADAPTER) private readonly storage: StorageAdapter,
     @InjectQueue("audio-processing") private readonly audioQueue: Queue,
+    private readonly analyticsService: AnalyticsService,
   ) {}
 
   async upload(file: Express.Multer.File, userId: string, projectId?: string) {
@@ -62,6 +64,13 @@ export class AudioService {
     await this.audioQueue.add("process-audio", {
       audioId: recording.id,
       userId,
+    });
+
+    // 4. Track event
+    await this.analyticsService.track(userId, "audio.uploaded", {
+      audioId: recording.id,
+      fileName: file.originalname,
+      fileSize: file.size,
     });
 
     return recording;

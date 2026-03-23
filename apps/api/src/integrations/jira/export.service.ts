@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { JiraService } from "./jira.service.js";
 import { TicketsService } from "../../tickets/tickets.service.js";
 import { PrismaService } from "../../prisma/prisma.service.js";
+import { AnalyticsService } from "../../analytics/analytics.service.js";
 
 export interface ExportResult {
   ticketId: string;
@@ -15,6 +16,7 @@ export class ExportService {
     private readonly jiraService: JiraService,
     private readonly ticketsService: TicketsService,
     private readonly prisma: PrismaService,
+    private readonly analyticsService: AnalyticsService,
   ) {}
 
   async exportOne(userId: string, ticketId: string, projectKey: string) {
@@ -34,6 +36,11 @@ export class ExportService {
         jiraIssueUrl: jiraIssue.self,
         status: "EXPORTED",
       },
+    });
+
+    await this.analyticsService.track(userId, "ticket.exported", {
+      ticketId,
+      jiraKey: jiraIssue.key,
     });
 
     return jiraIssue;

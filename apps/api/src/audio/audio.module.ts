@@ -6,6 +6,7 @@ import { AudioProcessor } from "./audio.processor.js";
 import { AIModule } from "../ai/ai.module.js";
 import { TicketsModule } from "../tickets/tickets.module.js";
 import { ProjectsModule } from "../projects/projects.module.js";
+import { AnalyticsModule } from "../analytics/analytics.module.js";
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ProjectsModule } from "../projects/projects.module.js";
     AIModule,
     TicketsModule,
     ProjectsModule,
+    AnalyticsModule,
   ],
   controllers: [AudioController],
   providers: [AudioService, AudioProcessor],
