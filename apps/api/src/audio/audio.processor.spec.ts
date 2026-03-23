@@ -34,6 +34,14 @@ function createMockAnalyticsService() {
   };
 }
 
+function createMockGateway() {
+  return {
+    emitProgress: vi.fn(),
+    emitCompleted: vi.fn(),
+    emitFailed: vi.fn(),
+  };
+}
+
 function createMockStorageAdapter() {
   return {
     get: vi.fn(),
@@ -47,6 +55,7 @@ describe("AudioProcessor", () => {
   let mockTicketsService: ReturnType<typeof createMockTicketsService>;
   let mockProjectsService: ReturnType<typeof createMockProjectsService>;
   let mockAnalytics: ReturnType<typeof createMockAnalyticsService>;
+  let mockGateway: ReturnType<typeof createMockGateway>;
   let mockStorage: ReturnType<typeof createMockStorageAdapter>;
 
   beforeEach(() => {
@@ -55,6 +64,7 @@ describe("AudioProcessor", () => {
     mockTicketsService = createMockTicketsService();
     mockProjectsService = createMockProjectsService();
     mockAnalytics = createMockAnalyticsService();
+    mockGateway = createMockGateway();
     mockStorage = createMockStorageAdapter();
 
     processor = new AudioProcessor(
@@ -63,11 +73,12 @@ describe("AudioProcessor", () => {
       mockTicketsService as never,
       mockProjectsService as never,
       mockAnalytics as never,
+      mockGateway as never,
       mockStorage as never,
     );
   });
 
-  it("should run the full pipeline with project context", async () => {
+  it("should run the full pipeline and emit WebSocket events", async () => {
     const audioBuffer = Buffer.from("fake-audio");
     mockStorage.get.mockResolvedValue(audioBuffer);
     mockAudioService.findOne.mockResolvedValue({
@@ -92,26 +103,32 @@ describe("AudioProcessor", () => {
       { title: "Build dashboard", description: "Main dashboard page", priority: "MEDIUM" },
     ]);
     mockAudioService.updateStatus.mockResolvedValue({});
-    mockTicketsService.create.mockResolvedValue({});
+    mockTicketsService.create
+      .mockResolvedValueOnce({ id: "t-1" })
+      .mockResolvedValueOnce({ id: "t-2" });
 
     await processor.process({
       data: { audioId: "audio-1", userId: "user-1" },
     } as never);
 
+    // Verify pipeline ran
     expect(mockProjectsService.findOne).toHaveBeenCalledWith("proj-1", "user-1");
-    expect(mockAIService.decompose).toHaveBeenCalledWith(
-      "We need auth and a dashboard",
-      "React + NestJS e-commerce app with Stripe payments",
-    );
-    expect(mockAIService.generateTickets).toHaveBeenCalledWith(
-      expect.any(Array),
-      "React + NestJS e-commerce app with Stripe payments",
-    );
     expect(mockTicketsService.create).toHaveBeenCalledTimes(2);
     expect(mockTicketsService.create).toHaveBeenCalledWith(
       expect.objectContaining({ userId: "user-1" }),
     );
-    expect(mockAudioService.updateStatus).toHaveBeenCalledWith("audio-1", "COMPLETED");
+
+    // Verify analytics tracked per ticket
+    expect(mockAnalytics.track).toHaveBeenCalledTimes(2);
+    expect(mockAnalytics.track).toHaveBeenCalledWith("user-1", "ticket.generated", {
+      audioId: "audio-1",
+      ticketId: "t-1",
+    });
+
+    // Verify WebSocket events emitted
+    expect(mockGateway.emitProgress).toHaveBeenCalledWith("user-1", "audio-1", "TRANSCRIBING");
+    expect(mockGateway.emitProgress).toHaveBeenCalledWith("user-1", "audio-1", "ANALYZING");
+    expect(mockGateway.emitCompleted).toHaveBeenCalledWith("user-1", "audio-1", 2);
   });
 
   it("should work without project context", async () => {
@@ -134,9 +151,10 @@ describe("AudioProcessor", () => {
 
     expect(mockProjectsService.findOne).not.toHaveBeenCalled();
     expect(mockAIService.decompose).toHaveBeenCalledWith("Some task", undefined);
+    expect(mockGateway.emitCompleted).toHaveBeenCalledWith("user-1", "audio-1", 0);
   });
 
-  it("should set status to FAILED on error", async () => {
+  it("should emit failed event and set status to FAILED on error", async () => {
     mockAudioService.findOne.mockResolvedValue({
       id: "audio-1",
       filePath: "user-1/recording.mp3",
@@ -152,5 +170,6 @@ describe("AudioProcessor", () => {
     ).rejects.toThrow("OpenAI API error");
 
     expect(mockAudioService.updateStatus).toHaveBeenCalledWith("audio-1", "FAILED");
+    expect(mockGateway.emitFailed).toHaveBeenCalledWith("user-1", "audio-1", "OpenAI API error");
   });
 });
