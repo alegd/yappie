@@ -22,7 +22,8 @@
         "name": "next"
       }
     ],
-    "allowJs": true
+    "allowJs": true,
+    "types": ["@testing-library/jest-dom/vitest"]
   },
   "include": [
     "src",
