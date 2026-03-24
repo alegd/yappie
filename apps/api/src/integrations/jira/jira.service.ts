@@ -158,6 +158,11 @@ export class JiraService {
       throw new UnauthorizedException("Jira not connected. Please authorize first.");
     }
 
+    // Auto-refresh if token expired or about to expire (1 min buffer)
+    if (integration.tokenExpiresAt && integration.tokenExpiresAt.getTime() < Date.now() + 60_000) {
+      return this.refreshAccessToken(userId);
+    }
+
     return integration;
   }
 
