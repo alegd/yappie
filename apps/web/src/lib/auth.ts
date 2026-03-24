@@ -4,38 +4,47 @@ import { LOGIN_PAGE } from "@/lib/constants/pages";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-// Refresh 60 seconds before actual expiry to avoid edge cases
-const ACCESS_TOKEN_MAX_AGE = 14 * 60 * 1000; // 14 min (backend JWT_EXPIRATION is 15m)
+// Refresh 2 minutes before actual expiry to avoid edge cases
+const ACCESS_TOKEN_MAX_AGE = 13 * 60 * 1000; // 13 min (backend JWT_EXPIRATION is 15m)
+
+// Mutex to prevent concurrent refresh calls (token rotation race condition)
+let refreshPromise: Promise<Record<string, unknown>> | null = null;
 
 async function refreshAccessToken(token: Record<string, unknown>) {
-  try {
-    console.log("[Auth] Refreshing access token...");
-
-    const response = await fetch(`${API_URL}/api/v1/auth/refresh`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken: token.refreshToken }),
-    });
-
-    if (!response.ok) {
-      console.log("[Auth] Refresh failed:", response.status);
-      return { ...token, error: "RefreshTokenExpired" };
-    }
-
-    const data = await response.json();
-    console.log("[Auth] Token refreshed successfully");
-
-    return {
-      ...token,
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken,
-      accessTokenExpires: Date.now() + ACCESS_TOKEN_MAX_AGE,
-      error: undefined,
-    };
-  } catch (err) {
-    console.error("[Auth] Refresh error:", err);
-    return { ...token, error: "RefreshTokenError" };
+  // If a refresh is already in progress, wait for it
+  if (refreshPromise) {
+    return refreshPromise;
   }
+
+  refreshPromise = (async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/v1/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: token.refreshToken }),
+      });
+
+      if (!response.ok) {
+        return { ...token, error: "RefreshTokenExpired" };
+      }
+
+      const data = await response.json();
+
+      return {
+        ...token,
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        accessTokenExpires: Date.now() + ACCESS_TOKEN_MAX_AGE,
+        error: undefined,
+      };
+    } catch {
+      return { ...token, error: "RefreshTokenError" };
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -73,7 +82,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       // Initial sign in — store tokens and expiry
       if (user) {
-        console.log("[Auth] Initial sign in, setting tokens");
         return {
           ...token,
           accessToken: user.accessToken,
@@ -87,7 +95,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const expiresAt = token.accessTokenExpires as number | undefined;
 
       if (expiresAt && Date.now() >= expiresAt) {
-        console.log("[Auth] Token expired, refreshing...");
         return refreshAccessToken(token);
       }
 
