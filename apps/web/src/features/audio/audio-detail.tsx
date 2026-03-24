@@ -4,16 +4,16 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@/hooks/use-query";
 import { audioDetail } from "@/lib/constants/endpoints";
 import { AUDIOS_PAGE } from "@/lib/constants/pages";
-import { AlertCircle, ArrowLeft, CheckCircle2, Clock, FileText, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, FileText, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { AudioRecording } from "./types";
 
 const statusConfig = {
-  PENDING: { label: "Pending", variant: "default" as const, icon: Clock },
-  TRANSCRIBING: { label: "Transcribing", variant: "info" as const, icon: Loader2 },
-  ANALYZING: { label: "Analyzing", variant: "purple" as const, icon: Loader2 },
-  COMPLETED: { label: "Completed", variant: "success" as const, icon: CheckCircle2 },
-  FAILED: { label: "Failed", variant: "danger" as const, icon: AlertCircle },
+  PENDING: { label: "Pending", variant: "default" as const },
+  TRANSCRIBING: { label: "Transcribing", variant: "info" as const },
+  ANALYZING: { label: "Analyzing", variant: "purple" as const },
+  COMPLETED: { label: "Completed", variant: "success" as const },
+  FAILED: { label: "Failed", variant: "danger" as const },
 };
 
 const priorityVariants: Record<string, "default" | "warning" | "orange" | "danger"> = {
@@ -66,7 +66,6 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
   }
 
   const status = statusConfig[audio.status];
-  const StatusIcon = status.icon;
 
   return (
     <div>
@@ -81,11 +80,7 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
             {new Date(audio.createdAt).toLocaleString()}
           </p>
         </div>
-        <Badge
-          variant={status.variant}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-        >
-          <StatusIcon size={12} />
+        <Badge variant={status.variant} className="flex items-center gap-1.5 px-2.5 py-1 ">
           {status.label}
         </Badge>
       </div>
@@ -93,9 +88,7 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
       {/* Transcription */}
       {audio.transcription && (
         <div className="mb-6">
-          <h2 className="mb-2 font-semibold text-muted text-sm uppercase tracking-wider">
-            Transcription
-          </h2>
+          <h2 className="mb-2 font-semibold tracking-wider">Transcription</h2>
           <div className="bg-surface/50 p-4 border border-border rounded-lg">
             <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap">
               {audio.transcription}
@@ -106,7 +99,7 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
 
       {/* Tickets */}
       <div>
-        <h2 className="mb-2 font-semibold text-muted text-sm uppercase tracking-wider">
+        <h2 className="mb-2 font-semibold text-foreground/50 text-sm tracking-wider">
           Generated Tickets ({audio.tickets?.length || 0})
         </h2>
 
@@ -122,12 +115,16 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
                 key={ticket.id}
                 className="bg-surface/50 p-4 border border-border hover:border-border-hover rounded-lg transition"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm">{ticket.title}</p>
+                <div className="flex items-center gap-6">
+                  <div className="flex-1 min-w-0 flex flex-col gap-1">
+                    <p className="font-medium">{ticket.title}</p>
+                    <p className="text-sm text-foreground/50 truncate">{ticket.description}</p>
                   </div>
-                  <Badge variant={priorityVariants[ticket.priority]}>{ticket.priority}</Badge>
-                  <Badge variant={ticketStatusVariants[ticket.status]}>{ticket.status}</Badge>
+
+                  <div className="flex items-center gap-3">
+                    <Badge variant={priorityVariants[ticket.priority]}>{ticket.priority}</Badge>
+                    <Badge variant={ticketStatusVariants[ticket.status]}>{ticket.status}</Badge>
+                  </div>
                 </div>
               </div>
             ))}
