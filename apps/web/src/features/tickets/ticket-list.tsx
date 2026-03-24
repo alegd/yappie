@@ -4,8 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card/Card";
 import { DataTable } from "@/components/ui/data-table";
-import { useTableOptions } from "@/hooks/use-table-options";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
+import { useTableOptions } from "@/hooks/use-table-options";
 import { apiFetcher } from "@/lib/api-fetcher";
 import {
   JIRA_STATUS,
@@ -18,9 +18,17 @@ import {
 import { DELETE, POST } from "@/lib/constants/http";
 import { ticketDetailPage } from "@/lib/constants/pages";
 import { ColumnDef, RowSelectionState } from "@tanstack/react-table";
-import { CheckCircle2, ExternalLink, FileText, Loader2, Trash2, Upload } from "lucide-react";
+import {
+  CheckCircle2,
+  ExternalLink,
+  FileText,
+  Loader2,
+  MoreVertical,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { JiraProjectSelect } from "./components/jira-project-select";
 import { Ticket, TicketListResponse } from "./types";
 
@@ -41,6 +49,99 @@ const statusVariants: Record<string, "default" | "success" | "info" | "danger"> 
 interface JiraStatus {
   connected: boolean;
   siteName: string | null;
+}
+
+function ActionsMenu({
+  ticket,
+  isActing,
+  onApprove,
+  onExport,
+  onDelete,
+  canExport,
+}: {
+  ticket: Ticket;
+  isActing: boolean;
+  onApprove: (id: string) => void;
+  onExport: (id: string) => void;
+  onDelete: (id: string) => void;
+  canExport: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(!open);
+        }}
+        className="p-1.5 rounded-md hover:bg-surface-hover transition"
+        aria-label="Actions"
+      >
+        <MoreVertical size={16} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 z-50 mt-1 w-40 bg-background border border-border rounded-md shadow-lg py-1">
+          {ticket.status === "DRAFT" && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onApprove(ticket.id);
+                setOpen(false);
+              }}
+              disabled={isActing}
+              className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-surface-hover transition disabled:opacity-50"
+            >
+              {isActing ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <CheckCircle2 size={14} />
+              )}
+              Approve
+            </button>
+          )}
+          {ticket.status === "APPROVED" && canExport && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onExport(ticket.id);
+                setOpen(false);
+              }}
+              disabled={isActing}
+              className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-surface-hover transition disabled:opacity-50"
+            >
+              {isActing ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+              Export to Jira
+            </button>
+          )}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(ticket.id);
+              setOpen(false);
+            }}
+            disabled={isActing}
+            className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-destructive hover:bg-surface-hover transition disabled:opacity-50"
+          >
+            <Trash2 size={14} />
+            Delete
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function TicketList() {
@@ -209,13 +310,13 @@ export function TicketList() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1 text-blue-400 hover:text-blue-300 text-xs transition"
+            className="flex items-center gap-2  hover:text-blue-500 text-sm transition"
           >
             {row.original.jiraIssueKey}
-            <ExternalLink size={10} />
+            <ExternalLink size={14} />
           </a>
         ) : (
-          <span className="text-muted-foreground text-xs">—</span>
+          <span className="text-muted-foreground text-sm">—</span>
         ),
     },
     {
@@ -226,55 +327,14 @@ export function TicketList() {
         const isActing = acting === ticket.id;
 
         return (
-          <div className="flex items-center gap-1">
-            {ticket.status === "DRAFT" && (
-              <Button
-                variant="outlined"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleApprove(ticket.id);
-                }}
-                disabled={isActing}
-                aria-label={`Approve ${ticket.title}`}
-              >
-                {isActing ? (
-                  <Loader2 size={12} className="animate-spin" />
-                ) : (
-                  <CheckCircle2 size={12} />
-                )}
-                Approve
-              </Button>
-            )}
-            {ticket.status === "APPROVED" && isJiraConnected && jiraProjectKey && (
-              <Button
-                variant="outlined"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleExport(ticket.id);
-                }}
-                disabled={isActing}
-                aria-label={`Export ${ticket.title}`}
-              >
-                {isActing ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                Export
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete(ticket.id);
-              }}
-              disabled={isActing}
-              className="hover:text-red-400"
-              aria-label={`Delete ${ticket.title}`}
-            >
-              <Trash2 size={12} />
-            </Button>
-          </div>
+          <ActionsMenu
+            ticket={ticket}
+            isActing={isActing}
+            onApprove={handleApprove}
+            onExport={handleExport}
+            onDelete={handleDelete}
+            canExport={isJiraConnected && !!jiraProjectKey}
+          />
         );
       },
     },
