@@ -4,6 +4,9 @@ import { ExportService } from "./export.service.js";
 function createMockJiraService() {
   return {
     createIssue: vi.fn(),
+    getStatus: vi
+      .fn()
+      .mockResolvedValue({ connected: true, siteName: "mysite", connectedAt: null }),
   };
 }
 
@@ -72,7 +75,7 @@ describe("ExportService", () => {
         where: { id: "ticket-1" },
         data: {
           jiraIssueKey: "PROJ-42",
-          jiraIssueUrl: "https://mysite.atlassian.net/rest/api/3/issue/10001",
+          jiraIssueUrl: "https://mysite.atlassian.net/browse/PROJ-42",
           status: "EXPORTED",
         },
       });

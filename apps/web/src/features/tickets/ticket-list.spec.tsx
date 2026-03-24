@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TicketList } from "./ticket-list";
 
@@ -44,29 +43,26 @@ const mockTickets = {
   data: [
     {
       id: "t-1",
-      title: "Fix Safari login bug",
+      title: "Fix bug",
       status: "DRAFT",
       priority: "HIGH",
       jiraIssueKey: null,
-      jiraIssueUrl: null,
       createdAt: "2026-03-21T10:00:00.000Z",
     },
     {
       id: "t-2",
-      title: "Update button design",
+      title: "Add feature",
       status: "APPROVED",
       priority: "MEDIUM",
       jiraIssueKey: null,
-      jiraIssueUrl: null,
       createdAt: "2026-03-21T10:01:00.000Z",
     },
     {
       id: "t-3",
-      title: "Add dark mode",
+      title: "Dark mode",
       status: "EXPORTED",
       priority: "LOW",
       jiraIssueKey: "PROJ-42",
-      jiraIssueUrl: "https://jira/42",
       createdAt: "2026-03-21T10:02:00.000Z",
     },
   ],
@@ -75,21 +71,16 @@ const mockTickets = {
   limit: 50,
 };
 
-interface JiraMock {
-  connected: boolean;
-  siteName: string | null;
-}
-const jiraConnected: JiraMock = { connected: true, siteName: "My Site" };
-const jiraDisconnected: JiraMock = { connected: false, siteName: null };
+const jiraConnected = { connected: true, siteName: "My Site" };
 
-function setupWithTickets(jiraStatus = jiraConnected) {
+function setupWithTickets() {
   let callIndex = 0;
   mockUseQuery.mockImplementation(() => {
     const idx = callIndex++;
     if (idx % 2 === 0) {
       return { data: mockTickets, error: undefined, isLoading: false, mutate: vi.fn() };
     }
-    return { data: jiraStatus, error: undefined, isLoading: false, mutate: vi.fn() };
+    return { data: jiraConnected, error: undefined, isLoading: false, mutate: vi.fn() };
   });
 }
 
@@ -98,7 +89,16 @@ describe("TicketList", () => {
     vi.clearAllMocks();
   });
 
-  it("should show loading state initially", () => {
+  it("should render DataTable with ticket data", () => {
+    setupWithTickets();
+    render(<TicketList />);
+
+    const table = screen.getByTestId("data-table");
+    expect(table).toBeInTheDocument();
+    expect(table).toHaveAttribute("data-rows", "3");
+  });
+
+  it("should pass loading state to DataTable", () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       error: undefined,
@@ -106,16 +106,9 @@ describe("TicketList", () => {
       mutate: vi.fn(),
     });
     render(<TicketList />);
-    expect(screen.getByText(/loading/i)).toBeInTheDocument();
-  });
 
-  it("should display tickets after loading", () => {
-    setupWithTickets();
-    render(<TicketList />);
-
-    expect(screen.getByText("Fix Safari login bug")).toBeInTheDocument();
-    expect(screen.getByText("Update button design")).toBeInTheDocument();
-    expect(screen.getByText("Add dark mode")).toBeInTheDocument();
+    const table = screen.getByTestId("data-table");
+    expect(table).toHaveAttribute("data-loading", "true");
   });
 
   it("should show empty state when no tickets", () => {
@@ -130,7 +123,7 @@ describe("TicketList", () => {
           mutate: vi.fn(),
         };
       }
-      return { data: jiraDisconnected, error: undefined, isLoading: false, mutate: vi.fn() };
+      return { data: jiraConnected, error: undefined, isLoading: false, mutate: vi.fn() };
     });
     render(<TicketList />);
     expect(screen.getByText(/no tickets/i)).toBeInTheDocument();
@@ -259,8 +252,7 @@ describe("TicketList", () => {
     expect(screen.getByText("Export 1")).toBeInTheDocument();
   });
 
-  it("should call bulk approve for all selected DRAFT tickets", async () => {
-    const user = userEvent.setup();
+  it("should define 5 columns", () => {
     setupWithTickets();
     mockApiFetcher.mockResolvedValue({});
     render(<TicketList />);
@@ -275,8 +267,7 @@ describe("TicketList", () => {
     });
   });
 
-  it("should call bulk export for all selected APPROVED tickets", async () => {
-    const user = userEvent.setup();
+  it("should render page title", () => {
     setupWithTickets();
     mockApiFetcher.mockResolvedValue({});
     render(<TicketList />);

@@ -79,7 +79,7 @@ export function AudioUpload({ projectId, onUploaded }: AudioUploadProps) {
   };
 
   return (
-    <div className="space-y-3">
+    <div>
       <div className="flex gap-3">
         <Button onClick={() => fileInputRef.current?.click()} disabled={uploading || recording}>
           {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
