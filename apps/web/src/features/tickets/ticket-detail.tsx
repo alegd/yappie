@@ -154,7 +154,7 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
   }
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Link
@@ -172,12 +172,17 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={handleDelete} className="hover:text-red-400">
+          <Button
+            variant="outlined"
+            size="sm"
+            onClick={handleDelete}
+            className="hover:text-red-400"
+          >
             <Trash2 size={14} />
             Delete
           </Button>
           {!editing && ticket.status === "DRAFT" && (
-            <Button variant="ghost" size="sm" onClick={startEditing}>
+            <Button variant="outlined" size="sm" onClick={startEditing}>
               <Pencil size={14} />
               Edit
             </Button>
@@ -223,9 +228,7 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
 
       {/* Description */}
       <div className="mb-6">
-        <h2 className="mb-2 font-semibold text-muted text-sm uppercase tracking-wider">
-          Description
-        </h2>
+        <h2 className="mb-2 font-medium text-foreground/75 text-sm tracking-wider">Description</h2>
         {editing ? (
           <textarea
             value={description}

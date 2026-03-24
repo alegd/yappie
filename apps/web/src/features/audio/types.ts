@@ -1,3 +1,5 @@
+import { Ticket } from "../tickets/types";
+
 export interface AudioRecording {
   id: string;
   fileName: string;
@@ -12,12 +14,7 @@ export interface AudioRecording {
   projectId: string | null;
   createdAt: string;
   updatedAt: string;
-  tickets?: Array<{
-    id: string;
-    title: string;
-    status: string;
-    priority: string;
-  }>;
+  tickets?: Array<Ticket>;
 }
 
 export interface AudioListResponse {

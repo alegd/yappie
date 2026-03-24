@@ -20,10 +20,10 @@ import { ticketDetailPage } from "@/lib/constants/pages";
 import { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import {
   CheckCircle2,
-  ExternalLink,
   FileText,
   Loader2,
   MoreVertical,
+  SquareArrowOutUpRightIcon,
   Trash2,
   Upload,
 } from "lucide-react";
@@ -310,10 +310,10 @@ export function TicketList() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-2  hover:text-blue-500 text-sm transition"
+            className="flex items-center gap-2 hover:text-blue-500 text-sm transition"
           >
             {row.original.jiraIssueKey}
-            <ExternalLink size={14} />
+            <SquareArrowOutUpRightIcon size={14} />
           </a>
         ) : (
           <span className="text-muted-foreground text-sm">—</span>
@@ -343,15 +343,16 @@ export function TicketList() {
   const selectedCount = selectedIds.length;
 
   const toolbar = (
-    <div className="flex justify-between items-center mb-4">
+    <div className="flex justify-between items-center p-4 pb-0 w-full">
       <div className="flex items-center gap-4">
         {isJiraConnected && (
           <JiraProjectSelect value={jiraProjectKey} onChange={setJiraProjectKey} />
         )}
       </div>
+
       {selectedCount > 0 && (
         <div className="flex items-center gap-3">
-          <span className="text-muted text-sm">{selectedCount} selected</span>
+          <span className="text-foreground/75 text-sm">{selectedCount} selected</span>
           {draftSelected.length > 0 && (
             <Button
               variant="outlined"
@@ -360,9 +361,9 @@ export function TicketList() {
               disabled={bulkActing === "approve"}
             >
               {bulkActing === "approve" ? (
-                <Loader2 size={12} className="animate-spin" />
+                <Loader2 size={16} className="animate-spin" />
               ) : (
-                <CheckCircle2 size={12} />
+                <CheckCircle2 size={16} />
               )}
               Approve {draftSelected.length}
             </Button>
@@ -375,21 +376,22 @@ export function TicketList() {
               disabled={bulkActing === "export"}
             >
               {bulkActing === "export" ? (
-                <Loader2 size={12} className="animate-spin" />
+                <Loader2 size={16} className="animate-spin" />
               ) : (
-                <Upload size={12} />
+                <Upload size={16} />
               )}
               Export {approvedSelected.length}
             </Button>
           )}
           <Button
-            variant="ghost"
+            variant="outlined"
             size="sm"
             onClick={handleBulkDelete}
             disabled={bulkActing === "delete"}
             className="hover:text-red-400"
           >
-            <Trash2 size={12} />
+            <Trash2 size={16} />
+            Delete
           </Button>
         </div>
       )}
