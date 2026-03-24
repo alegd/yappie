@@ -12,6 +12,7 @@ import {
   X,
   Save,
   Trash2,
+  ExternalLink,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useQuery, invalidateQuery } from "@/hooks/use-query";
@@ -262,7 +263,15 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
         {ticket.jiraIssueKey && (
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Jira</span>
-            <span className="text-blue-400">{ticket.jiraIssueKey}</span>
+            <a
+              href={ticket.jiraIssueUrl || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 flex items-center gap-1 transition"
+            >
+              {ticket.jiraIssueKey}
+              <ExternalLink size={12} />
+            </a>
           </div>
         )}
       </div>

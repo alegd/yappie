@@ -8,11 +8,12 @@ import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { useTableOptions } from "@/hooks/use-table-options";
 import { api } from "@/lib/api";
 import {
-  JIRA_STATUS,
   JIRA_PROJECTS,
+  JIRA_STATUS,
   TICKETS_EXPORT_BULK,
   TICKETS_LIST,
   ticketApprove,
+  ticketDetail,
   ticketExport,
 } from "@/lib/constants/endpoints";
 import { ticketDetailPage } from "@/lib/constants/pages";
@@ -162,7 +163,7 @@ export function TicketList() {
           type="checkbox"
           checked={table.getIsAllRowsSelected()}
           onChange={table.getToggleAllRowsSelectedHandler()}
-          className="rounded border-zinc-600"
+          className="border-zinc-600 rounded"
         />
       ),
       cell: ({ row }) => (
@@ -171,7 +172,7 @@ export function TicketList() {
           checked={row.getIsSelected()}
           onChange={row.getToggleSelectedHandler()}
           onClick={(e) => e.stopPropagation()}
-          className="rounded border-zinc-600"
+          className="border-zinc-600 rounded"
         />
       ),
       enableSorting: false,
@@ -208,10 +209,16 @@ export function TicketList() {
       header: "Jira",
       cell: ({ row }) =>
         row.original.jiraIssueKey ? (
-          <span className="flex items-center gap-1 text-blue-400 text-xs">
+          <a
+            href={row.original.jiraIssueUrl || "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1 text-blue-400 hover:text-blue-300 text-xs transition"
+          >
             {row.original.jiraIssueKey}
             <ExternalLink size={10} />
-          </span>
+          </a>
         ) : (
           <span className="text-muted-foreground text-xs">—</span>
         ),
@@ -292,7 +299,7 @@ export function TicketList() {
   }
 
   const toolbar = (
-    <div className="flex items-center justify-between w-full">
+    <div className="flex justify-between items-center w-full">
       <div className="flex items-center gap-3">
         {selectedIds.length > 0 && (
           <span className="text-muted text-sm">{selectedIds.length} selected</span>
@@ -347,7 +354,7 @@ export function TicketList() {
         <select
           value={jiraProjectKey}
           onChange={(e) => setJiraProjectKey(e.target.value)}
-          className="bg-surface px-3 py-1.5 border border-border-hover rounded-lg text-sm focus:outline-none focus:border-primary transition"
+          className="bg-surface px-3 py-1.5 border border-border-hover focus:border-primary rounded-lg focus:outline-none text-sm transition"
           aria-label="Jira project"
         >
           <option value="">Select Jira project</option>
