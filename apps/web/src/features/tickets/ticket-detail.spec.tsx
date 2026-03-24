@@ -3,14 +3,10 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TicketDetail } from "./ticket-detail";
 
-const { mockUseQuery, mockInvalidateQuery } = vi.hoisted(() => ({
+const { mockUseQuery, mockInvalidateQuery, mockApiFetcher } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
   mockInvalidateQuery: vi.fn(),
-}));
-
-const { mockPost, mockPatch } = vi.hoisted(() => ({
-  mockPost: vi.fn(),
-  mockPatch: vi.fn(),
+  mockApiFetcher: vi.fn(),
 }));
 
 vi.mock("@/hooks/use-query", () => ({
@@ -18,8 +14,8 @@ vi.mock("@/hooks/use-query", () => ({
   invalidateQuery: mockInvalidateQuery,
 }));
 
-vi.mock("@/lib/api", () => ({
-  api: { post: mockPost, patch: mockPatch },
+vi.mock("@/lib/api-fetcher", () => ({
+  apiFetcher: mockApiFetcher,
 }));
 
 vi.mock("next/link", () => ({
@@ -27,6 +23,20 @@ vi.mock("next/link", () => ({
     <a href={href as string} {...props}>
       {children as React.ReactNode}
     </a>
+  ),
+}));
+
+vi.mock("./components/jira-project-select", () => ({
+  JiraProjectSelect: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+    <select
+      data-testid="jira-project-select"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      aria-label="Jira project"
+    >
+      <option value="">Select project</option>
+      <option value="YAP">YAP</option>
+    </select>
   ),
 }));
 
@@ -134,20 +144,20 @@ describe("TicketDetail", () => {
   it("should call approve API when Approve clicked", async () => {
     const user = userEvent.setup();
     setupMocks();
-    mockPost.mockResolvedValue({});
+    mockApiFetcher.mockResolvedValue({});
     render(<TicketDetail ticketId="t-1" />);
 
     await user.click(screen.getByRole("button", { name: /approve/i }));
 
     await waitFor(() => {
-      expect(mockPost).toHaveBeenCalledWith("/tickets/t-1/approve");
+      expect(mockApiFetcher).toHaveBeenCalledWith("/v1/tickets/t-1/approve", { method: "POST" });
     });
   });
 
   it("should enter edit mode and save changes", async () => {
     const user = userEvent.setup();
     setupMocks();
-    mockPatch.mockResolvedValue({});
+    mockApiFetcher.mockResolvedValue({});
     render(<TicketDetail ticketId="t-1" />);
 
     await user.click(screen.getByRole("button", { name: /edit/i }));
@@ -159,9 +169,12 @@ describe("TicketDetail", () => {
     await user.click(screen.getByRole("button", { name: /save/i }));
 
     await waitFor(() => {
-      expect(mockPatch).toHaveBeenCalledWith(
-        "/tickets/t-1",
-        expect.objectContaining({ title: "Updated title" }),
+      expect(mockApiFetcher).toHaveBeenCalledWith(
+        "/v1/tickets/t-1",
+        expect.objectContaining({
+          data: expect.objectContaining({ title: "Updated title" }),
+          method: "PATCH",
+        }),
       );
     });
   });

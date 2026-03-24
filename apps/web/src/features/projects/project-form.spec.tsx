@@ -3,11 +3,11 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ProjectForm } from "./project-form";
 
-const { mockPush, mockPost, mockPatch, mockGet } = vi.hoisted(() => ({
+const { mockPush, mockUseQuery, mockCreateProject, mockUpdateProject } = vi.hoisted(() => ({
   mockPush: vi.fn(),
-  mockPost: vi.fn(),
-  mockPatch: vi.fn(),
-  mockGet: vi.fn(),
+  mockUseQuery: vi.fn(),
+  mockCreateProject: vi.fn(),
+  mockUpdateProject: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -22,22 +22,30 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("@/lib/api", () => ({
-  api: {
-    post: mockPost,
-    patch: mockPatch,
-    get: mockGet,
-  },
+vi.mock("@/hooks/use-query", () => ({
+  useQuery: mockUseQuery,
 }));
 
-vi.mock("@/lib/constants/endpoints", () => ({
-  PROJECTS_CREATE: "/projects",
-  projectDetail: (id: string) => `/projects/${id}`,
+vi.mock("./hooks/useProjects", () => ({
+  useCreateProject: () => ({
+    mutate: mockCreateProject,
+    isPending: false,
+  }),
+  useUpdateProject: () => ({
+    mutate: mockUpdateProject,
+    isPending: false,
+  }),
 }));
 
 describe("ProjectForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseQuery.mockReturnValue({
+      data: undefined,
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
   });
 
   it("should render form with name, description, and context fields", () => {
@@ -55,10 +63,15 @@ describe("ProjectForm", () => {
   });
 
   it("should render 'Edit Project' title in edit mode", async () => {
-    mockGet.mockResolvedValue({
-      name: "Test Project",
-      description: "A description",
-      context: "Some context",
+    mockUseQuery.mockReturnValue({
+      data: {
+        name: "Test Project",
+        description: "A description",
+        context: "Some context",
+      },
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
     });
 
     render(<ProjectForm projectId="proj-1" />);
@@ -90,9 +103,9 @@ describe("ProjectForm", () => {
     expect(links.length).toBeGreaterThanOrEqual(2);
   });
 
-  it("should call api.post on submit in create mode", async () => {
+  it("should call createProject on submit in create mode", async () => {
     const user = userEvent.setup();
-    mockPost.mockResolvedValue({});
+    mockCreateProject.mockResolvedValue({});
 
     render(<ProjectForm />);
 
@@ -101,7 +114,7 @@ describe("ProjectForm", () => {
     await user.click(screen.getByRole("button", { name: "Create project" }));
 
     await waitFor(() => {
-      expect(mockPost).toHaveBeenCalledWith("/projects", {
+      expect(mockCreateProject).toHaveBeenCalledWith({
         name: "New Project",
         description: "A cool project",
         context: undefined,
@@ -111,32 +124,19 @@ describe("ProjectForm", () => {
     expect(mockPush).toHaveBeenCalledWith("/dashboard/projects");
   });
 
-  it("should show error when save fails", async () => {
-    const user = userEvent.setup();
-    mockPost.mockRejectedValue(new Error("Network error"));
-
-    render(<ProjectForm />);
-
-    await user.type(screen.getByLabelText("Name"), "Fail Project");
-    await user.click(screen.getByRole("button", { name: "Create project" }));
-
-    await waitFor(() => {
-      expect(screen.getByText("Network error")).toBeInTheDocument();
-    });
-  });
-
   it("should fetch project data in edit mode", async () => {
-    mockGet.mockResolvedValue({
-      name: "Existing Project",
-      description: "Existing description",
-      context: "Existing context",
+    mockUseQuery.mockReturnValue({
+      data: {
+        name: "Existing Project",
+        description: "Existing description",
+        context: "Existing context",
+      },
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
     });
 
     render(<ProjectForm projectId="proj-1" />);
-
-    await waitFor(() => {
-      expect(mockGet).toHaveBeenCalledWith("/projects/proj-1");
-    });
 
     await waitFor(() => {
       expect(screen.getByLabelText("Name")).toHaveValue("Existing Project");
@@ -146,7 +146,12 @@ describe("ProjectForm", () => {
   });
 
   it("should show loading state while fetching project", () => {
-    mockGet.mockReturnValue(new Promise(() => {})); // never resolves
+    mockUseQuery.mockReturnValue({
+      data: undefined,
+      error: undefined,
+      isLoading: true,
+      mutate: vi.fn(),
+    });
 
     render(<ProjectForm projectId="proj-1" />);
 

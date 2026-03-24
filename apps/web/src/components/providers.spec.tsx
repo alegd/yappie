@@ -12,6 +12,10 @@ vi.mock("next-themes", () => ({
   ThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+vi.mock("@/config/swr.config", () => ({
+  SwrConfig: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 describe("Providers", () => {
   beforeEach(() => {
     vi.clearAllMocks();

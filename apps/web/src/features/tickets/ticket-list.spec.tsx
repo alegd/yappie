@@ -3,13 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TicketList } from "./ticket-list";
 
-const { mockUseQuery, mockInvalidateQuery } = vi.hoisted(() => ({
+const { mockUseQuery, mockInvalidateQuery, mockApiFetcher } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
   mockInvalidateQuery: vi.fn(),
-}));
-
-const { mockPost } = vi.hoisted(() => ({
-  mockPost: vi.fn(),
+  mockApiFetcher: vi.fn(),
 }));
 
 vi.mock("@/hooks/use-query", () => ({
@@ -17,8 +14,30 @@ vi.mock("@/hooks/use-query", () => ({
   invalidateQuery: mockInvalidateQuery,
 }));
 
-vi.mock("@/lib/api", () => ({
-  api: { post: mockPost },
+vi.mock("@/lib/api-fetcher", () => ({
+  apiFetcher: mockApiFetcher,
+}));
+
+vi.mock("./components/jira-project-select", () => ({
+  JiraProjectSelect: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+    <select
+      data-testid="jira-project-select"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      aria-label="Jira project"
+    >
+      <option value="">Select project</option>
+      <option value="YAP">YAP</option>
+    </select>
+  ),
+}));
+
+vi.mock("next/link", () => ({
+  default: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 const mockTickets = {
@@ -138,9 +157,15 @@ describe("TicketList", () => {
     expect(screen.getByRole("button", { name: /approve fix safari/i })).toBeInTheDocument();
   });
 
-  it("should show Export button for APPROVED tickets when Jira connected", () => {
+  it("should show Export button for APPROVED tickets when Jira connected and project selected", async () => {
+    const user = userEvent.setup();
     setupWithTickets();
     render(<TicketList />);
+
+    // Select a Jira project to make export buttons visible
+    const select = screen.getByTestId("jira-project-select");
+    await user.selectOptions(select, "YAP");
+
     expect(screen.getByRole("button", { name: /export update button/i })).toBeInTheDocument();
   });
 
@@ -153,13 +178,13 @@ describe("TicketList", () => {
   it("should call approve API when Approve clicked", async () => {
     const user = userEvent.setup();
     setupWithTickets();
-    mockPost.mockResolvedValue({});
+    mockApiFetcher.mockResolvedValue({});
     render(<TicketList />);
 
     await user.click(screen.getByRole("button", { name: /approve fix safari/i }));
 
     await waitFor(() => {
-      expect(mockPost).toHaveBeenCalledWith("/tickets/t-1/approve");
+      expect(mockApiFetcher).toHaveBeenCalledWith("/v1/tickets/t-1/approve", { method: "POST" });
     });
     expect(mockInvalidateQuery).toHaveBeenCalled();
   });
@@ -167,13 +192,20 @@ describe("TicketList", () => {
   it("should call export API when Export clicked", async () => {
     const user = userEvent.setup();
     setupWithTickets();
-    mockPost.mockResolvedValue({});
+    mockApiFetcher.mockResolvedValue({});
     render(<TicketList />);
+
+    // Select Jira project first
+    const select = screen.getByTestId("jira-project-select");
+    await user.selectOptions(select, "YAP");
 
     await user.click(screen.getByRole("button", { name: /export update button/i }));
 
     await waitFor(() => {
-      expect(mockPost).toHaveBeenCalledWith("/integrations/jira/export/t-2?projectKey=YAP");
+      expect(mockApiFetcher).toHaveBeenCalledWith(
+        "/v1/integrations/jira/export/t-2?projectKey=YAP",
+        { method: "POST" },
+      );
     });
   });
 
@@ -212,10 +244,14 @@ describe("TicketList", () => {
     expect(screen.getByText("Approve 1")).toBeInTheDocument();
   });
 
-  it("should show bulk export button when APPROVED tickets selected and Jira connected", async () => {
+  it("should show bulk export button when APPROVED tickets selected and Jira connected with project", async () => {
     const user = userEvent.setup();
     setupWithTickets();
     render(<TicketList />);
+
+    // Select Jira project first
+    const select = screen.getByTestId("jira-project-select");
+    await user.selectOptions(select, "YAP");
 
     const checkboxes = screen.getAllByRole("checkbox");
     await user.click(checkboxes[2]); // select APPROVED ticket
@@ -226,7 +262,7 @@ describe("TicketList", () => {
   it("should call bulk approve for all selected DRAFT tickets", async () => {
     const user = userEvent.setup();
     setupWithTickets();
-    mockPost.mockResolvedValue({});
+    mockApiFetcher.mockResolvedValue({});
     render(<TicketList />);
 
     const checkboxes = screen.getAllByRole("checkbox");
@@ -235,15 +271,19 @@ describe("TicketList", () => {
     await user.click(screen.getByText("Approve 1"));
 
     await waitFor(() => {
-      expect(mockPost).toHaveBeenCalledWith("/tickets/t-1/approve");
+      expect(mockApiFetcher).toHaveBeenCalledWith("/v1/tickets/t-1/approve", { method: "POST" });
     });
   });
 
   it("should call bulk export for all selected APPROVED tickets", async () => {
     const user = userEvent.setup();
     setupWithTickets();
-    mockPost.mockResolvedValue({});
+    mockApiFetcher.mockResolvedValue({});
     render(<TicketList />);
+
+    // Select Jira project first
+    const select = screen.getByTestId("jira-project-select");
+    await user.selectOptions(select, "YAP");
 
     const checkboxes = screen.getAllByRole("checkbox");
     await user.click(checkboxes[2]); // select APPROVED ticket
@@ -251,9 +291,12 @@ describe("TicketList", () => {
     await user.click(screen.getByText("Export 1"));
 
     await waitFor(() => {
-      expect(mockPost).toHaveBeenCalledWith("/integrations/jira/export-bulk", {
-        ticketIds: ["t-2"],
-        projectKey: "YAP",
+      expect(mockApiFetcher).toHaveBeenCalledWith("/v1/integrations/jira/export-bulk", {
+        data: {
+          ticketIds: ["t-2"],
+          projectKey: "YAP",
+        },
+        method: "POST",
       });
     });
   });

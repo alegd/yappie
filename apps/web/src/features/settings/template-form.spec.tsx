@@ -3,17 +3,13 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TemplateForm } from "./template-form";
 
-const { mockPost, mockPatch } = vi.hoisted(() => ({
-  mockPost: vi.fn(),
-  mockPatch: vi.fn(),
-}));
-
-const { mockInvalidateQuery } = vi.hoisted(() => ({
+const { mockApiFetcher, mockInvalidateQuery } = vi.hoisted(() => ({
+  mockApiFetcher: vi.fn(),
   mockInvalidateQuery: vi.fn(),
 }));
 
-vi.mock("@/lib/api", () => ({
-  api: { post: mockPost, patch: mockPatch },
+vi.mock("@/lib/api-fetcher", () => ({
+  apiFetcher: mockApiFetcher,
 }));
 
 vi.mock("@/hooks/use-query", () => ({
@@ -44,9 +40,9 @@ describe("TemplateForm", () => {
     expect(screen.getByLabelText("Content")).toHaveValue("## Steps");
   });
 
-  it("should call api.post on create submit", async () => {
+  it("should call apiFetcher with POST on create submit", async () => {
     const user = userEvent.setup();
-    mockPost.mockResolvedValue({});
+    mockApiFetcher.mockResolvedValue({});
     render(<TemplateForm onClose={mockOnClose} />);
 
     await user.type(screen.getByLabelText("Name"), "Bug Report");
@@ -54,18 +50,21 @@ describe("TemplateForm", () => {
     await user.click(screen.getByRole("button", { name: /create template/i }));
 
     await waitFor(() => {
-      expect(mockPost).toHaveBeenCalledWith("/templates", {
-        name: "Bug Report",
-        content: "## Description",
-        isDefault: false,
+      expect(mockApiFetcher).toHaveBeenCalledWith("/v1/templates", {
+        data: {
+          name: "Bug Report",
+          content: "## Description",
+          isDefault: false,
+        },
+        method: "POST",
       });
     });
     expect(mockOnClose).toHaveBeenCalled();
   });
 
-  it("should call api.patch on edit submit", async () => {
+  it("should call apiFetcher with PATCH on edit submit", async () => {
     const user = userEvent.setup();
-    mockPatch.mockResolvedValue({});
+    mockApiFetcher.mockResolvedValue({});
     const template = { id: "t-1", name: "Bug Report", content: "## Steps", isDefault: false };
     render(<TemplateForm template={template} onClose={mockOnClose} />);
 
@@ -74,10 +73,13 @@ describe("TemplateForm", () => {
     await user.click(screen.getByRole("button", { name: /save changes/i }));
 
     await waitFor(() => {
-      expect(mockPatch).toHaveBeenCalledWith("/templates/t-1", {
-        name: "Updated Name",
-        content: "## Steps",
-        isDefault: false,
+      expect(mockApiFetcher).toHaveBeenCalledWith("/v1/templates/t-1", {
+        data: {
+          name: "Updated Name",
+          content: "## Steps",
+          isDefault: false,
+        },
+        method: "PATCH",
       });
     });
     expect(mockOnClose).toHaveBeenCalled();
@@ -103,7 +105,7 @@ describe("TemplateForm", () => {
 
   it("should show error when save fails", async () => {
     const user = userEvent.setup();
-    mockPost.mockRejectedValue(new Error("Server error"));
+    mockApiFetcher.mockRejectedValue(new Error("Server error"));
     render(<TemplateForm onClose={mockOnClose} />);
 
     await user.type(screen.getByLabelText("Name"), "Test");

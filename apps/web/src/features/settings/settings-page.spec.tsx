@@ -3,13 +3,10 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SettingsPage } from "./settings-page";
 
-const { mockUseQuery, mockInvalidateQuery, mockApi } = vi.hoisted(() => ({
+const { mockUseQuery, mockInvalidateQuery, mockApiFetcher } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
   mockInvalidateQuery: vi.fn(),
-  mockApi: {
-    get: vi.fn(),
-    delete: vi.fn(),
-  },
+  mockApiFetcher: vi.fn(),
 }));
 
 vi.mock("@/hooks/use-query", () => ({
@@ -17,8 +14,8 @@ vi.mock("@/hooks/use-query", () => ({
   invalidateQuery: mockInvalidateQuery,
 }));
 
-vi.mock("@/lib/api", () => ({
-  api: mockApi,
+vi.mock("@/lib/api-fetcher", () => ({
+  apiFetcher: mockApiFetcher,
 }));
 
 vi.mock("@/components/ui/theme-toggle", () => ({
@@ -123,10 +120,10 @@ describe("SettingsPage", () => {
     expect(screen.queryByText(/connect jira/i)).not.toBeInTheDocument();
   });
 
-  it("should call api.get and redirect when Connect Jira is clicked", async () => {
+  it("should call apiFetcher and redirect when Connect Jira is clicked", async () => {
     const user = userEvent.setup();
     setupMocks();
-    mockApi.get.mockResolvedValue({ url: "https://auth.atlassian.com/authorize?state=abc" });
+    mockApiFetcher.mockResolvedValue({ url: "https://auth.atlassian.com/authorize?state=abc" });
 
     const originalLocation = window.location.href;
     Object.defineProperty(window, "location", {
@@ -138,18 +135,18 @@ describe("SettingsPage", () => {
     const connectButton = await screen.findByText(/connect jira/i);
     await user.click(connectButton);
 
-    expect(mockApi.get).toHaveBeenCalledWith("/integrations/jira/auth");
+    expect(mockApiFetcher).toHaveBeenCalledWith("/v1/integrations/jira/auth");
     expect(window.location.href).toBe("https://auth.atlassian.com/authorize?state=abc");
   });
 
-  it("should call api.delete when disconnect is confirmed", async () => {
+  it("should call apiFetcher with DELETE when disconnect is confirmed", async () => {
     const user = userEvent.setup();
     setupMocks([], {
       connected: true,
       siteName: "my-workspace",
       connectedAt: "2026-03-20T10:00:00Z",
     });
-    mockApi.delete.mockResolvedValue(undefined);
+    mockApiFetcher.mockResolvedValue(undefined);
     vi.spyOn(window, "confirm").mockReturnValue(true);
 
     render(<SettingsPage />);
@@ -157,7 +154,7 @@ describe("SettingsPage", () => {
     await user.click(disconnectButton);
 
     expect(window.confirm).toHaveBeenCalledWith("Are you sure you want to disconnect Jira?");
-    expect(mockApi.delete).toHaveBeenCalledWith("/integrations/jira");
+    expect(mockApiFetcher).toHaveBeenCalledWith("/v1/integrations/jira", { method: "DELETE" });
   });
 
   it("should not disconnect when confirm is cancelled", async () => {
@@ -174,7 +171,7 @@ describe("SettingsPage", () => {
     await user.click(disconnectButton);
 
     expect(window.confirm).toHaveBeenCalled();
-    expect(mockApi.delete).not.toHaveBeenCalled();
+    expect(mockApiFetcher).not.toHaveBeenCalled();
   });
 
   it("should show default badge for default template", async () => {
@@ -206,10 +203,10 @@ describe("SettingsPage", () => {
     expect(screen.getByRole("button", { name: /delete bug report/i })).toBeInTheDocument();
   });
 
-  it("should call api.delete when delete template confirmed", async () => {
+  it("should call apiFetcher with DELETE when delete template confirmed", async () => {
     const user = userEvent.setup();
     vi.spyOn(window, "confirm").mockReturnValue(true);
-    mockApi.delete.mockResolvedValue(undefined);
+    mockApiFetcher.mockResolvedValue(undefined);
 
     setupMocks([{ id: "tpl-1", name: "Bug Report", isDefault: false }]);
     render(<SettingsPage />);
@@ -217,6 +214,6 @@ describe("SettingsPage", () => {
     await screen.findByText("Bug Report");
     await user.click(screen.getByRole("button", { name: /delete bug report/i }));
 
-    expect(mockApi.delete).toHaveBeenCalledWith("/templates/tpl-1");
+    expect(mockApiFetcher).toHaveBeenCalledWith("/v1/templates/tpl-1", { method: "DELETE" });
   });
 });
