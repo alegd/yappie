@@ -3,9 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { LandingPage } from "./landing-page";
 
 vi.mock("@/components/layout/public-navbar", () => ({
-  PublicNavbar: ({ isAuthenticated }: any) => (
-    <nav data-testid="public-navbar" data-auth={isAuthenticated} />
-  ),
+  PublicNavbar: () => <nav data-testid="public-navbar" />,
 }));
 
 vi.mock("next/link", () => ({
@@ -71,10 +69,9 @@ describe("LandingPage", () => {
     expect(screen.getByText("AGPL-3.0")).toBeInTheDocument();
   });
 
-  it("should pass isAuthenticated to PublicNavbar", () => {
-    render(<LandingPage isAuthenticated={true} />);
+  it("should render PublicNavbar", () => {
+    render(<LandingPage />);
 
-    const navbar = screen.getByTestId("public-navbar");
-    expect(navbar).toHaveAttribute("data-auth", "true");
+    expect(screen.getByTestId("public-navbar")).toBeInTheDocument();
   });
 });

@@ -48,7 +48,7 @@ export function RegisterForm() {
           )}
 
           <div>
-            <label htmlFor="name" className="block mb-1 font-medium text-muted text-sm">
+            <label htmlFor="name" className="block mb-1 font-medium text-foreground/50 text-sm">
               Name
             </label>
             <input
@@ -57,7 +57,7 @@ export function RegisterForm() {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="bg-surface px-3 py-2 border border-border-hover focus:border-indigo-500 rounded-lg focus:outline-none w-full text-sm transition"
+              className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full text-sm transition"
             />
           </div>
 
@@ -71,7 +71,7 @@ export function RegisterForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="bg-surface px-3 py-2 border border-border-hover focus:border-indigo-500 rounded-lg focus:outline-none w-full text-sm transition"
+              className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full text-sm transition"
             />
           </div>
 
@@ -86,7 +86,7 @@ export function RegisterForm() {
               minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="bg-surface px-3 py-2 border border-border-hover focus:border-indigo-500 rounded-lg focus:outline-none w-full text-sm transition"
+              className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full text-sm transition"
             />
           </div>
 

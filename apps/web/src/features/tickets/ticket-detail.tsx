@@ -11,19 +11,22 @@ import {
   ticketExport,
   TICKETS_LIST,
 } from "@/lib/constants/endpoints";
-import { PATCH, POST } from "@/lib/constants/http";
+import { DELETE, PATCH, POST } from "@/lib/constants/http";
 import { TICKETS_PAGE } from "@/lib/constants/pages";
 import {
   AlertCircle,
   ArrowLeft,
   CheckCircle2,
+  ExternalLink,
   Loader2,
   Pencil,
   Save,
+  Trash2,
   Upload,
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { JiraProjectSelect } from "./components/jira-project-select";
 import { Ticket } from "./types";
@@ -105,7 +108,7 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this ticket?")) return;
     try {
-      await api.delete(ticketDetail(ticketId));
+      await apiFetcher(ticketDetail(ticketId), { method: DELETE });
       invalidateQuery(TICKETS_LIST);
       router.push(TICKETS_PAGE);
     } catch {
@@ -184,7 +187,7 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
               size="sm"
               onClick={handleApprove}
               disabled={acting}
-              className="bg-emerald-600 hover:bg-emerald-500"
+              className="bg-success hover:bg-success/80"
             >
               {acting ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
               Approve
@@ -197,7 +200,7 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
                 size="sm"
                 onClick={handleExport}
                 disabled={acting || !jiraProjectKey}
-                className="bg-blue-600 hover:bg-blue-500"
+                className="bg-info hover:bg-info/80"
               >
                 {acting ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
                 Export

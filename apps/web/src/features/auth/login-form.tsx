@@ -1,7 +1,7 @@
 "use client";
 
-import { AUDIOS_PAGE, REGISTER_PAGE } from "@/lib/constants/pages";
 import { Button } from "@/components/ui/button";
+import { AUDIOS_PAGE, REGISTER_PAGE } from "@/lib/constants/pages";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
@@ -42,7 +42,7 @@ export function LoginForm() {
           )}
 
           <div>
-            <label htmlFor="email" className="block mb-1 font-medium text-muted text-sm">
+            <label htmlFor="email" className="block mb-1 font-medium text-foreground/50 text-sm">
               Email
             </label>
             <input
@@ -51,12 +51,12 @@ export function LoginForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="bg-surface px-3 py-2 border border-border-hover focus:border-indigo-500 rounded-lg focus:outline-none w-full text-sm transition"
+              className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full transition"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block mb-1 font-medium text-muted text-sm">
+            <label htmlFor="password" className="block mb-1 font-medium text-foreground/50 text-sm">
               Password
             </label>
             <input
@@ -65,7 +65,7 @@ export function LoginForm() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="bg-surface px-3 py-2 border border-border-hover focus:border-indigo-500 rounded-lg focus:outline-none w-full text-sm transition"
+              className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full transition"
             />
           </div>
 
@@ -74,7 +74,7 @@ export function LoginForm() {
           </Button>
         </form>
 
-        <p className="mt-6 text-muted-foreground text-sm text-center">
+        <p className="mt-6 text-muted-foreground  text-center">
           Don&apos;t have an account?{" "}
           <Link href={REGISTER_PAGE} className="text-accent hover:text-accent">
             Sign up

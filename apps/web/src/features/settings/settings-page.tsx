@@ -135,7 +135,7 @@ export function SettingsPage() {
                 <div>
                   <p className="font-medium">Jira</p>
                   {jiraStatus?.connected ? (
-                    <p className="flex items-center gap-1 mt-0.5 text-emerald-500 text-sm">
+                    <p className="flex items-center gap-1 mt-0.5 text-success text-sm">
                       <CheckCircle2 size={12} />
                       Connected to {jiraStatus.siteName || "Atlassian"}
                     </p>
@@ -152,7 +152,7 @@ export function SettingsPage() {
                   {disconnecting ? "Disconnecting..." : "Disconnect"}
                 </Button>
               ) : (
-                <Button onClick={handleConnectJira} className="bg-blue-600 hover:bg-blue-500">
+                <Button onClick={handleConnectJira} className="bg-info hover:bg-info/80">
                   Connect Jira
                 </Button>
               )}
