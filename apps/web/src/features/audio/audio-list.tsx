@@ -96,10 +96,9 @@ export function AudioList() {
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {audios.map((audio) => {
             const status = statusConfig[audio.status];
-            const StatusIcon = status.icon;
             return (
               <Card>
                 <Link
@@ -115,14 +114,6 @@ export function AudioList() {
                     </p>
                   </div>
                   <Badge variant={status.variant} className="flex items-center gap-1.5">
-                    <StatusIcon
-                      size={12}
-                      className={
-                        audio.status === "TRANSCRIBING" || audio.status === "ANALYZING"
-                          ? "animate-spin"
-                          : ""
-                      }
-                    />
                     {status.label}
                   </Badge>
                 </Link>

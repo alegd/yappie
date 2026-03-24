@@ -82,7 +82,7 @@ export function Sidebar({ user }: SidebarProps) {
                   "flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition",
                   isActive
                     ? "bg-accent-surface text-accent"
-                    : "text-muted hover:text-foreground hover:bg-surface-hover/50",
+                    : "text-foreground/75 hover:text-foreground hover:bg-surface-hover/50",
                 )}
               >
                 <item.icon size={18} />
