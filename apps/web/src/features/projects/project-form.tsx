@@ -1,14 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { useQuery } from "@/hooks/use-query";
+import { projectDetail } from "@/lib/constants/endpoints";
+import { PROJECTS_PAGE } from "@/lib/constants/pages";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Brain, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { api } from "@/lib/api";
-import { PROJECTS_CREATE, projectDetail } from "@/lib/constants/endpoints";
-import { PROJECTS_PAGE } from "@/lib/constants/pages";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useCreateProject, useUpdateProject } from "./hooks/useProjects";
 import { Project } from "./types";
+
+const projectSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
+  description: z.string().max(500).optional(),
+  context: z.string().max(5000).optional(),
+});
+
+type ProjectFormData = z.infer<typeof projectSchema>;
 
 const CONTEXT_PLACEHOLDER = `Describe your project so AI generates better tickets. Example:
 
@@ -22,63 +34,55 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
   const router = useRouter();
   const isEditing = !!projectId;
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [context, setContext] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(isEditing);
-  const [error, setError] = useState("");
+  const { data: project, isLoading } = useQuery<Project>(
+    isEditing ? projectDetail(projectId) : null,
+  );
+
+  const { mutate: createProject, isPending: creating } = useCreateProject();
+  const { mutate: updateProject, isPending: updating } = useUpdateProject(projectId ?? "");
+
+  const saving = creating || updating;
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ProjectFormData>({
+    resolver: zodResolver(projectSchema),
+    defaultValues: { name: "", description: "", context: "" },
+  });
 
   useEffect(() => {
-    if (!projectId) return;
-
-    const fetchProject = async () => {
-      try {
-        const project = await api.get<Project>(projectDetail(projectId));
-        setName(project.name);
-        setDescription(project.description || "");
-        setContext(project.context || "");
-      } catch {
-        setError("Project not found");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProject();
-  }, [projectId]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-
-    setSaving(true);
-    setError("");
-
-    try {
-      const body = {
-        name: name.trim(),
-        description: description.trim() || undefined,
-        context: context.trim() || undefined,
-      };
-
-      if (isEditing) {
-        await api.patch(projectDetail(projectId!), body);
-      } else {
-        await api.post(PROJECTS_CREATE, body);
-      }
-
-      router.push(PROJECTS_PAGE);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save project");
-    } finally {
-      setSaving(false);
+    if (project) {
+      reset({
+        name: project.name,
+        description: project.description ?? "",
+        context: project.context ?? "",
+      });
     }
+  }, [project, reset]);
+
+  const onSubmit = async (data: ProjectFormData) => {
+    const body = {
+      name: data.name.trim(),
+      description: data.description?.trim() || undefined,
+      context: data.context?.trim() || undefined,
+    };
+
+    if (isEditing) {
+      await updateProject(body);
+    } else {
+      await createProject(body);
+    }
+
+    router.push(PROJECTS_PAGE);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 size={24} className="animate-spin text-muted-foreground" />
+      <div className="flex justify-center items-center py-20">
+        <Loader2 size={24} className="text-muted-foreground animate-spin" />
         <span className="ml-2 text-muted-foreground">Loading...</span>
       </div>
     );
@@ -93,47 +97,42 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
         >
           <ArrowLeft size={20} />
         </Link>
-        <h1 className="text-2xl font-bold">{isEditing ? "Edit Project" : "New Project"}</h1>
+        <h1 className="font-bold text-2xl">{isEditing ? "Edit Project" : "New Project"}</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg p-3">
-            {error}
-          </div>
-        )}
-
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-muted mb-1">
+          <label htmlFor="name" className="block mb-1 font-medium text-muted text-sm">
             Name
           </label>
           <input
             id="name"
             type="text"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            {...register("name")}
             placeholder="My Project"
-            className="w-full bg-surface border border-border-hover rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition"
+            className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full text-sm transition"
           />
+          {errors.name && <p className="mt-1 text-red-400 text-xs">{errors.name.message}</p>}
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-muted mb-1">
+          <label htmlFor="description" className="block mb-1 font-medium text-muted text-sm">
             Description
           </label>
           <input
             id="description"
             type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            {...register("description")}
             placeholder="Brief description of the project"
-            className="w-full bg-surface border border-border-hover rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition"
+            className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full text-sm transition"
           />
+          {errors.description && (
+            <p className="mt-1 text-red-400 text-xs">{errors.description.message}</p>
+          )}
         </div>
 
         <div>
-          <label htmlFor="context" className="block text-sm font-medium text-muted mb-1">
+          <label htmlFor="context" className="block mb-1 font-medium text-muted text-sm">
             <span className="flex items-center gap-1.5">
               <Brain size={14} className="text-accent" />
               AI Context
@@ -141,25 +140,25 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
           </label>
           <textarea
             id="context"
-            value={context}
-            onChange={(e) => setContext(e.target.value)}
+            {...register("context")}
             placeholder={CONTEXT_PLACEHOLDER}
             rows={8}
-            className="w-full bg-surface border border-border-hover rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition resize-none"
+            className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full text-sm transition resize-none"
           />
-          <p className="text-xs text-muted-foreground mt-1">
+          {errors.context && <p className="mt-1 text-red-400 text-xs">{errors.context.message}</p>}
+          <p className="mt-1 text-muted-foreground text-xs">
             This context is injected into AI prompts when processing audio for this project. The
             more specific you are, the better the generated tickets will be.
           </p>
         </div>
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={saving || !name.trim()}>
+          <Button type="submit" disabled={saving}>
             {saving ? "Saving..." : isEditing ? "Save changes" : "Create project"}
           </Button>
           <Link
             href={PROJECTS_PAGE}
-            className="bg-surface-hover hover:bg-surface-hover px-6 py-2 rounded-lg text-sm font-medium transition"
+            className="bg-surface-hover hover:bg-surface-hover px-6 py-2 rounded-lg font-medium text-sm transition"
           >
             Cancel
           </Link>
