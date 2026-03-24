@@ -8,6 +8,7 @@ import {
   OnChangeFn,
   PaginationState,
   Row,
+  RowSelectionState,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
@@ -27,6 +28,10 @@ export interface DataTableProps<T> {
   onRowClick?: (row: Row<T>) => void;
   sortBy?: SortingState;
   setSortBy?: OnChangeFn<SortingState>;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>;
+  enableRowSelection?: boolean;
+  getRowId?: (row: T) => string;
   toolbar?: React.ReactNode;
 }
 
@@ -41,6 +46,10 @@ export function DataTable<T>({
   onRowClick,
   sortBy,
   setSortBy,
+  rowSelection,
+  onRowSelectionChange,
+  enableRowSelection = false,
+  getRowId,
   toolbar,
 }: Readonly<DataTableProps<T>>) {
   const table = useReactTable({
@@ -49,12 +58,16 @@ export function DataTable<T>({
     getCoreRowModel: getCoreRowModel(),
     onPaginationChange,
     onSortingChange: setSortBy,
+    onRowSelectionChange,
+    enableRowSelection,
+    getRowId,
     manualPagination: true,
     manualSorting: true,
     rowCount: count,
     state: {
       sorting: sortBy,
       pagination: { pageIndex: page, pageSize },
+      rowSelection: rowSelection ?? {},
     },
   });
 
@@ -83,7 +96,7 @@ export function DataTable<T>({
                     key={header.id}
                     className="px-4 py-3 font-medium text-foreground/50 text-xs text-left uppercase tracking-wider"
                   >
-                    {header.column.columnDef.header ? (
+                    {header.isPlaceholder ? null : header.column.columnDef.header ? (
                       <span
                         className={cn(
                           "flex items-center gap-1",
@@ -119,6 +132,7 @@ export function DataTable<T>({
                     className={cn(
                       "border-border border-b transition",
                       onRowClick ? "cursor-pointer hover:bg-surface/50" : "",
+                      row.getIsSelected() ? "bg-accent-surface" : "",
                     )}
                   >
                     {row.getVisibleCells().map((cell) => (

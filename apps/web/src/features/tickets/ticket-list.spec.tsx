@@ -145,7 +145,7 @@ describe("TicketList", () => {
     render(<TicketList />);
 
     const table = screen.getByTestId("data-table");
-    expect(table).toHaveAttribute("data-cols", "5");
+    expect(table).toHaveAttribute("data-cols", "6");
   });
 
   it("should render page title", () => {

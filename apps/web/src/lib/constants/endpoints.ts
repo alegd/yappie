@@ -32,4 +32,5 @@ export const analyticsOverview = (from: string, to: string) =>
 // ─── Integrations — Jira ─────────────────────────────────
 export const JIRA_STATUS = "/integrations/jira/status";
 export const JIRA_AUTH = "/integrations/jira/auth";
+export const JIRA_PROJECTS = "/integrations/jira/projects";
 export const JIRA_DISCONNECT = "/integrations/jira";

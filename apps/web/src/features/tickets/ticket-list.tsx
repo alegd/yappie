@@ -7,9 +7,16 @@ import { DataTable } from "@/components/ui/data-table";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { useTableOptions } from "@/hooks/use-table-options";
 import { api } from "@/lib/api";
-import { JIRA_STATUS, TICKETS_LIST, ticketApprove, ticketExport } from "@/lib/constants/endpoints";
+import {
+  JIRA_STATUS,
+  JIRA_PROJECTS,
+  TICKETS_EXPORT_BULK,
+  TICKETS_LIST,
+  ticketApprove,
+  ticketExport,
+} from "@/lib/constants/endpoints";
 import { ticketDetailPage } from "@/lib/constants/pages";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import { CheckCircle2, ExternalLink, FileText, Loader2, Upload } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -34,15 +41,32 @@ interface JiraStatus {
   siteName: string | null;
 }
 
+interface JiraProject {
+  id: string;
+  key: string;
+  name: string;
+}
+
 export function TicketList() {
   const tableOptions = useTableOptions({ defaultPageSize: 50 });
   const { data: ticketData, isLoading } = useQuery<TicketListResponse>(TICKETS_LIST);
   const { data: jiraStatus } = useQuery<JiraStatus>(JIRA_STATUS);
+  const { data: jiraProjects } = useQuery<JiraProject[]>(
+    jiraStatus?.connected ? JIRA_PROJECTS : null,
+  );
   const [acting, setActing] = useState<string | null>(null);
+  const [bulkActing, setBulkActing] = useState<string | null>(null);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [jiraProjectKey, setJiraProjectKey] = useState("");
 
   const tickets = ticketData?.data ?? [];
   const total = ticketData?.total ?? 0;
   const isJiraConnected = jiraStatus?.connected ?? false;
+
+  const selectedIds = Object.keys(rowSelection).filter((k) => rowSelection[k]);
+  const selectedTickets = tickets.filter((t) => selectedIds.includes(t.id));
+  const draftSelected = selectedTickets.filter((t) => t.status === "DRAFT");
+  const approvedSelected = selectedTickets.filter((t) => t.status === "APPROVED");
 
   const handleApprove = async (id: string) => {
     setActing(id);
@@ -57,9 +81,10 @@ export function TicketList() {
   };
 
   const handleExport = async (id: string) => {
+    if (!jiraProjectKey) return;
     setActing(id);
     try {
-      await api.post(ticketExport(id, "YAP"));
+      await api.post(ticketExport(id, jiraProjectKey));
       invalidateQuery(TICKETS_LIST);
     } catch {
       // handle error
@@ -68,7 +93,60 @@ export function TicketList() {
     }
   };
 
+  const handleBulkApprove = async () => {
+    setBulkActing("approve");
+    try {
+      for (const ticket of draftSelected) {
+        await api.post(ticketApprove(ticket.id));
+      }
+      invalidateQuery(TICKETS_LIST);
+      setRowSelection({});
+    } catch {
+      // handle error
+    } finally {
+      setBulkActing(null);
+    }
+  };
+
+  const handleBulkExport = async () => {
+    if (!jiraProjectKey) return;
+    setBulkActing("export");
+    try {
+      await api.post(TICKETS_EXPORT_BULK, {
+        ticketIds: approvedSelected.map((t) => t.id),
+        projectKey: jiraProjectKey,
+      });
+      invalidateQuery(TICKETS_LIST);
+      setRowSelection({});
+    } catch {
+      // handle error
+    } finally {
+      setBulkActing(null);
+    }
+  };
+
   const columns: ColumnDef<Ticket, unknown>[] = [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <input
+          type="checkbox"
+          checked={table.getIsAllRowsSelected()}
+          onChange={table.getToggleAllRowsSelectedHandler()}
+          className="rounded border-zinc-600"
+        />
+      ),
+      cell: ({ row }) => (
+        <input
+          type="checkbox"
+          checked={row.getIsSelected()}
+          onChange={row.getToggleSelectedHandler()}
+          onClick={(e) => e.stopPropagation()}
+          className="rounded border-zinc-600"
+        />
+      ),
+      enableSorting: false,
+    },
     {
       accessorKey: "title",
       header: "Title",
@@ -76,6 +154,7 @@ export function TicketList() {
         <Link
           href={ticketDetailPage(row.original.id)}
           className="font-medium hover:text-accent truncate transition"
+          onClick={(e) => e.stopPropagation()}
         >
           {row.original.title}
         </Link>
@@ -136,7 +215,7 @@ export function TicketList() {
                 Approve
               </Button>
             )}
-            {ticket.status === "APPROVED" && isJiraConnected && (
+            {ticket.status === "APPROVED" && isJiraConnected && jiraProjectKey && (
               <Button
                 variant="outlined"
                 size="sm"
@@ -170,6 +249,61 @@ export function TicketList() {
     );
   }
 
+  const toolbar = (
+    <div className="flex items-center justify-between w-full">
+      <div className="flex items-center gap-3">
+        {selectedIds.length > 0 && (
+          <span className="text-muted text-sm">{selectedIds.length} selected</span>
+        )}
+        {draftSelected.length > 0 && (
+          <Button
+            size="sm"
+            onClick={handleBulkApprove}
+            disabled={bulkActing !== null}
+            className="bg-emerald-600 hover:bg-emerald-500"
+          >
+            {bulkActing === "approve" ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : (
+              <CheckCircle2 size={12} />
+            )}
+            Approve {draftSelected.length}
+          </Button>
+        )}
+        {approvedSelected.length > 0 && isJiraConnected && jiraProjectKey && (
+          <Button
+            size="sm"
+            onClick={handleBulkExport}
+            disabled={bulkActing !== null}
+            className="bg-blue-600 hover:bg-blue-500"
+          >
+            {bulkActing === "export" ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : (
+              <Upload size={12} />
+            )}
+            Export {approvedSelected.length}
+          </Button>
+        )}
+      </div>
+      {isJiraConnected && jiraProjects && jiraProjects.length > 0 && (
+        <select
+          value={jiraProjectKey}
+          onChange={(e) => setJiraProjectKey(e.target.value)}
+          className="bg-surface px-3 py-1.5 border border-border-hover rounded-lg text-sm focus:outline-none focus:border-primary transition"
+          aria-label="Jira project"
+        >
+          <option value="">Select Jira project</option>
+          {jiraProjects.map((p) => (
+            <option key={p.id} value={p.key}>
+              {p.key} — {p.name}
+            </option>
+          ))}
+        </select>
+      )}
+    </div>
+  );
+
   return (
     <div>
       <h1 className="mb-6 font-bold text-2xl">Tickets</h1>
@@ -180,6 +314,11 @@ export function TicketList() {
           data={tickets}
           count={total}
           loading={isLoading}
+          enableRowSelection
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
+          getRowId={(row) => row.id}
+          toolbar={toolbar}
           {...tableOptions}
         />
       </Card>
