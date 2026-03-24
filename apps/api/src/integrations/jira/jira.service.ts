@@ -65,7 +65,13 @@ export class JiraService {
   }
 
   async refreshAccessToken(userId: string) {
-    const integration = await this.getIntegration(userId);
+    const integration = await this.prisma.integration.findUnique({
+      where: { userId_type: { userId, type: "JIRA" } },
+    });
+
+    if (!integration || !integration.refreshToken) {
+      throw new UnauthorizedException("Jira not connected. Please authorize first.");
+    }
 
     const tokenData = await this.postJson("https://auth.atlassian.com/oauth/token", {
       grant_type: "refresh_token",
