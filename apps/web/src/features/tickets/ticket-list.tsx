@@ -3,21 +3,17 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card/Card";
+import { DataTable } from "@/components/ui/data-table";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
+import { useTableOptions } from "@/hooks/use-table-options";
 import { api } from "@/lib/api";
-import {
-  JIRA_STATUS,
-  TICKETS_EXPORT_BULK,
-  TICKETS_LIST,
-  ticketApprove,
-  ticketExport,
-} from "@/lib/constants/endpoints";
+import { JIRA_STATUS, TICKETS_LIST, ticketApprove, ticketExport } from "@/lib/constants/endpoints";
 import { ticketDetailPage } from "@/lib/constants/pages";
-import { cn } from "@/lib/utils";
+import { ColumnDef } from "@tanstack/react-table";
 import { CheckCircle2, ExternalLink, FileText, Loader2, Upload } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { TicketListResponse } from "./types";
+import { Ticket, TicketListResponse } from "./types";
 
 const priorityVariants: Record<string, "default" | "warning" | "orange" | "danger"> = {
   LOW: "default",
@@ -39,35 +35,14 @@ interface JiraStatus {
 }
 
 export function TicketList() {
+  const tableOptions = useTableOptions({ defaultPageSize: 50 });
   const { data: ticketData, isLoading } = useQuery<TicketListResponse>(TICKETS_LIST);
   const { data: jiraStatus } = useQuery<JiraStatus>(JIRA_STATUS);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [acting, setActing] = useState<string | null>(null);
-  const [bulkActing, setBulkActing] = useState<string | null>(null);
 
   const tickets = ticketData?.data ?? [];
+  const total = ticketData?.total ?? 0;
   const isJiraConnected = jiraStatus?.connected ?? false;
-
-  const selectedTickets = tickets.filter((t) => selected.has(t.id));
-  const draftSelected = selectedTickets.filter((t) => t.status === "DRAFT");
-  const approvedSelected = selectedTickets.filter((t) => t.status === "APPROVED");
-
-  const handleToggle = (id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const handleToggleAll = () => {
-    if (selected.size === tickets.length) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(tickets.map((t) => t.id)));
-    }
-  };
 
   const handleApprove = async (id: string) => {
     setActing(id);
@@ -93,195 +68,121 @@ export function TicketList() {
     }
   };
 
-  const handleBulkApprove = async () => {
-    setBulkActing("approve");
-    try {
-      for (const ticket of draftSelected) {
-        await api.post(ticketApprove(ticket.id));
-      }
-      invalidateQuery(TICKETS_LIST);
-      setSelected(new Set());
-    } catch {
-      // handle error
-    } finally {
-      setBulkActing(null);
-    }
-  };
+  const columns: ColumnDef<Ticket, unknown>[] = [
+    {
+      accessorKey: "title",
+      header: "Title",
+      cell: ({ row }) => (
+        <Link
+          href={ticketDetailPage(row.original.id)}
+          className="font-medium hover:text-accent truncate transition"
+        >
+          {row.original.title}
+        </Link>
+      ),
+    },
+    {
+      accessorKey: "priority",
+      header: "Priority",
+      cell: ({ row }) => (
+        <Badge variant={priorityVariants[row.original.priority]}>{row.original.priority}</Badge>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => (
+        <Badge variant={statusVariants[row.original.status]}>{row.original.status}</Badge>
+      ),
+    },
+    {
+      id: "jira",
+      header: "Jira",
+      cell: ({ row }) =>
+        row.original.jiraIssueKey ? (
+          <span className="flex items-center gap-1 text-blue-400 text-xs">
+            {row.original.jiraIssueKey}
+            <ExternalLink size={10} />
+          </span>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        ),
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => {
+        const ticket = row.original;
+        const isActing = acting === ticket.id;
 
-  const handleBulkExport = async () => {
-    setBulkActing("export");
-    try {
-      await api.post(TICKETS_EXPORT_BULK, {
-        ticketIds: approvedSelected.map((t) => t.id),
-        projectKey: "YAP",
-      });
-      invalidateQuery(TICKETS_LIST);
-      setSelected(new Set());
-    } catch {
-      // handle error
-    } finally {
-      setBulkActing(null);
-    }
-  };
+        return (
+          <div className="flex justify-end gap-1">
+            {ticket.status === "DRAFT" && (
+              <Button
+                variant="outlined"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleApprove(ticket.id);
+                }}
+                disabled={isActing}
+                aria-label={`Approve ${ticket.title}`}
+              >
+                {isActing ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <CheckCircle2 size={12} />
+                )}
+                Approve
+              </Button>
+            )}
+            {ticket.status === "APPROVED" && isJiraConnected && (
+              <Button
+                variant="outlined"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleExport(ticket.id);
+                }}
+                disabled={isActing}
+                aria-label={`Export ${ticket.title}`}
+              >
+                {isActing ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                Export
+              </Button>
+            )}
+          </div>
+        );
+      },
+    },
+  ];
 
-  if (isLoading) {
+  if (tickets.length === 0 && !isLoading) {
     return (
-      <div className="flex justify-center items-center py-20">
-        <Loader2 size={24} className="text-muted-foreground animate-spin" />
-        <span className="ml-2 text-muted-foreground">Loading...</span>
+      <div>
+        <h1 className="mb-6 font-bold text-2xl">Tickets</h1>
+        <div className="py-20 text-muted-foreground text-center">
+          <FileText size={48} className="opacity-50 mx-auto mb-4" />
+          <p>No tickets yet.</p>
+          <p className="mt-1 text-sm">Upload an audio and tickets will appear here.</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="font-bold text-2xl">Tickets</h1>
+      <h1 className="mb-6 font-bold text-2xl">Tickets</h1>
 
-        {/* Bulk action bar */}
-        {selected.size > 0 && (
-          <div className="flex items-center gap-3">
-            <span className="text-muted text-sm">{selected.size} selected</span>
-
-            {draftSelected.length > 0 && (
-              <Button
-                size="sm"
-                onClick={handleBulkApprove}
-                disabled={bulkActing !== null}
-                className="bg-emerald-600 hover:bg-emerald-500"
-              >
-                {bulkActing === "approve" ? (
-                  <Loader2 size={12} className="animate-spin" />
-                ) : (
-                  <CheckCircle2 size={12} />
-                )}
-                Approve {draftSelected.length}
-              </Button>
-            )}
-
-            {approvedSelected.length > 0 && isJiraConnected && (
-              <Button
-                size="sm"
-                onClick={handleBulkExport}
-                disabled={bulkActing !== null}
-                className="bg-blue-600 hover:bg-blue-500"
-              >
-                {bulkActing === "export" ? (
-                  <Loader2 size={12} className="animate-spin" />
-                ) : (
-                  <Upload size={12} />
-                )}
-                Export {approvedSelected.length}
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {tickets.length === 0 ? (
-        <div className="py-20 text-muted-foreground text-center">
-          <FileText size={48} className="opacity-50 mx-auto mb-4" />
-          <p>No tickets yet.</p>
-          <p className="mt-1 text-sm">Upload an audio and tickets will appear here.</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-            <input
-              type="checkbox"
-              checked={selected.size === tickets.length && tickets.length > 0}
-              onChange={handleToggleAll}
-              className="border-zinc-600 rounded"
-            />
-            <span className="flex-1">Title</span>
-            <span className="w-20 text-center">Priority</span>
-            <span className="w-24 text-center">Status</span>
-            <span className="w-20 text-center">Jira</span>
-            <span className="w-24 text-center">Actions</span>
-          </div>
-
-          {/* Rows */}
-          {tickets.map((ticket) => {
-            const isActing = acting === ticket.id;
-
-            return (
-              <Card
-                key={ticket.id}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 border rounded-lg transition",
-                  selected.has(ticket.id)
-                    ? "bg-indigo-500/5 border-indigo-500/20"
-                    : "border-border hover:border-border-hover",
-                )}
-              >
-                <input
-                  type="checkbox"
-                  checked={selected.has(ticket.id)}
-                  onChange={() => handleToggle(ticket.id)}
-                  className="border-zinc-600 rounded"
-                />
-                <Link
-                  href={ticketDetailPage(ticket.id)}
-                  className="flex-1 font-medium hover:text-accent text-sm truncate transition"
-                >
-                  {ticket.title}
-                </Link>
-                <Badge variant={priorityVariants[ticket.priority]} className="w-20 text-center">
-                  {ticket.priority}
-                </Badge>
-                <Badge variant={statusVariants[ticket.status]} className="w-24 text-center">
-                  {ticket.status}
-                </Badge>
-                <span className="w-20 text-center">
-                  {ticket.jiraIssueKey ? (
-                    <span className="flex justify-center items-center gap-1 text-blue-400 text-xs">
-                      {ticket.jiraIssueKey}
-                      <ExternalLink size={10} />
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground text-xs">—</span>
-                  )}
-                </span>
-                <span className="flex justify-center w-24">
-                  {ticket.status === "DRAFT" && (
-                    <Button
-                      variant="outlined"
-                      size="sm"
-                      onClick={() => handleApprove(ticket.id)}
-                      disabled={isActing}
-                      aria-label={`Approve ${ticket.title}`}
-                    >
-                      {isActing ? (
-                        <Loader2 size={12} className="animate-spin" />
-                      ) : (
-                        <CheckCircle2 size={12} />
-                      )}
-                      Approve
-                    </Button>
-                  )}
-                  {ticket.status === "APPROVED" && isJiraConnected && (
-                    <Button
-                      variant="outlined"
-                      size="sm"
-                      onClick={() => handleExport(ticket.id)}
-                      disabled={isActing}
-                      aria-label={`Export ${ticket.title}`}
-                    >
-                      {isActing ? (
-                        <Loader2 size={12} className="animate-spin" />
-                      ) : (
-                        <Upload size={12} />
-                      )}
-                      Export
-                    </Button>
-                  )}
-                </span>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+      <Card className="shadow-lg p-2">
+        <DataTable
+          columns={columns}
+          data={tickets}
+          count={total}
+          loading={isLoading}
+          {...tableOptions}
+        />
+      </Card>
     </div>
   );
 }
