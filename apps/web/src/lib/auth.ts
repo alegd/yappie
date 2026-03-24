@@ -4,14 +4,27 @@ import { LOGIN_PAGE } from "@/lib/constants/pages";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-// Refresh 2 minutes before actual expiry to avoid edge cases
-const ACCESS_TOKEN_MAX_AGE = 13 * 60 * 1000; // 13 min (backend JWT_EXPIRATION is 15m)
+// Buffer before actual expiry to refresh proactively (2 minutes)
+const REFRESH_BUFFER_MS = 2 * 60 * 1000;
 
 // Mutex to prevent concurrent refresh calls (token rotation race condition)
 let refreshPromise: Promise<Record<string, unknown>> | null = null;
 
+function decodeJwtExp(token: string): number {
+  try {
+    const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+    return payload.exp * 1000; // convert seconds to milliseconds
+  } catch {
+    return 0;
+  }
+}
+
+function isTokenExpired(accessToken: string): boolean {
+  const exp = decodeJwtExp(accessToken);
+  return exp > 0 && Date.now() >= exp - REFRESH_BUFFER_MS;
+}
+
 async function refreshAccessToken(token: Record<string, unknown>) {
-  // If a refresh is already in progress, wait for it
   if (refreshPromise) {
     return refreshPromise;
   }
@@ -34,7 +47,6 @@ async function refreshAccessToken(token: Record<string, unknown>) {
         ...token,
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
-        accessTokenExpires: Date.now() + ACCESS_TOKEN_MAX_AGE,
         error: undefined,
       };
     } catch {
@@ -80,21 +92,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user }) {
-      // Initial sign in — store tokens and expiry
       if (user) {
         return {
           ...token,
           accessToken: user.accessToken,
           refreshToken: user.refreshToken,
           userId: user.id,
-          accessTokenExpires: Date.now() + ACCESS_TOKEN_MAX_AGE,
         };
       }
 
-      // Check if token needs refresh
-      const expiresAt = token.accessTokenExpires as number | undefined;
-
-      if (expiresAt && Date.now() >= expiresAt) {
+      const accessToken = token.accessToken as string;
+      if (accessToken && isTokenExpired(accessToken)) {
         return refreshAccessToken(token);
       }
 
