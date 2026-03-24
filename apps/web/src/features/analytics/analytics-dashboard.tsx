@@ -1,18 +1,18 @@
 "use client";
 
-import { Mic, FileText, ExternalLink, Loader2, BarChart3 } from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
 import { useQuery } from "@/hooks/use-query";
 import { analyticsOverview } from "@/lib/constants/endpoints";
+import { BarChart3, ExternalLink, FileText, Loader2, Mic } from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 interface EventCount {
   type: string;
@@ -91,7 +91,7 @@ export function AnalyticsDashboard() {
           const config = eventConfig[event.type] || {
             label: event.type,
             icon: BarChart3,
-            color: "text-muted bg-surface",
+            color: "text-foreground/75 bg-surface",
           };
           const Icon = config.icon;
 
@@ -103,7 +103,7 @@ export function AnalyticsDashboard() {
                 <Icon size={20} />
               </div>
               <p className="text-3xl font-bold">{event.count}</p>
-              <p className="text-sm text-muted-foreground mt-1">{config.label}</p>
+              <p className="text-sm text-foreground/75 mt-1">{config.label}</p>
             </div>
           );
         })}

@@ -58,7 +58,7 @@ export function ProjectList() {
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {projects.map((project) => (
             <div
               key={project.id}
@@ -67,9 +67,9 @@ export function ProjectList() {
               <div className="flex items-center gap-3">
                 <FolderOpen size={18} className="text-muted-foreground shrink-0" />
                 <Link href={editProjectPage(project.id)} className="flex-1 min-w-0">
-                  <p className="font-medium hover:text-accent text-sm transition">{project.name}</p>
+                  <p className="font-medium hover:text-accent transition">{project.name}</p>
                   {project.description && (
-                    <p className="mt-0.5 text-muted-foreground text-xs">{project.description}</p>
+                    <p className="mt-0.5 text-foreground/75 text-sm">{project.description}</p>
                   )}
                 </Link>
                 {project.context && (
@@ -80,19 +80,18 @@ export function ProjectList() {
                 )}
                 <Link
                   href={editProjectPage(project.id)}
-                  className="text-muted-foreground hover:text-accent transition"
+                  className="text-foreground/75 hover:text-accent transition"
                   aria-label={`Edit ${project.name}`}
                 >
-                  <Pencil size={14} />
+                  <Pencil size={16} />
                 </Link>
                 <Button
                   variant="ghost"
-                  size="sm"
                   onClick={() => handleDelete(project.id)}
                   className="hover:text-red-400"
                   aria-label={`Delete ${project.name}`}
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={16} />
                 </Button>
               </div>
             </div>
