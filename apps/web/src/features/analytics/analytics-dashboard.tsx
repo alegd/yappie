@@ -32,13 +32,13 @@ const eventConfig: Record<
   "ticket.generated": {
     label: "Tickets Generated",
     icon: FileText,
-    color: "text-emerald-400 bg-emerald-400/10",
+    color: "text-success bg-[rgba(46,212,122,0.12)]",
     fill: "#34d399",
   },
   "ticket.exported": {
     label: "Tickets Exported",
     icon: ExternalLink,
-    color: "text-blue-400 bg-blue-400/10",
+    color: "text-info bg-[rgba(91,134,229,0.12)]",
     fill: "#60a5fa",
   },
 };

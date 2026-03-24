@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TicketList } from "./ticket-list";
 
@@ -39,6 +40,97 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+vi.mock("@/hooks/use-table-options", () => ({
+  useTableOptions: () => ({
+    page: 0,
+    pageSize: 50,
+    onPaginationChange: vi.fn(),
+    sortBy: [],
+    setSortBy: vi.fn(),
+  }),
+}));
+
+vi.mock("@/components/ui/data-table", () => ({
+  DataTable: ({
+    data,
+    columns,
+    toolbar,
+    loading,
+    rowSelection,
+    onRowSelectionChange,
+    getRowId,
+  }: any) => {
+    const selection = rowSelection ?? {};
+    const handleToggleAll = () => {
+      const allSelected = (data ?? []).every((r: any) => {
+        const id = getRowId ? getRowId(r) : r.id;
+        return selection[id];
+      });
+      if (allSelected) {
+        onRowSelectionChange?.({});
+      } else {
+        const next: Record<string, boolean> = {};
+        (data ?? []).forEach((r: any) => {
+          const id = getRowId ? getRowId(r) : r.id;
+          next[id] = true;
+        });
+        onRowSelectionChange?.(next);
+      }
+    };
+    const handleToggleRow = (row: any) => () => {
+      const id = getRowId ? getRowId(row) : row.id;
+      const next = { ...selection, [id]: !selection[id] };
+      if (!next[id]) delete next[id];
+      onRowSelectionChange?.(next);
+    };
+    const allSelected =
+      (data ?? []).length > 0 &&
+      (data ?? []).every((r: any) => {
+        const id = getRowId ? getRowId(r) : r.id;
+        return selection[id];
+      });
+
+    return (
+      <div
+        data-testid="data-table"
+        data-rows={String(data?.length ?? 0)}
+        data-loading={String(!!loading)}
+      >
+        {toolbar}
+        <table>
+          <tbody>
+            {(data ?? []).map((row: any) => {
+              const id = getRowId ? getRowId(row) : row.id;
+              const isSelected = !!selection[id];
+              return (
+                <tr key={id}>
+                  {columns.map((col: any) => (
+                    <td key={col.id || col.accessorKey}>
+                      {typeof col.cell === "function"
+                        ? col.cell({
+                            row: {
+                              original: row,
+                              getIsSelected: () => isSelected,
+                              getToggleSelectedHandler: handleToggleRow(row),
+                            },
+                            table: {
+                              getIsAllRowsSelected: () => allSelected,
+                              getToggleAllRowsSelectedHandler: () => handleToggleAll,
+                            },
+                          })
+                        : null}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  },
+}));
+
 const mockTickets = {
   data: [
     {
@@ -72,15 +164,25 @@ const mockTickets = {
 };
 
 const jiraConnected = { connected: true, siteName: "My Site" };
+const jiraDisconnected = { connected: false, siteName: null };
 
-function setupWithTickets() {
+function setupWithTickets(jira = jiraConnected) {
   let callIndex = 0;
   mockUseQuery.mockImplementation(() => {
     const idx = callIndex++;
-    if (idx % 2 === 0) {
+    const position = idx % 3;
+    if (position === 0) {
       return { data: mockTickets, error: undefined, isLoading: false, mutate: vi.fn() };
     }
-    return { data: jiraConnected, error: undefined, isLoading: false, mutate: vi.fn() };
+    if (position === 1) {
+      return { data: jira, error: undefined, isLoading: false, mutate: vi.fn() };
+    }
+    return {
+      data: [{ id: "1", key: "YAP", name: "Yappie" }],
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    };
   });
 }
 
@@ -115,7 +217,8 @@ describe("TicketList", () => {
     let callIndex = 0;
     mockUseQuery.mockImplementation(() => {
       const idx = callIndex++;
-      if (idx % 2 === 0) {
+      const position = idx % 3;
+      if (position === 0) {
         return {
           data: { data: [], total: 0, page: 1, limit: 50 },
           error: undefined,
@@ -123,7 +226,10 @@ describe("TicketList", () => {
           mutate: vi.fn(),
         };
       }
-      return { data: jiraConnected, error: undefined, isLoading: false, mutate: vi.fn() };
+      if (position === 1) {
+        return { data: jiraConnected, error: undefined, isLoading: false, mutate: vi.fn() };
+      }
+      return { data: [], error: undefined, isLoading: false, mutate: vi.fn() };
     });
     render(<TicketList />);
     expect(screen.getByText(/no tickets/i)).toBeInTheDocument();
@@ -147,7 +253,7 @@ describe("TicketList", () => {
   it("should show Approve button for DRAFT tickets", () => {
     setupWithTickets();
     render(<TicketList />);
-    expect(screen.getByRole("button", { name: /approve fix safari/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /approve fix bug/i })).toBeInTheDocument();
   });
 
   it("should show Export button for APPROVED tickets when Jira connected and project selected", async () => {
@@ -159,13 +265,13 @@ describe("TicketList", () => {
     const select = screen.getByTestId("jira-project-select");
     await user.selectOptions(select, "YAP");
 
-    expect(screen.getByRole("button", { name: /export update button/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /export add feature/i })).toBeInTheDocument();
   });
 
   it("should not show Export button when Jira disconnected", () => {
     setupWithTickets(jiraDisconnected);
     render(<TicketList />);
-    expect(screen.queryByRole("button", { name: /export update button/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /export add feature/i })).not.toBeInTheDocument();
   });
 
   it("should call approve API when Approve clicked", async () => {
@@ -174,7 +280,7 @@ describe("TicketList", () => {
     mockApiFetcher.mockResolvedValue({});
     render(<TicketList />);
 
-    await user.click(screen.getByRole("button", { name: /approve fix safari/i }));
+    await user.click(screen.getByRole("button", { name: /approve fix bug/i }));
 
     await waitFor(() => {
       expect(mockApiFetcher).toHaveBeenCalledWith("/v1/tickets/t-1/approve", { method: "POST" });
@@ -192,7 +298,7 @@ describe("TicketList", () => {
     const select = screen.getByTestId("jira-project-select");
     await user.selectOptions(select, "YAP");
 
-    await user.click(screen.getByRole("button", { name: /export update button/i }));
+    await user.click(screen.getByRole("button", { name: /export add feature/i }));
 
     await waitFor(() => {
       expect(mockApiFetcher).toHaveBeenCalledWith(
@@ -252,7 +358,8 @@ describe("TicketList", () => {
     expect(screen.getByText("Export 1")).toBeInTheDocument();
   });
 
-  it("should define 5 columns", () => {
+  it("should call bulk approve API when Approve N clicked", async () => {
+    const user = userEvent.setup();
     setupWithTickets();
     mockApiFetcher.mockResolvedValue({});
     render(<TicketList />);
@@ -267,7 +374,8 @@ describe("TicketList", () => {
     });
   });
 
-  it("should render page title", () => {
+  it("should call bulk export API when Export N clicked", async () => {
+    const user = userEvent.setup();
     setupWithTickets();
     mockApiFetcher.mockResolvedValue({});
     render(<TicketList />);

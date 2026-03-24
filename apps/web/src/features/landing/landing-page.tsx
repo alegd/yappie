@@ -1,6 +1,6 @@
 import { PublicNavbar } from "@/components/layout/public-navbar";
 import { REGISTER_PAGE } from "@/lib/constants/pages";
-import { ArrowRight, CheckCircle, FileText, Mic, Zap } from "lucide-react";
+import { ArrowRight, FileText, Mic, Zap } from "lucide-react";
 import Link from "next/link";
 
 const features = [
@@ -25,10 +25,25 @@ const features = [
 ];
 
 const steps = [
-  "Record a voice note or upload an audio file",
-  "AI transcribes and extracts actionable tasks",
-  "Review and edit generated tickets",
-  "Export to Jira with one click",
+  {
+    title: "Record or upload",
+    description: "Capture a voice note after a meeting or upload an existing audio file.",
+  },
+  {
+    title: "AI extracts tasks",
+    description:
+      "Yappie transcribes the audio and breaks it down into structured, actionable tickets.",
+  },
+  {
+    title: "Review and edit",
+    description:
+      "Check the generated tickets, adjust titles or descriptions, and approve the ones you want.",
+  },
+  {
+    title: "Export to Jira",
+    description:
+      "Send approved tickets to your Jira project with one click — individually or in bulk.",
+  },
 ];
 
 export function LandingPage() {
@@ -38,15 +53,15 @@ export function LandingPage() {
 
       {/* Hero */}
       <section className="mx-auto px-6 py-24 max-w-4xl text-center">
-        <div className="inline-block mb-6 px-3 py-1 border border-indigo-500/20 rounded-full font-semibold text-accent text-xs uppercase tracking-wider bg-accent-surface">
-          Powered by OpenAI
+        <div className="inline-block mb-6 px-3 py-1 border border-border rounded-full font-semibold text-accent text-xs uppercase tracking-wider bg-accent-surface">
+          Powered by AI
         </div>
-        <h1 className="font-extrabold text-5xl md:text-6xl leading-tight tracking-tight">
+        <h1 className="font-extrabold text-5xl md:text-6xl tracking-tight">
           Turn voice notes into
           <br />
           <span className="text-accent">Jira tickets</span>
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-muted text-lg leading-relaxed">
+        <p className="mx-auto mt-6 max-w-2xl text-foreground text-lg leading-relaxed">
           Record your thoughts after a meeting, standup, or brainstorm. Yappie uses AI to extract
           tasks, generate structured tickets, and export them to Jira — in seconds.
         </p>
@@ -59,7 +74,7 @@ export function LandingPage() {
           </Link>
           <Link
             href="#how-it-works"
-            className="px-6 py-3 border border-border-hover hover:border-border-hover rounded-lg font-medium text-foreground text-sm transition"
+            className="px-6 py-3 border border-border-hover hover:border-border-hover rounded-lg font-medium text-foreground  transition"
           >
             How it works
           </Link>
@@ -79,7 +94,7 @@ export function LandingPage() {
                 <feature.icon size={20} className="text-accent" />
               </div>
               <h3 className="mb-2 font-semibold text-lg">{feature.title}</h3>
-              <p className="text-muted text-sm leading-relaxed">{feature.description}</p>
+              <p className="text-foreground/75 leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
@@ -92,14 +107,14 @@ export function LandingPage() {
           {steps.map((step, i) => (
             <div
               key={i}
-              className="flex items-start gap-4 bg-surface/30 p-4 border border-border/50 rounded-lg"
+              className="flex items-start gap-4 bg-surface/30 p-5 border border-border/50 rounded-lg"
             >
               <div className="flex justify-center items-center mt-0.5 rounded-full w-8 h-8 bg-accent-surface shrink-0">
-                <span className="font-bold text-accent text-sm">{i + 1}</span>
+                <span className="font-bold text-accent">{i + 1}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle size={16} className="text-emerald-500 shrink-0" />
-                <span className="text-foreground">{step}</span>
+              <div>
+                <p className="font-heading font-semibold">{step.title}</p>
+                <p className="text-muted-foreground text-sm mt-0.5">{step.description}</p>
               </div>
             </div>
           ))}
@@ -108,9 +123,9 @@ export function LandingPage() {
 
       {/* CTA */}
       <section className="mx-auto px-6 py-20 max-w-6xl text-center">
-        <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 p-12 border border-indigo-500/20 rounded-2xl">
+        <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-12 border border-border rounded-2xl">
           <h2 className="mb-4 font-bold text-3xl">Ready to stop typing tickets?</h2>
-          <p className="mb-8 text-muted">
+          <p className="mb-8 text-foreground/75">
             Join teams who save hours every week by turning meetings into actionable Jira tickets.
           </p>
           <Link
@@ -125,7 +140,7 @@ export function LandingPage() {
       {/* Footer */}
       <footer className="px-6 py-8 border-border border-t">
         <div className="flex justify-between items-center mx-auto max-w-6xl text-muted-foreground text-sm">
-          <span>Yappie — TFM Project</span>
+          <span>Yappie</span>
           <span>AGPL-3.0</span>
         </div>
       </footer>

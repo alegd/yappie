@@ -18,6 +18,10 @@ vi.mock("@/lib/api-fetcher", () => ({
   apiFetcher: mockApiFetcher,
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 vi.mock("next/link", () => ({
   default: ({ children, href, ...props }: Record<string, unknown>) => (
     <a href={href as string} {...props}>

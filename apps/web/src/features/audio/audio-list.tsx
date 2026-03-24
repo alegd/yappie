@@ -72,7 +72,7 @@ export function AudioList() {
             <select
               value={selectedProjectId}
               onChange={(e) => handleProjectChange(e.target.value)}
-              className="bg-surface px-3 py-2 border border-border-hover focus:border-indigo-500 rounded-lg focus:outline-none text-sm"
+              className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none text-sm"
               aria-label="Filter by project"
             >
               <option value="">All projects</option>
