@@ -17,7 +17,7 @@ import {
 } from "@/lib/constants/endpoints";
 import { ticketDetailPage } from "@/lib/constants/pages";
 import { ColumnDef, RowSelectionState } from "@tanstack/react-table";
-import { CheckCircle2, ExternalLink, FileText, Loader2, Upload } from "lucide-react";
+import { CheckCircle2, ExternalLink, FileText, Loader2, Trash2, Upload } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Ticket, TicketListResponse } from "./types";
@@ -98,6 +98,35 @@ export function TicketList() {
     try {
       for (const ticket of draftSelected) {
         await api.post(ticketApprove(ticket.id));
+      }
+      invalidateQuery(TICKETS_LIST);
+      setRowSelection({});
+    } catch {
+      // handle error
+    } finally {
+      setBulkActing(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this ticket?")) return;
+    setActing(id);
+    try {
+      await api.delete(ticketDetail(id));
+      invalidateQuery(TICKETS_LIST);
+    } catch {
+      // handle error
+    } finally {
+      setActing(null);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${selectedIds.length} ticket(s)?`)) return;
+    setBulkActing("delete");
+    try {
+      for (const id of selectedIds) {
+        await api.delete(ticketDetail(id));
       }
       invalidateQuery(TICKETS_LIST);
       setRowSelection({});
@@ -230,6 +259,19 @@ export function TicketList() {
                 Export
               </Button>
             )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(ticket.id);
+              }}
+              disabled={isActing}
+              className="hover:text-red-400"
+              aria-label={`Delete ${ticket.title}`}
+            >
+              <Trash2 size={12} />
+            </Button>
           </div>
         );
       },
@@ -283,6 +325,21 @@ export function TicketList() {
               <Upload size={12} />
             )}
             Export {approvedSelected.length}
+          </Button>
+        )}
+        {selectedIds.length > 0 && (
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={handleBulkDelete}
+            disabled={bulkActing !== null}
+          >
+            {bulkActing === "delete" ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : (
+              <Trash2 size={12} />
+            )}
+            Delete {selectedIds.length}
           </Button>
         )}
       </div>
