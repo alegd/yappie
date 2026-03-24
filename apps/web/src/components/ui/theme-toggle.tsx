@@ -1,7 +1,7 @@
 "use client";
 
+import { Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Monitor } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const themes = [
@@ -19,7 +19,7 @@ export function ThemeToggle() {
   if (!mounted) return null;
 
   return (
-    <div className="flex items-center gap-1 rounded-lg bg-surface-hover p-1">
+    <div className="flex items-center gap-1 p-1 rounded-lg">
       {themes.map(({ value, icon: Icon, label }) => (
         <button
           key={value}
