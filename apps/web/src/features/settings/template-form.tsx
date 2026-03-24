@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { api } from "@/lib/api";
 import { invalidateQuery } from "@/hooks/use-query";
+import { apiFetcher } from "@/lib/api-fetcher";
 import { TEMPLATES_CREATE, TEMPLATES_LIST, templateDetail } from "@/lib/constants/endpoints";
+import { PATCH, POST } from "@/lib/constants/http";
+import { Loader2, X } from "lucide-react";
+import { useState } from "react";
 
 interface TemplateFormProps {
   template?: { id: string; name: string; content: string; isDefault: boolean };
@@ -31,9 +32,9 @@ export function TemplateForm({ template, onClose }: TemplateFormProps) {
       const body = { name: name.trim(), content: content.trim(), isDefault };
 
       if (isEditing) {
-        await api.patch(templateDetail(template.id), body);
+        await apiFetcher(templateDetail(template.id), { data: body, method: PATCH });
       } else {
-        await api.post(TEMPLATES_CREATE, body);
+        await apiFetcher(TEMPLATES_CREATE, { data: body, method: POST });
       }
 
       invalidateQuery(TEMPLATES_LIST);
@@ -48,9 +49,9 @@ export function TemplateForm({ template, onClose }: TemplateFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-surface/50 border border-border rounded-lg p-4 space-y-4"
+      className="space-y-4 bg-surface/50 p-4 border border-border rounded-lg"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <h3 className="font-medium text-sm">{isEditing ? "Edit template" : "New template"}</h3>
         <button
           type="button"
@@ -63,13 +64,13 @@ export function TemplateForm({ template, onClose }: TemplateFormProps) {
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg p-3">
+        <div className="bg-red-500/10 p-3 border border-red-500/20 rounded-lg text-red-400 text-sm">
           {error}
         </div>
       )}
 
       <div>
-        <label htmlFor="template-name" className="block text-sm font-medium text-muted mb-1">
+        <label htmlFor="template-name" className="block mb-1 font-medium text-muted text-sm">
           Name
         </label>
         <input
@@ -79,12 +80,12 @@ export function TemplateForm({ template, onClose }: TemplateFormProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Bug Report"
-          className="w-full bg-surface border border-border-hover rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary transition"
+          className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full text-sm transition"
         />
       </div>
 
       <div>
-        <label htmlFor="template-content" className="block text-sm font-medium text-muted mb-1">
+        <label htmlFor="template-content" className="block mb-1 font-medium text-muted text-sm">
           Content
         </label>
         <textarea
@@ -94,7 +95,7 @@ export function TemplateForm({ template, onClose }: TemplateFormProps) {
           onChange={(e) => setContent(e.target.value)}
           placeholder="## Description&#10;&#10;## Steps to reproduce&#10;&#10;## Expected behavior"
           rows={6}
-          className="w-full bg-surface border border-border-hover rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary transition resize-none"
+          className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full text-sm transition resize-none"
         />
       </div>
 
@@ -103,7 +104,7 @@ export function TemplateForm({ template, onClose }: TemplateFormProps) {
           type="checkbox"
           checked={isDefault}
           onChange={(e) => setIsDefault(e.target.checked)}
-          className="rounded border-zinc-600"
+          className="border-zinc-600 rounded"
         />
         <span className="text-muted-foreground">Set as default template</span>
       </label>

@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card/Card";
 import { DataTable } from "@/components/ui/data-table";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
-import { useTableOptions } from "@/hooks/use-table-options";
-import { api } from "@/lib/api";
+import { apiFetcher } from "@/lib/api-fetcher";
 import {
   JIRA_PROJECTS,
   JIRA_STATUS,
@@ -16,12 +15,14 @@ import {
   ticketDetail,
   ticketExport,
 } from "@/lib/constants/endpoints";
+import { POST } from "@/lib/constants/http";
 import { ticketDetailPage } from "@/lib/constants/pages";
 import { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import { CheckCircle2, ExternalLink, FileText, Loader2, Trash2, Upload } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Ticket, TicketListResponse } from "./types";
+import { JiraProjectSelect } from "./components/jira-project-select";
+import { TicketListResponse } from "./types";
 
 const priorityVariants: Record<string, "default" | "warning" | "orange" | "danger"> = {
   LOW: "default",
@@ -57,7 +58,6 @@ export function TicketList() {
   );
   const [acting, setActing] = useState<string | null>(null);
   const [bulkActing, setBulkActing] = useState<string | null>(null);
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [jiraProjectKey, setJiraProjectKey] = useState("");
 
   const tickets = ticketData?.data ?? [];
@@ -72,7 +72,7 @@ export function TicketList() {
   const handleApprove = async (id: string) => {
     setActing(id);
     try {
-      await api.post(ticketApprove(id));
+      await apiFetcher(ticketApprove(id), { method: POST });
       invalidateQuery(TICKETS_LIST);
     } catch {
       // handle error
@@ -85,7 +85,7 @@ export function TicketList() {
     if (!jiraProjectKey) return;
     setActing(id);
     try {
-      await api.post(ticketExport(id, jiraProjectKey));
+      await apiFetcher(ticketExport(id, jiraProjectKey), { method: POST });
       invalidateQuery(TICKETS_LIST);
     } catch {
       // handle error
@@ -98,7 +98,7 @@ export function TicketList() {
     setBulkActing("approve");
     try {
       for (const ticket of draftSelected) {
-        await api.post(ticketApprove(ticket.id));
+        await apiFetcher(ticketApprove(ticket.id), { method: POST });
       }
       invalidateQuery(TICKETS_LIST);
       setRowSelection({});
@@ -142,9 +142,12 @@ export function TicketList() {
     if (!jiraProjectKey) return;
     setBulkActing("export");
     try {
-      await api.post(TICKETS_EXPORT_BULK, {
-        ticketIds: approvedSelected.map((t) => t.id),
-        projectKey: jiraProjectKey,
+      await apiFetcher(TICKETS_EXPORT_BULK, {
+        data: {
+          ticketIds: approvedSelected.map((t) => t.id),
+          projectKey: jiraProjectKey,
+        },
+        method: POST,
       });
       invalidateQuery(TICKETS_LIST);
       setRowSelection({});
@@ -230,9 +233,22 @@ export function TicketList() {
         const ticket = row.original;
         const isActing = acting === ticket.id;
 
-        return (
-          <div className="flex justify-end gap-1">
-            {ticket.status === "DRAFT" && (
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-4">
+          <h1 className="font-bold text-2xl">Tickets</h1>
+          {isJiraConnected && (
+            <JiraProjectSelect value={jiraProjectKey} onChange={setJiraProjectKey} />
+          )}
+        </div>
+
+        {/* Bulk action bar */}
+        {selected.size > 0 && (
+          <div className="flex items-center gap-3">
+            <span className="text-muted text-sm">{selected.size} selected</span>
+
+            {draftSelected.length > 0 && (
               <Button
                 variant="outlined"
                 size="sm"
@@ -251,7 +267,8 @@ export function TicketList() {
                 Approve
               </Button>
             )}
-            {ticket.status === "APPROVED" && isJiraConnected && jiraProjectKey && (
+
+            {approvedSelected.length > 0 && isJiraConnected && jiraProjectKey && (
               <Button
                 variant="outlined"
                 size="sm"
@@ -298,72 +315,82 @@ export function TicketList() {
     );
   }
 
-  const toolbar = (
-    <div className="flex justify-between items-center w-full">
-      <div className="flex items-center gap-3">
-        {selectedIds.length > 0 && (
-          <span className="text-muted text-sm">{selectedIds.length} selected</span>
-        )}
-        {draftSelected.length > 0 && (
-          <Button
-            size="sm"
-            onClick={handleBulkApprove}
-            disabled={bulkActing !== null}
-            className="bg-emerald-600 hover:bg-emerald-500"
-          >
-            {bulkActing === "approve" ? (
-              <Loader2 size={12} className="animate-spin" />
-            ) : (
-              <CheckCircle2 size={12} />
-            )}
-            Approve {draftSelected.length}
-          </Button>
-        )}
-        {approvedSelected.length > 0 && isJiraConnected && jiraProjectKey && (
-          <Button
-            size="sm"
-            onClick={handleBulkExport}
-            disabled={bulkActing !== null}
-            className="bg-blue-600 hover:bg-blue-500"
-          >
-            {bulkActing === "export" ? (
-              <Loader2 size={12} className="animate-spin" />
-            ) : (
-              <Upload size={12} />
-            )}
-            Export {approvedSelected.length}
-          </Button>
-        )}
-        {selectedIds.length > 0 && (
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={handleBulkDelete}
-            disabled={bulkActing !== null}
-          >
-            {bulkActing === "delete" ? (
-              <Loader2 size={12} className="animate-spin" />
-            ) : (
-              <Trash2 size={12} />
-            )}
-            Delete {selectedIds.length}
-          </Button>
-        )}
-      </div>
-      {isJiraConnected && jiraProjects && jiraProjects.length > 0 && (
-        <select
-          value={jiraProjectKey}
-          onChange={(e) => setJiraProjectKey(e.target.value)}
-          className="bg-surface px-3 py-1.5 border border-border-hover focus:border-primary rounded-lg focus:outline-none text-sm transition"
-          aria-label="Jira project"
-        >
-          <option value="">Select Jira project</option>
-          {jiraProjects.map((p) => (
-            <option key={p.id} value={p.key}>
-              {p.key} — {p.name}
-            </option>
-          ))}
-        </select>
+            return (
+              <Card
+                key={ticket.id}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 border rounded-lg transition",
+                  selected.has(ticket.id)
+                    ? "bg-indigo-500/5 border-indigo-500/20"
+                    : "border-border hover:border-border-hover",
+                )}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.has(ticket.id)}
+                  onChange={() => handleToggle(ticket.id)}
+                  className="border-zinc-600 rounded"
+                />
+                <Link
+                  href={ticketDetailPage(ticket.id)}
+                  className="flex-1 font-medium hover:text-accent text-sm truncate transition"
+                >
+                  {ticket.title}
+                </Link>
+                <Badge variant={priorityVariants[ticket.priority]} className="w-20 text-center">
+                  {ticket.priority}
+                </Badge>
+                <Badge variant={statusVariants[ticket.status]} className="w-24 text-center">
+                  {ticket.status}
+                </Badge>
+                <span className="w-20 text-center">
+                  {ticket.jiraIssueKey ? (
+                    <span className="flex justify-center items-center gap-1 text-blue-400 text-xs">
+                      {ticket.jiraIssueKey}
+                      <ExternalLink size={10} />
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">—</span>
+                  )}
+                </span>
+                <span className="flex justify-center w-24">
+                  {ticket.status === "DRAFT" && (
+                    <Button
+                      variant="outlined"
+                      size="sm"
+                      onClick={() => handleApprove(ticket.id)}
+                      disabled={isActing}
+                      aria-label={`Approve ${ticket.title}`}
+                    >
+                      {isActing ? (
+                        <Loader2 size={12} className="animate-spin" />
+                      ) : (
+                        <CheckCircle2 size={12} />
+                      )}
+                      Approve
+                    </Button>
+                  )}
+                  {ticket.status === "APPROVED" && isJiraConnected && jiraProjectKey && (
+                    <Button
+                      variant="outlined"
+                      size="sm"
+                      onClick={() => handleExport(ticket.id)}
+                      disabled={isActing}
+                      aria-label={`Export ${ticket.title}`}
+                    >
+                      {isActing ? (
+                        <Loader2 size={12} className="animate-spin" />
+                      ) : (
+                        <Upload size={12} />
+                      )}
+                      Export
+                    </Button>
+                  )}
+                </span>
+              </Card>
+            );
+          })}
+        </div>
       )}
     </div>
   );

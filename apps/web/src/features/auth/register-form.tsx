@@ -1,9 +1,10 @@
 "use client";
 
-import { AUDIOS_PAGE, LOGIN_PAGE } from "@/lib/constants/pages";
-import { AUTH_REGISTER } from "@/lib/constants/endpoints";
 import { Button } from "@/components/ui/button";
-import { api } from "@/lib/api";
+import { apiFetcher } from "@/lib/api-fetcher";
+import { AUTH_REGISTER } from "@/lib/constants/endpoints";
+import { POST } from "@/lib/constants/http";
+import { AUDIOS_PAGE, LOGIN_PAGE } from "@/lib/constants/pages";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
@@ -21,7 +22,7 @@ export function RegisterForm() {
     setLoading(true);
 
     try {
-      await api.post(AUTH_REGISTER, { name, email, password });
+      await apiFetcher(AUTH_REGISTER, { data: { name, email, password }, method: POST });
 
       await signIn("credentials", {
         email,

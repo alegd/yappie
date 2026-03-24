@@ -2,18 +2,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { AudioUpload } from "./audio-upload";
 
-const { mockUpload } = vi.hoisted(() => ({
-  mockUpload: vi.fn(),
+const { mockApiFetcher } = vi.hoisted(() => ({
+  mockApiFetcher: vi.fn(),
 }));
 
-vi.mock("@/lib/api", () => ({
-  api: {
-    upload: mockUpload,
-  },
-}));
-
-vi.mock("@/lib/constants/endpoints", () => ({
-  AUDIO_UPLOAD: "/audio/upload",
+vi.mock("@/lib/api-fetcher", () => ({
+  apiFetcher: mockApiFetcher,
 }));
 
 const mockOnUploaded = vi.fn();
@@ -56,9 +50,9 @@ describe("AudioUpload", () => {
     expect(recordButton).not.toBeDisabled();
   });
 
-  it("should call api.upload when file is selected", async () => {
+  it("should call apiFetcher when file is selected", async () => {
     const mockResult = { id: "a-1", fileName: "test.mp3" };
-    mockUpload.mockResolvedValue(mockResult);
+    mockApiFetcher.mockResolvedValue(mockResult);
 
     const { container } = render(<AudioUpload onUploaded={mockOnUploaded} />);
 
@@ -68,7 +62,11 @@ describe("AudioUpload", () => {
     fireEvent.change(input, { target: { files: [file] } });
 
     await waitFor(() => {
-      expect(mockUpload).toHaveBeenCalledWith("/audio/upload", file, {});
+      expect(mockApiFetcher).toHaveBeenCalledWith("/v1/audio/upload", {
+        data: { file: { name: "file", value: [file] } },
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data" },
+      });
     });
 
     await waitFor(() => {
@@ -76,9 +74,9 @@ describe("AudioUpload", () => {
     });
   });
 
-  it("should call api.upload with projectId when provided", async () => {
+  it("should call apiFetcher with projectId when provided", async () => {
     const mockResult = { id: "a-1", fileName: "test.mp3" };
-    mockUpload.mockResolvedValue(mockResult);
+    mockApiFetcher.mockResolvedValue(mockResult);
 
     const { container } = render(<AudioUpload projectId="p-1" onUploaded={mockOnUploaded} />);
 
@@ -88,8 +86,10 @@ describe("AudioUpload", () => {
     fireEvent.change(input, { target: { files: [file] } });
 
     await waitFor(() => {
-      expect(mockUpload).toHaveBeenCalledWith("/audio/upload", file, {
-        projectId: "p-1",
+      expect(mockApiFetcher).toHaveBeenCalledWith("/v1/audio/upload?projectId=p-1", {
+        data: { file: { name: "file", value: [file] } },
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data" },
       });
     });
   });
@@ -100,7 +100,7 @@ describe("AudioUpload", () => {
 
     fireEvent.change(input, { target: { files: [] } });
 
-    expect(mockUpload).not.toHaveBeenCalled();
+    expect(mockApiFetcher).not.toHaveBeenCalled();
   });
 
   it("should start and stop recording", async () => {
@@ -159,7 +159,7 @@ describe("AudioUpload", () => {
   });
 
   it("should show error message when upload fails", async () => {
-    mockUpload.mockRejectedValue(new Error("Upload failed"));
+    mockApiFetcher.mockRejectedValue(new Error("Upload failed"));
 
     const { container } = render(<AudioUpload onUploaded={mockOnUploaded} />);
 

@@ -2,8 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
-import { api } from "@/lib/api";
+import { apiFetcher } from "@/lib/api-fetcher";
 import { PROJECTS_LIST, projectDetail } from "@/lib/constants/endpoints";
+import { DELETE } from "@/lib/constants/http";
 import { NEW_PROJECT_PAGE, editProjectPage } from "@/lib/constants/pages";
 import { Brain, FolderOpen, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -18,7 +19,7 @@ export function ProjectList() {
     if (!confirm("Are you sure you want to delete this project?")) return;
 
     try {
-      await api.delete(projectDetail(id));
+      await apiFetcher(projectDetail(id), { method: DELETE });
       invalidateQuery(PROJECTS_LIST);
     } catch {
       // handle error

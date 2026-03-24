@@ -1,7 +1,7 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import { DashboardContent } from "@/components/layout/dashboard-content";
+import { auth } from "@/lib/auth";
 import { LOGIN_PAGE } from "@/lib/constants/pages";
+import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -12,7 +12,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <DashboardContent
-      accessToken={session.accessToken}
       user={{
         name: session.user?.name || "",
         email: session.user?.email || "",

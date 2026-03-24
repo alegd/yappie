@@ -3,13 +3,10 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ProjectList } from "./project-list";
 
-const { mockUseQuery, mockInvalidateQuery } = vi.hoisted(() => ({
+const { mockUseQuery, mockInvalidateQuery, mockApiFetcher } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
   mockInvalidateQuery: vi.fn(),
-}));
-
-const { mockDelete } = vi.hoisted(() => ({
-  mockDelete: vi.fn(),
+  mockApiFetcher: vi.fn(),
 }));
 
 vi.mock("@/hooks/use-query", () => ({
@@ -17,8 +14,8 @@ vi.mock("@/hooks/use-query", () => ({
   invalidateQuery: mockInvalidateQuery,
 }));
 
-vi.mock("@/lib/api", () => ({
-  api: { delete: mockDelete },
+vi.mock("@/lib/api-fetcher", () => ({
+  apiFetcher: mockApiFetcher,
 }));
 
 vi.mock("next/link", () => ({
@@ -135,7 +132,7 @@ describe("ProjectList", () => {
   it("should delete project when confirmed", async () => {
     const user = userEvent.setup();
     vi.spyOn(window, "confirm").mockReturnValue(true);
-    mockDelete.mockResolvedValue(undefined);
+    mockApiFetcher.mockResolvedValue(undefined);
 
     mockUseQuery.mockReturnValue({
       data: mockProjects,
@@ -149,7 +146,7 @@ describe("ProjectList", () => {
     const deleteButtons = screen.getAllByRole("button", { name: /delete/i });
     await user.click(deleteButtons[0]);
 
-    expect(mockDelete).toHaveBeenCalled();
+    expect(mockApiFetcher).toHaveBeenCalledWith("/v1/projects/p-1", { method: "DELETE" });
     expect(mockInvalidateQuery).toHaveBeenCalled();
   });
 
@@ -169,6 +166,6 @@ describe("ProjectList", () => {
     const deleteButtons = screen.getAllByRole("button", { name: /delete/i });
     await user.click(deleteButtons[0]);
 
-    expect(mockDelete).not.toHaveBeenCalled();
+    expect(mockApiFetcher).not.toHaveBeenCalled();
   });
 });

@@ -3,12 +3,14 @@
 import {
   ANALYTICS_PAGE,
   AUDIOS_PAGE,
+  LOGIN_PAGE,
   PROJECTS_PAGE,
   SETTINGS_PAGE,
   TICKETS_PAGE,
 } from "@/lib/constants/pages";
 import { cn } from "@/lib/utils";
 import { BarChart3, FileText, FolderOpen, LogOut, Menu, Mic, Settings, X } from "lucide-react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -23,12 +25,15 @@ const navItems = [
 
 interface SidebarProps {
   user: { name: string; email: string } | null;
-  onLogout: () => void;
 }
 
-export function Sidebar({ user, onLogout }: SidebarProps) {
+export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleLogout = () => {
+    signOut({ redirectTo: LOGIN_PAGE });
+  };
 
   return (
     <>
@@ -97,7 +102,7 @@ export function Sidebar({ user, onLogout }: SidebarProps) {
               <p className="text-muted-foreground text-xs truncate">{user?.email}</p>
             </div>
             <button
-              onClick={onLogout}
+              onClick={handleLogout}
               className="text-muted-foreground hover:text-foreground transition"
             >
               <LogOut size={16} />

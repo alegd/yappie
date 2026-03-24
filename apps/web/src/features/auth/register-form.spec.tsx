@@ -3,20 +3,17 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RegisterForm } from "./register-form";
 
-const { mockSignIn } = vi.hoisted(() => ({
+const { mockSignIn, mockApiFetcher } = vi.hoisted(() => ({
   mockSignIn: vi.fn(),
-}));
-
-const { mockPost } = vi.hoisted(() => ({
-  mockPost: vi.fn(),
+  mockApiFetcher: vi.fn(),
 }));
 
 vi.mock("next-auth/react", () => ({
   signIn: mockSignIn,
 }));
 
-vi.mock("@/lib/api", () => ({
-  api: { post: mockPost, setToken: vi.fn() },
+vi.mock("@/lib/api-fetcher", () => ({
+  apiFetcher: mockApiFetcher,
 }));
 
 vi.mock("next/link", () => ({
@@ -55,7 +52,7 @@ describe("RegisterForm", () => {
 
   it("should show 'Creating account...' while submitting", async () => {
     const user = userEvent.setup();
-    mockPost.mockReturnValue(new Promise(() => {}));
+    mockApiFetcher.mockReturnValue(new Promise(() => {}));
 
     render(<RegisterForm />);
 
@@ -67,9 +64,9 @@ describe("RegisterForm", () => {
     expect(screen.getByRole("button", { name: "Creating account..." })).toBeInTheDocument();
   });
 
-  it("should call api.post then signIn on successful registration", async () => {
+  it("should call apiFetcher then signIn on successful registration", async () => {
     const user = userEvent.setup();
-    mockPost.mockResolvedValue({ id: "user-1" });
+    mockApiFetcher.mockResolvedValue({ id: "user-1" });
     mockSignIn.mockResolvedValue(undefined);
 
     render(<RegisterForm />);
@@ -80,10 +77,13 @@ describe("RegisterForm", () => {
     await user.click(screen.getByRole("button", { name: "Create account" }));
 
     await waitFor(() => {
-      expect(mockPost).toHaveBeenCalledWith("/auth/register", {
-        name: "John Doe",
-        email: "john@example.com",
-        password: "password123",
+      expect(mockApiFetcher).toHaveBeenCalledWith("/auth/register", {
+        data: {
+          name: "John Doe",
+          email: "john@example.com",
+          password: "password123",
+        },
+        method: "POST",
       });
     });
 
@@ -98,7 +98,7 @@ describe("RegisterForm", () => {
 
   it("should show error when backend returns error", async () => {
     const user = userEvent.setup();
-    mockPost.mockRejectedValue(new Error("Email already in use"));
+    mockApiFetcher.mockRejectedValue(new Error("Email already in use"));
 
     render(<RegisterForm />);
 
@@ -116,7 +116,7 @@ describe("RegisterForm", () => {
 
   it("should show generic error when non-Error is thrown", async () => {
     const user = userEvent.setup();
-    mockPost.mockRejectedValue("something went wrong");
+    mockApiFetcher.mockRejectedValue("something went wrong");
 
     render(<RegisterForm />);
 
