@@ -6,10 +6,10 @@
  * (e.g., to react-query), only this file needs to be updated.
  */
 
-import type { KeyedMutator } from "swr";
+import { apiFetcher } from "@/lib/api-fetcher";
+import type { Key, KeyedMutator, SWRConfiguration } from "swr";
 import useSWR, { mutate as globalMutate } from "swr";
 import useSWRMutation from "swr/mutation";
-import { api } from "@/lib/api";
 
 // ─── useQuery ───────────────────────────────────────────
 
@@ -20,8 +20,8 @@ export interface QueryResult<T> {
   mutate: KeyedMutator<T>;
 }
 
-export const useQuery = <T>(key: string | null): QueryResult<T> => {
-  const { data, error, isLoading, mutate } = useSWR<T>(key, (url: string) => api.get<T>(url));
+export const useQuery = <T>(key: Key | null, options?: SWRConfiguration): QueryResult<T> => {
+  const { data, error, isLoading, mutate } = useSWR<T>(key, options);
   return { data, error, isLoading, mutate };
 };
 
@@ -29,40 +29,50 @@ export const useQuery = <T>(key: string | null): QueryResult<T> => {
 
 type MutationMethod = "POST" | "PUT" | "DELETE" | "PATCH";
 
-interface MutationOptions<T> {
+type MutationOptions<T> = {
+  queryKey: string;
   method: MutationMethod;
   invalidateKeys?: string[];
   onSuccess?: (data: T) => void;
-}
+  headers?: object;
+};
 
-export function useMutation<T>(
-  endpoint: string,
-  { method, invalidateKeys, onSuccess }: MutationOptions<T>,
-) {
+export function useMutation<T>({
+  queryKey,
+  method,
+  invalidateKeys,
+  headers,
+  onSuccess,
+}: MutationOptions<T>) {
+  const keyString = typeof queryKey === "string" ? queryKey : queryKey[0];
+
   const { trigger, isMutating, error } = useSWRMutation<T, Error, string, unknown>(
-    endpoint,
-    async (url: string, { arg }: { arg: unknown }) => {
-      switch (method) {
-        case "POST":
-          return api.post<T>(url, arg);
-        case "PUT":
-        case "PATCH":
-          return api.patch<T>(url, arg);
-        case "DELETE":
-          return api.delete<T>(url);
-        default:
-          throw new Error(`Unsupported method: ${method}`);
+    keyString,
+    async (_url, { arg }) => {
+      const res = await apiFetcher(queryKey, {
+        method,
+        data: arg,
+        ...(headers ? { headers } : undefined),
+      });
+
+      if (!res || res.success === false || res.error) {
+        throw res.error;
       }
+
+      return res;
     },
     {
       onSuccess: async (response) => {
-        await invalidateQuery(endpoint);
+        await invalidateQuery(keyString);
 
         if (invalidateKeys?.length) {
           await Promise.all(invalidateKeys.map((key) => invalidateQuery(key)));
         }
 
         onSuccess?.(response as T);
+      },
+      onError: (err) => {
+        throw err;
       },
     },
   );

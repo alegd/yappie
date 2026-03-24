@@ -2,7 +2,7 @@
 export const HOME_PAGE = "/";
 export const LOGIN_PAGE = "/login";
 export const REGISTER_PAGE = "/register";
-
+export const LOGOUT_PAGE = "/logout";
 // ─── Dashboard ───────────────────────────────────────────
 export const DASHBOARD_PAGE = "/dashboard";
 export const AUDIOS_PAGE = "/dashboard/audios";
