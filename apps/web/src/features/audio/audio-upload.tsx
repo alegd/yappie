@@ -1,8 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { api } from "@/lib/api";
+import { apiFetcher } from "@/lib/api-fetcher";
 import { AUDIO_UPLOAD } from "@/lib/constants/endpoints";
+import { POST } from "@/lib/constants/http";
 import { Loader2, Mic, Square, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { AudioRecording } from "./types";
@@ -31,9 +32,14 @@ export function AudioUpload({ projectId, onUploaded }: AudioUploadProps) {
     setError("");
     setUploading(true);
     try {
-      const params: Record<string, string> = {};
-      if (projectId) params.projectId = projectId;
-      const result = await api.upload<AudioRecording>(AUDIO_UPLOAD, file, params);
+      const url = projectId ? `${AUDIO_UPLOAD}?projectId=${projectId}` : AUDIO_UPLOAD;
+
+      const result = await apiFetcher(url, {
+        data: { file: { name: "file", value: [file] } },
+        method: POST,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
       onUploaded(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");

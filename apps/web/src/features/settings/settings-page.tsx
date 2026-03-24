@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
-import { api } from "@/lib/api";
+import { apiFetcher } from "@/lib/api-fetcher";
 import {
   JIRA_AUTH,
   JIRA_DISCONNECT,
@@ -11,6 +11,7 @@ import {
   TEMPLATES_LIST,
   templateDetail,
 } from "@/lib/constants/endpoints";
+import { DELETE } from "@/lib/constants/http";
 import {
   CheckCircle2,
   FileText,
@@ -47,7 +48,7 @@ export function SettingsPage() {
 
   const handleConnectJira = async () => {
     try {
-      const data = await api.get<{ url: string }>(JIRA_AUTH);
+      const data = await apiFetcher(JIRA_AUTH);
       window.location.href = data.url;
     } catch {
       // handle error
@@ -59,7 +60,7 @@ export function SettingsPage() {
 
     setDisconnecting(true);
     try {
-      await api.delete(JIRA_DISCONNECT);
+      await apiFetcher(JIRA_DISCONNECT, { method: DELETE });
       invalidateQuery(JIRA_STATUS);
     } catch {
       // handle error
@@ -82,7 +83,7 @@ export function SettingsPage() {
     if (!confirm("Are you sure you want to delete this template?")) return;
 
     try {
-      await api.delete(templateDetail(id));
+      await apiFetcher(templateDetail(id), { method: DELETE });
       invalidateQuery(TEMPLATES_LIST);
     } catch {
       // handle error

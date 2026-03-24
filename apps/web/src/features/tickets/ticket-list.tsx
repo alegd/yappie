@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card/Card";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
-import { api } from "@/lib/api";
+import { apiFetcher } from "@/lib/api-fetcher";
 import {
   JIRA_STATUS,
   TICKETS_EXPORT_BULK,
@@ -12,11 +12,13 @@ import {
   ticketApprove,
   ticketExport,
 } from "@/lib/constants/endpoints";
+import { POST } from "@/lib/constants/http";
 import { ticketDetailPage } from "@/lib/constants/pages";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, ExternalLink, FileText, Loader2, Upload } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { JiraProjectSelect } from "./components/jira-project-select";
 import { TicketListResponse } from "./types";
 
 const priorityVariants: Record<string, "default" | "warning" | "orange" | "danger"> = {
@@ -44,6 +46,7 @@ export function TicketList() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [acting, setActing] = useState<string | null>(null);
   const [bulkActing, setBulkActing] = useState<string | null>(null);
+  const [jiraProjectKey, setJiraProjectKey] = useState("");
 
   const tickets = ticketData?.data ?? [];
   const isJiraConnected = jiraStatus?.connected ?? false;
@@ -72,7 +75,7 @@ export function TicketList() {
   const handleApprove = async (id: string) => {
     setActing(id);
     try {
-      await api.post(ticketApprove(id));
+      await apiFetcher(ticketApprove(id), { method: POST });
       invalidateQuery(TICKETS_LIST);
     } catch {
       // handle error
@@ -84,7 +87,7 @@ export function TicketList() {
   const handleExport = async (id: string) => {
     setActing(id);
     try {
-      await api.post(ticketExport(id, "YAP"));
+      await apiFetcher(ticketExport(id, jiraProjectKey), { method: POST });
       invalidateQuery(TICKETS_LIST);
     } catch {
       // handle error
@@ -97,7 +100,7 @@ export function TicketList() {
     setBulkActing("approve");
     try {
       for (const ticket of draftSelected) {
-        await api.post(ticketApprove(ticket.id));
+        await apiFetcher(ticketApprove(ticket.id), { method: POST });
       }
       invalidateQuery(TICKETS_LIST);
       setSelected(new Set());
@@ -111,9 +114,12 @@ export function TicketList() {
   const handleBulkExport = async () => {
     setBulkActing("export");
     try {
-      await api.post(TICKETS_EXPORT_BULK, {
-        ticketIds: approvedSelected.map((t) => t.id),
-        projectKey: "YAP",
+      await apiFetcher(TICKETS_EXPORT_BULK, {
+        data: {
+          ticketIds: approvedSelected.map((t) => t.id),
+          projectKey: jiraProjectKey,
+        },
+        method: POST,
       });
       invalidateQuery(TICKETS_LIST);
       setSelected(new Set());
@@ -136,7 +142,12 @@ export function TicketList() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="font-bold text-2xl">Tickets</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="font-bold text-2xl">Tickets</h1>
+          {isJiraConnected && (
+            <JiraProjectSelect value={jiraProjectKey} onChange={setJiraProjectKey} />
+          )}
+        </div>
 
         {/* Bulk action bar */}
         {selected.size > 0 && (
@@ -159,7 +170,7 @@ export function TicketList() {
               </Button>
             )}
 
-            {approvedSelected.length > 0 && isJiraConnected && (
+            {approvedSelected.length > 0 && isJiraConnected && jiraProjectKey && (
               <Button
                 size="sm"
                 onClick={handleBulkExport}
@@ -260,7 +271,7 @@ export function TicketList() {
                       Approve
                     </Button>
                   )}
-                  {ticket.status === "APPROVED" && isJiraConnected && (
+                  {ticket.status === "APPROVED" && isJiraConnected && jiraProjectKey && (
                     <Button
                       variant="outlined"
                       size="sm"

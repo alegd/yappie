@@ -41,6 +41,7 @@ export function AudioList() {
   const audioKey = selectedProjectId ? audioByProject(selectedProjectId) : AUDIO_LIST;
 
   const { data: audioData, isLoading: isLoadingAudios } = useQuery<AudioListResponse>(audioKey);
+
   const { data: projectData } = useQuery<ProjectListResponse>(PROJECTS_LIST);
 
   const audios = audioData?.data ?? [];

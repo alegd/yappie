@@ -1,29 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import {
-  ArrowLeft,
-  Loader2,
-  AlertCircle,
-  CheckCircle2,
-  Upload,
-  Pencil,
-  X,
-  Save,
-} from "lucide-react";
-import { useQuery, invalidateQuery } from "@/hooks/use-query";
-import { api } from "@/lib/api";
-import {
-  ticketDetail,
-  ticketApprove,
-  ticketExport,
-  TICKETS_LIST,
-  JIRA_STATUS,
-} from "@/lib/constants/endpoints";
-import { TICKETS_PAGE } from "@/lib/constants/pages";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { invalidateQuery, useQuery } from "@/hooks/use-query";
+import { apiFetcher } from "@/lib/api-fetcher";
+import {
+  JIRA_STATUS,
+  ticketApprove,
+  ticketDetail,
+  ticketExport,
+  TICKETS_LIST,
+} from "@/lib/constants/endpoints";
+import { PATCH, POST } from "@/lib/constants/http";
+import { TICKETS_PAGE } from "@/lib/constants/pages";
+import {
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle2,
+  Loader2,
+  Pencil,
+  Save,
+  Upload,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { JiraProjectSelect } from "./components/jira-project-select";
 import { Ticket } from "./types";
 
 const priorityVariants: Record<string, "default" | "warning" | "orange" | "danger"> = {
@@ -57,6 +59,7 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
   const [acting, setActing] = useState(false);
+  const [jiraProjectKey, setJiraProjectKey] = useState("");
 
   const isJiraConnected = jiraStatus?.connected ?? false;
 
@@ -74,7 +77,7 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.patch(ticketDetail(ticketId), { title, description });
+      await apiFetcher(ticketDetail(ticketId), { data: { title, description }, method: PATCH });
       invalidateQuery(ticketDetail(ticketId));
       invalidateQuery(TICKETS_LIST);
       setEditing(false);
@@ -88,7 +91,7 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
   const handleApprove = async () => {
     setActing(true);
     try {
-      await api.post(ticketApprove(ticketId));
+      await apiFetcher(ticketApprove(ticketId), { method: POST });
       invalidateQuery(ticketDetail(ticketId));
       invalidateQuery(TICKETS_LIST);
     } catch {
@@ -101,7 +104,7 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
   const handleExport = async () => {
     setActing(true);
     try {
-      await api.post(ticketExport(ticketId, "YAP"));
+      await apiFetcher(ticketExport(ticketId, jiraProjectKey), { method: POST });
       invalidateQuery(ticketDetail(ticketId));
       invalidateQuery(TICKETS_LIST);
     } catch {
@@ -113,8 +116,8 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 size={24} className="animate-spin text-muted-foreground" />
+      <div className="flex justify-center items-center py-20">
+        <Loader2 size={24} className="text-muted-foreground animate-spin" />
         <span className="ml-2 text-muted-foreground">Loading...</span>
       </div>
     );
@@ -122,12 +125,12 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
 
   if (fetchError || !ticket) {
     return (
-      <div className="text-center py-20">
-        <AlertCircle size={48} className="mx-auto mb-4 text-red-400 opacity-50" />
+      <div className="py-20 text-center">
+        <AlertCircle size={48} className="opacity-50 mx-auto mb-4 text-red-400" />
         <p className="text-red-400">{fetchError?.message || "Ticket not found"}</p>
         <Link
           href={TICKETS_PAGE}
-          className="text-sm text-accent hover:text-accent mt-4 inline-block"
+          className="inline-block mt-4 text-accent hover:text-accent text-sm"
         >
           Back to tickets
         </Link>
@@ -172,15 +175,18 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
             </Button>
           )}
           {ticket.status === "APPROVED" && isJiraConnected && (
-            <Button
-              size="sm"
-              onClick={handleExport}
-              disabled={acting}
-              className="bg-blue-600 hover:bg-blue-500"
-            >
-              {acting ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-              Export to Jira
-            </Button>
+            <>
+              <JiraProjectSelect value={jiraProjectKey} onChange={setJiraProjectKey} />
+              <Button
+                size="sm"
+                onClick={handleExport}
+                disabled={acting || !jiraProjectKey}
+                className="bg-blue-600 hover:bg-blue-500"
+              >
+                {acting ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                Export
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -190,15 +196,15 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full bg-surface border border-border-hover rounded-lg px-3 py-2 text-xl font-bold mb-4 focus:outline-none focus:border-primary transition"
+          className="bg-surface mb-4 px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full font-bold text-xl transition"
         />
       ) : (
-        <h1 className="text-xl font-bold mb-4">{ticket.title}</h1>
+        <h1 className="mb-4 font-bold text-xl">{ticket.title}</h1>
       )}
 
       {/* Description */}
       <div className="mb-6">
-        <h2 className="text-sm font-semibold text-muted uppercase tracking-wider mb-2">
+        <h2 className="mb-2 font-semibold text-muted text-sm uppercase tracking-wider">
           Description
         </h2>
         {editing ? (
@@ -206,11 +212,11 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={8}
-            className="w-full bg-surface border border-border-hover rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary transition resize-none"
+            className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full text-sm transition resize-none"
           />
         ) : (
-          <div className="bg-surface/50 border border-border rounded-lg p-4">
-            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+          <div className="bg-surface/50 p-4 border border-border rounded-lg">
+            <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap">
               {ticket.description}
             </p>
           </div>
@@ -232,7 +238,7 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
       )}
 
       {/* Metadata */}
-      <div className="bg-surface/50 border border-border rounded-lg p-4 space-y-3">
+      <div className="space-y-3 bg-surface/50 p-4 border border-border rounded-lg">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Created</span>
           <span>{new Date(ticket.createdAt).toLocaleString()}</span>

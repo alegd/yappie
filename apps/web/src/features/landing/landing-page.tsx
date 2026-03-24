@@ -31,14 +31,10 @@ const steps = [
   "Export to Jira with one click",
 ];
 
-interface LandingPageProps {
-  isAuthenticated?: boolean;
-}
-
-export function LandingPage({ isAuthenticated = false }: LandingPageProps) {
+export function LandingPage() {
   return (
     <main className="min-h-screen">
-      <PublicNavbar isAuthenticated={isAuthenticated} />
+      <PublicNavbar />
 
       {/* Hero */}
       <section className="mx-auto px-6 py-24 max-w-4xl text-center">
