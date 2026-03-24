@@ -11,7 +11,10 @@ import {
   Pencil,
   X,
   Save,
+  Trash2,
+  ExternalLink,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useQuery, invalidateQuery } from "@/hooks/use-query";
 import { api } from "@/lib/api";
 import {
@@ -49,6 +52,7 @@ interface TicketDetailProps {
 }
 
 export function TicketDetail({ ticketId }: TicketDetailProps) {
+  const router = useRouter();
   const { data: ticket, error: fetchError, isLoading } = useQuery<Ticket>(ticketDetail(ticketId));
   const { data: jiraStatus } = useQuery<JiraStatus>(JIRA_STATUS);
 
@@ -95,6 +99,17 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
       // handle error
     } finally {
       setActing(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this ticket?")) return;
+    try {
+      await api.delete(ticketDetail(ticketId));
+      invalidateQuery(TICKETS_LIST);
+      router.push(TICKETS_PAGE);
+    } catch {
+      // handle error
     }
   };
 
@@ -154,6 +169,10 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={handleDelete} className="hover:text-red-400">
+            <Trash2 size={14} />
+            Delete
+          </Button>
           {!editing && ticket.status === "DRAFT" && (
             <Button variant="ghost" size="sm" onClick={startEditing}>
               <Pencil size={14} />
@@ -244,7 +263,15 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
         {ticket.jiraIssueKey && (
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Jira</span>
-            <span className="text-blue-400">{ticket.jiraIssueKey}</span>
+            <a
+              href={ticket.jiraIssueUrl || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 flex items-center gap-1 transition"
+            >
+              {ticket.jiraIssueKey}
+              <ExternalLink size={12} />
+            </a>
           </div>
         )}
       </div>

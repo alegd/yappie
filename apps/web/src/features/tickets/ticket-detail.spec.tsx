@@ -18,8 +18,17 @@ vi.mock("@/hooks/use-query", () => ({
   invalidateQuery: mockInvalidateQuery,
 }));
 
+const { mockDelete, mockPush } = vi.hoisted(() => ({
+  mockDelete: vi.fn(),
+  mockPush: vi.fn(),
+}));
+
 vi.mock("@/lib/api", () => ({
-  api: { post: mockPost, patch: mockPatch },
+  api: { post: mockPost, patch: mockPatch, delete: mockDelete },
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mockPush }),
 }));
 
 vi.mock("next/link", () => ({

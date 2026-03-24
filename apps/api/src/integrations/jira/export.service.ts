@@ -29,11 +29,14 @@ export class ExportService {
       issueType: "Task",
     });
 
+    const jiraStatus = await this.jiraService.getStatus(userId);
+    const browseUrl = `https://${jiraStatus.siteName}.atlassian.net/browse/${jiraIssue.key}`;
+
     await this.prisma.ticket.update({
       where: { id: ticketId },
       data: {
         jiraIssueKey: jiraIssue.key,
-        jiraIssueUrl: jiraIssue.self,
+        jiraIssueUrl: browseUrl,
         status: "EXPORTED",
       },
     });
