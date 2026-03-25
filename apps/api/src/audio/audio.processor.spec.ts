@@ -48,6 +48,14 @@ function createMockStorageAdapter() {
   };
 }
 
+function createMockPrisma() {
+  return {
+    audioRecording: {
+      update: vi.fn().mockResolvedValue({}),
+    },
+  };
+}
+
 describe("AudioProcessor", () => {
   let processor: AudioProcessor;
   let mockAudioService: ReturnType<typeof createMockAudioService>;
@@ -57,6 +65,7 @@ describe("AudioProcessor", () => {
   let mockAnalytics: ReturnType<typeof createMockAnalyticsService>;
   let mockGateway: ReturnType<typeof createMockGateway>;
   let mockStorage: ReturnType<typeof createMockStorageAdapter>;
+  let mockPrisma: ReturnType<typeof createMockPrisma>;
 
   beforeEach(() => {
     mockAudioService = createMockAudioService();
@@ -66,6 +75,7 @@ describe("AudioProcessor", () => {
     mockAnalytics = createMockAnalyticsService();
     mockGateway = createMockGateway();
     mockStorage = createMockStorageAdapter();
+    mockPrisma = createMockPrisma();
 
     processor = new AudioProcessor(
       mockAudioService as never,
@@ -75,6 +85,7 @@ describe("AudioProcessor", () => {
       mockAnalytics as never,
       mockGateway as never,
       mockStorage as never,
+      mockPrisma as never,
     );
   });
 
@@ -93,7 +104,10 @@ describe("AudioProcessor", () => {
       name: "My App",
       context: "React + NestJS e-commerce app with Stripe payments",
     });
-    mockAIService.transcribe.mockResolvedValue("We need auth and a dashboard");
+    mockAIService.transcribe.mockResolvedValue({
+      text: "We need auth and a dashboard",
+      duration: 45.5,
+    });
     mockAIService.decompose.mockResolvedValue([
       { title: "Auth", description: "Add authentication" },
       { title: "Dashboard", description: "Create dashboard" },
@@ -129,6 +143,12 @@ describe("AudioProcessor", () => {
     expect(mockGateway.emitProgress).toHaveBeenCalledWith("user-1", "audio-1", "TRANSCRIBING");
     expect(mockGateway.emitProgress).toHaveBeenCalledWith("user-1", "audio-1", "ANALYZING");
     expect(mockGateway.emitCompleted).toHaveBeenCalledWith("user-1", "audio-1", 2);
+
+    // Verify transcription and duration persisted
+    expect(mockPrisma.audioRecording.update).toHaveBeenCalledWith({
+      where: { id: "audio-1" },
+      data: { transcription: "We need auth and a dashboard", duration: 45.5 },
+    });
   });
 
   it("should work without project context", async () => {
@@ -140,7 +160,7 @@ describe("AudioProcessor", () => {
       userId: "user-1",
       projectId: null,
     });
-    mockAIService.transcribe.mockResolvedValue("Some task");
+    mockAIService.transcribe.mockResolvedValue({ text: "Some task", duration: 12.3 });
     mockAIService.decompose.mockResolvedValue([]);
     mockAIService.generateTickets.mockResolvedValue([]);
     mockAudioService.updateStatus.mockResolvedValue({});

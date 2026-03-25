@@ -4,6 +4,7 @@ import { Job } from "bullmq";
 import { AIService } from "../ai/ai.service.js";
 import { AnalyticsService } from "../analytics/analytics.service.js";
 import { ProjectsService } from "../projects/projects.service";
+import { PrismaService } from "../prisma/prisma.service.js";
 import { STORAGE_ADAPTER, type StorageAdapter } from "../storage/storage.interface.js";
 import { TicketsService } from "../tickets/tickets.service";
 import { AudioGateway } from "./audio.gateway.js";
@@ -26,6 +27,7 @@ export class AudioProcessor extends WorkerHost {
     private readonly analyticsService: AnalyticsService,
     private readonly audioGateway: AudioGateway,
     @Inject(STORAGE_ADAPTER) private readonly storage: StorageAdapter,
+    private readonly prisma: PrismaService,
   ) {
     super();
   }
@@ -42,7 +44,14 @@ export class AudioProcessor extends WorkerHost {
       await this.audioService.updateStatus(audioId, "TRANSCRIBING");
       this.audioGateway.emitProgress(userId, audioId, "TRANSCRIBING");
       const audioBuffer = await this.storage.get(recording.filePath);
-      const transcription = await this.aiService.transcribe(audioBuffer!, recording.fileName);
+      const { text: transcription, duration } = await this.aiService.transcribe(
+        audioBuffer!,
+        recording.fileName,
+      );
+      await this.prisma.audioRecording.update({
+        where: { id: audioId },
+        data: { transcription, duration },
+      });
 
       // Get project context if available
       let projectContext: string | undefined;
