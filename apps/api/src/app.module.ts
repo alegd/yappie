@@ -13,6 +13,7 @@ import { IntegrationsModule } from "./integrations/integrations.module.js";
 import { AnalyticsModule } from "./analytics/analytics.module.js";
 import { UsersModule } from "./users/users.module.js";
 import { TemplatesModule } from "./templates/templates.module.js";
+import { QuotasModule } from "./quotas/quotas.module.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
 import { StorageModule } from "./storage/storage.module.js";
 
@@ -45,6 +46,7 @@ import { StorageModule } from "./storage/storage.module.js";
     AnalyticsModule,
     UsersModule,
     TemplatesModule,
+    QuotasModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
