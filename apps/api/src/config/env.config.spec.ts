@@ -21,6 +21,8 @@ describe("validateEnv", () => {
     UPLOAD_PATH: "./uploads",
     NEXT_PUBLIC_API_URL: "http://localhost:3001",
     FRONTEND_URL: "http://localhost:3000",
+    QUOTA_FREE_MINUTES: "30",
+    QUOTA_PRO_MINUTES: "300",
   };
 
   beforeEach(() => {
