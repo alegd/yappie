@@ -173,6 +173,27 @@ describe("QuotasService", () => {
       });
     });
 
+    it("should round up partial minutes with Math.ceil", async () => {
+      const startDate = new Date("2026-03-01T00:00:00Z");
+      vi.setSystemTime(new Date("2026-03-15T12:00:00Z"));
+      mockPrisma.subscription.findFirst.mockResolvedValue({
+        id: "sub-1",
+        plan: "FREE",
+        startDate,
+        endDate: null,
+        userId: "user-1",
+      });
+      // 601 seconds = 10 min 1 sec → ceil = 11 minutes
+      mockPrisma.audioRecording.aggregate.mockResolvedValue({
+        _sum: { duration: 601 },
+      });
+
+      const result = await service.getQuota("user-1");
+
+      expect(result.usedMinutes).toBe(11);
+      expect(result.remainingMinutes).toBe(19);
+    });
+
     it("should return 0 remaining when limit is reached", async () => {
       const startDate = new Date("2026-03-01T00:00:00Z");
       vi.setSystemTime(new Date("2026-03-15T12:00:00Z"));
@@ -191,6 +212,27 @@ describe("QuotasService", () => {
       const result = await service.getQuota("user-1");
 
       expect(result.usedMinutes).toBe(30);
+      expect(result.remainingMinutes).toBe(0);
+    });
+
+    it("should clamp remaining to 0 when usage exceeds limit", async () => {
+      const startDate = new Date("2026-03-01T00:00:00Z");
+      vi.setSystemTime(new Date("2026-03-15T12:00:00Z"));
+      mockPrisma.subscription.findFirst.mockResolvedValue({
+        id: "sub-1",
+        plan: "FREE",
+        startDate,
+        endDate: null,
+        userId: "user-1",
+      });
+      // 2000 seconds = ceil(33.33) = 34 minutes, exceeds 30 min limit
+      mockPrisma.audioRecording.aggregate.mockResolvedValue({
+        _sum: { duration: 2000 },
+      });
+
+      const result = await service.getQuota("user-1");
+
+      expect(result.usedMinutes).toBe(34);
       expect(result.remainingMinutes).toBe(0);
     });
 
@@ -299,6 +341,9 @@ describe("QuotasService", () => {
 
       await service.trackConsumption("user-1", "audio-1");
 
+      expect(mockPrisma.audioRecording.findUnique).toHaveBeenCalledWith({
+        where: { id: "audio-1", userId: "user-1" },
+      });
       expect(mockAnalytics.track).toHaveBeenCalledWith("user-1", "quota.consumed", {
         audioId: "audio-1",
         durationSeconds: 120,

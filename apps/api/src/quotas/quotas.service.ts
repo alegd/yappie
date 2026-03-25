@@ -18,7 +18,7 @@ export class QuotasService {
     const { cycleStart, cycleEnd } = this.calculateCycleBoundaries(subscription.startDate);
     const limitMinutes = this.getPlanLimit(subscription.plan);
     const usedSeconds = await this.getUsedSeconds(userId, cycleStart, cycleEnd);
-    const usedMinutes = Math.floor(usedSeconds / 60);
+    const usedMinutes = Math.ceil(usedSeconds / 60);
     const remainingMinutes = Math.max(0, limitMinutes - usedMinutes);
 
     return {
@@ -38,7 +38,7 @@ export class QuotasService {
 
   async trackConsumption(userId: string, audioId: string): Promise<void> {
     const recording = await this.prisma.audioRecording.findUnique({
-      where: { id: audioId },
+      where: { id: audioId, userId },
     });
 
     if (!recording || !recording.duration) return;
@@ -87,7 +87,9 @@ export class QuotasService {
   private getPlanLimit(plan: string): number {
     const envKey = PLAN_LIMITS[plan as keyof typeof PLAN_LIMITS];
     if (!envKey) throw new Error(`Unknown plan: ${plan}`);
-    return this.configService.get<number>(envKey)!;
+    const limit = this.configService.get<number>(envKey);
+    if (limit === undefined) throw new Error(`Missing env var: ${envKey}`);
+    return limit;
   }
 
   private async getUsedSeconds(userId: string, cycleStart: Date, cycleEnd: Date): Promise<number> {
