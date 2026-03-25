@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TicketList } from "./ticket-list";
@@ -18,6 +18,12 @@ vi.mock("@/lib/api-fetcher", () => ({
   apiFetcher: mockApiFetcher,
 }));
 
+vi.mock("./components/actions-menu", () => ({
+  ActionsMenu: ({ ticket }: { ticket: { id: string } }) => (
+    <button data-testid={`actions-${ticket.id}`} aria-label="Actions" />
+  ),
+}));
+
 vi.mock("./components/jira-project-select", () => ({
   JiraProjectSelect: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
     <select
@@ -33,6 +39,7 @@ vi.mock("./components/jira-project-select", () => ({
 }));
 
 vi.mock("next/link", () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   default: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -50,11 +57,12 @@ vi.mock("@/hooks/use-table-options", () => ({
   }),
 }));
 
-// Store the latest onRowSelectionChange so tests can call it externally
+// Capture onRowSelectionChange so tests can simulate selection via act()
 let latestOnRowSelectionChange: ((s: Record<string, boolean>) => void) | null = null;
 
 vi.mock("@/components/ui/data-table", () => ({
-  DataTable: ({ data, toolbar, loading, _rowSelection, onRowSelectionChange, getRowId }: any) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  DataTable: ({ data, columns, toolbar, loading, onRowSelectionChange, getRowId }: any) => {
     latestOnRowSelectionChange = onRowSelectionChange;
     return (
       <div
@@ -63,17 +71,36 @@ vi.mock("@/components/ui/data-table", () => ({
         data-loading={String(!!loading)}
       >
         {toolbar}
-        <ul>
-          {(data ?? []).map((row: any) => {
-            const id = getRowId ? getRowId(row) : row.id;
-            return (
-              <li key={id} data-testid={`row-${id}`}>
-                {row.title} — {row.status} — {row.priority}
-                {row.jiraIssueKey ? ` — ${row.jiraIssueKey}` : ""}
-              </li>
-            );
-          })}
-        </ul>
+        <table>
+          <tbody>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {(data ?? []).map((row: any) => {
+              const id = getRowId ? getRowId(row) : row.id;
+              return (
+                <tr key={id}>
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  {columns.map((col: any) => (
+                    <td key={col.id || col.accessorKey}>
+                      {typeof col.cell === "function"
+                        ? col.cell({
+                            row: {
+                              original: row,
+                              getIsSelected: () => false,
+                              getToggleSelectedHandler: () => vi.fn(),
+                            },
+                            table: {
+                              getIsAllRowsSelected: () => false,
+                              getToggleAllRowsSelectedHandler: () => vi.fn(),
+                            },
+                          })
+                        : null}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     );
   },
@@ -171,20 +198,45 @@ describe("TicketList", () => {
     expect(screen.getByText(/no tickets/i)).toBeInTheDocument();
   });
 
-  it("should render ticket rows", () => {
+  it("should display priority and status badges", () => {
     setupWithTickets();
     render(<TicketList />);
 
-    expect(screen.getByText(/Fix bug/)).toBeInTheDocument();
-    expect(screen.getByText(/Add feature/)).toBeInTheDocument();
-    expect(screen.getByText(/Dark mode/)).toBeInTheDocument();
+    expect(screen.getByText("HIGH")).toBeInTheDocument();
+    expect(screen.getByText("DRAFT")).toBeInTheDocument();
+    expect(screen.getByText("EXPORTED")).toBeInTheDocument();
   });
 
   it("should show Jira key for exported tickets", () => {
     setupWithTickets();
     render(<TicketList />);
+    expect(screen.getByText("PROJ-42")).toBeInTheDocument();
+  });
 
-    expect(screen.getByText(/PROJ-42/)).toBeInTheDocument();
+  it("should render ticket title links", () => {
+    setupWithTickets();
+    render(<TicketList />);
+
+    expect(screen.getByText("Fix bug")).toBeInTheDocument();
+    expect(screen.getByText("Add feature")).toBeInTheDocument();
+    expect(screen.getByText("Dark mode")).toBeInTheDocument();
+  });
+
+  it("should render actions menu for each ticket", () => {
+    setupWithTickets();
+    render(<TicketList />);
+
+    expect(screen.getByTestId("actions-t-1")).toBeInTheDocument();
+    expect(screen.getByTestId("actions-t-2")).toBeInTheDocument();
+    expect(screen.getByTestId("actions-t-3")).toBeInTheDocument();
+  });
+
+  it("should render checkboxes for row selection", () => {
+    setupWithTickets();
+    render(<TicketList />);
+
+    const checkboxes = screen.getAllByRole("checkbox");
+    expect(checkboxes.length).toBeGreaterThanOrEqual(3);
   });
 
   it("should show Jira project select when connected", () => {
@@ -205,7 +257,6 @@ describe("TicketList", () => {
     setupWithTickets();
     render(<TicketList />);
 
-    // Simulate selecting a DRAFT ticket via the captured callback
     act(() => {
       latestOnRowSelectionChange?.({ "t-1": true });
     });
@@ -222,7 +273,6 @@ describe("TicketList", () => {
     const select = screen.getByTestId("jira-project-select");
     await user.selectOptions(select, "YAP");
 
-    // Simulate selecting an APPROVED ticket
     act(() => {
       latestOnRowSelectionChange?.({ "t-2": true });
     });
@@ -236,14 +286,15 @@ describe("TicketList", () => {
     mockApiFetcher.mockResolvedValue({});
     render(<TicketList />);
 
-    // Select DRAFT ticket
     act(() => {
       latestOnRowSelectionChange?.({ "t-1": true });
     });
 
     await user.click(screen.getByText("Approve 1"));
 
-    expect(mockApiFetcher).toHaveBeenCalledWith("/v1/tickets/t-1/approve", { method: "POST" });
+    await waitFor(() => {
+      expect(mockApiFetcher).toHaveBeenCalledWith("/v1/tickets/t-1/approve", { method: "POST" });
+    });
   });
 
   it("should call bulk export API", async () => {
@@ -255,16 +306,28 @@ describe("TicketList", () => {
     const select = screen.getByTestId("jira-project-select");
     await user.selectOptions(select, "YAP");
 
-    // Select APPROVED ticket
     act(() => {
       latestOnRowSelectionChange?.({ "t-2": true });
     });
 
     await user.click(screen.getByText("Export 1"));
 
-    expect(mockApiFetcher).toHaveBeenCalledWith("/v1/integrations/jira/export-bulk", {
-      data: { ticketIds: ["t-2"], projectKey: "YAP" },
-      method: "POST",
+    await waitFor(() => {
+      expect(mockApiFetcher).toHaveBeenCalledWith("/v1/integrations/jira/export-bulk", {
+        data: { ticketIds: ["t-2"], projectKey: "YAP" },
+        method: "POST",
+      });
     });
+  });
+
+  it("should show delete button in bulk actions", () => {
+    setupWithTickets();
+    render(<TicketList />);
+
+    act(() => {
+      latestOnRowSelectionChange?.({ "t-1": true });
+    });
+
+    expect(screen.getByText("Delete")).toBeInTheDocument();
   });
 });
