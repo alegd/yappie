@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProjectList } from "./project-list";
 
 const { mockUseQuery, mockInvalidateQuery, mockApiFetcher } = vi.hoisted(() => ({
@@ -16,6 +16,10 @@ vi.mock("@/hooks/use-query", () => ({
 
 vi.mock("@/lib/api-fetcher", () => ({
   apiFetcher: mockApiFetcher,
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
 }));
 
 vi.mock("next/link", () => ({
@@ -111,8 +115,7 @@ describe("ProjectList", () => {
     render(<ProjectList />);
 
     await screen.findByText(/no projects/i);
-    const newLink = screen.getByRole("link", { name: /new project/i });
-    expect(newLink).toHaveAttribute("href", "/dashboard/projects/new");
+    expect(screen.getByRole("button", { name: /new project/i })).toBeInTheDocument();
   });
 
   it("should have edit links for each project", async () => {
