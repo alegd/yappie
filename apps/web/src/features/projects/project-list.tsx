@@ -8,9 +8,12 @@ import { DELETE } from "@/lib/constants/http";
 import { NEW_PROJECT_PAGE, editProjectPage } from "@/lib/constants/pages";
 import { Brain, FolderOpen, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ProjectListResponse } from "./types";
 
 export function ProjectList() {
+  const router = useRouter();
+
   const { data: projectData, isLoading } = useQuery<ProjectListResponse>(PROJECTS_LIST);
 
   const projects = projectData?.data ?? [];
@@ -39,14 +42,10 @@ export function ProjectList() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="font-bold text-2xl">Projects</h1>
-        <Link
-          href={NEW_PROJECT_PAGE}
-          className="flex items-center gap-1.5 bg-primary hover:bg-primary-hover px-4 py-2 rounded-lg font-medium text-white text-sm transition"
-          aria-label="New project"
-        >
+        <Button onClick={() => router.push(NEW_PROJECT_PAGE)} aria-label="New project">
           <Plus size={16} />
           New project
-        </Link>
+        </Button>
       </div>
 
       {projects.length === 0 ? (
