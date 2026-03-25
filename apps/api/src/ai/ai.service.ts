@@ -54,15 +54,19 @@ export class AIService {
     this.generationModel = process.env.AI_GENERATION_MODEL!;
   }
 
-  async transcribe(audioBuffer: Buffer, fileName: string): Promise<string> {
+  async transcribe(
+    audioBuffer: Buffer,
+    fileName: string,
+  ): Promise<{ text: string; duration: number }> {
     const file = await toFile(audioBuffer, fileName);
 
     const response = await this.openai.audio.transcriptions.create({
       model: this.transcriptionModel,
       file,
+      response_format: "verbose_json",
     });
 
-    return response.text;
+    return { text: response.text, duration: response.duration };
   }
 
   async decompose(

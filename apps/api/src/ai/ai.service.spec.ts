@@ -29,17 +29,22 @@ describe("AIService", () => {
   });
 
   describe("transcribe", () => {
-    it("should return transcription text from audio buffer", async () => {
+    it("should return text and duration from verbose_json response", async () => {
       mockOpenAI.audio.transcriptions.create.mockResolvedValue({
         text: "We need to add user authentication and a dashboard page.",
+        duration: 45.5,
       });
 
       const result = await service.transcribe(Buffer.from("fake-audio"), "recording.mp3");
 
-      expect(result).toBe("We need to add user authentication and a dashboard page.");
+      expect(result).toEqual({
+        text: "We need to add user authentication and a dashboard page.",
+        duration: 45.5,
+      });
       expect(mockOpenAI.audio.transcriptions.create).toHaveBeenCalledWith(
         expect.objectContaining({
           model: "whisper-1",
+          response_format: "verbose_json",
         }),
       );
     });
