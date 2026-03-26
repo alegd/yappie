@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card/Card";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { apiFetcher } from "@/lib/api-fetcher";
 import { TEMPLATES_LIST, templateDetail } from "@/lib/constants/endpoints";
@@ -65,45 +66,47 @@ export function TemplatesSection() {
         </div>
       )}
 
-      {templates.length === 0 && !showForm ? (
-        <div className="bg-surface/25 py-10 border border-border rounded-lg text-muted-foreground text-center">
-          <FileText size={32} className="opacity-50 mx-auto mb-2" />
-          <p className="text-sm">No templates yet.</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {templates.map((template) => (
-            <div
-              key={template.id}
-              className="flex items-center gap-3 bg-surface/50 p-4 border border-border hover:border-border-hover rounded-lg transition"
-            >
-              <FileText size={18} className="text-muted-foreground shrink-0" />
-              <span className="flex-1 font-medium text-sm">{template.name}</span>
-              {template.isDefault && (
-                <span className="flex items-center gap-1 text-yellow-400 text-xs">
-                  <Star size={18} />
-                  Default
-                </span>
-              )}
-              <Button
-                variant="ghost"
-                onClick={() => handleEditTemplate(template)}
-                aria-label={`Edit ${template.name}`}
+      <Card className="p-4">
+        {templates.length === 0 && !showForm ? (
+          <div className="py-10 text-foreground/50 text-center">
+            <FileText size={32} className="opacity-50 mx-auto mb-2" />
+            <p className="text-sm">No templates yet.</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {templates.map((template) => (
+              <div
+                key={template.id}
+                className="flex items-center gap-3 hover:border-border-hover rounded-lg transition"
               >
-                <Pencil size={18} />
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => handleDeleteTemplate(template.id)}
-                className="hover:text-red-400"
-                aria-label={`Delete ${template.name}`}
-              >
-                <Trash2 size={18} />
-              </Button>
-            </div>
-          ))}
-        </div>
-      )}
+                <FileText size={18} className="text-muted-foreground shrink-0" />
+                <span className="flex-1 font-medium text-sm">{template.name}</span>
+                {template.isDefault && (
+                  <span className="flex items-center gap-1 text-yellow-400 text-xs">
+                    <Star size={18} />
+                    Default
+                  </span>
+                )}
+                <Button
+                  variant="outlined"
+                  onClick={() => handleEditTemplate(template)}
+                  aria-label={`Edit ${template.name}`}
+                >
+                  <Pencil size={18} />
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => handleDeleteTemplate(template.id)}
+                  className="hover:text-red-400"
+                  aria-label={`Delete ${template.name}`}
+                >
+                  <Trash2 size={18} />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
     </section>
   );
 }

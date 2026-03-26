@@ -20,7 +20,7 @@ export function ThemeToggle() {
   if (!mounted) return null;
 
   return (
-    <div className="flex items-center gap-1 p-1 rounded-lg">
+    <div className="flex items-center gap-1 rounded-lg">
       {themes.map(({ value, icon: Icon, label }) => (
         <Button
           key={value}
