@@ -6,6 +6,10 @@ vi.mock("@/components/ui/toast/toast-provider", () => ({
   ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+vi.mock("./quota-banner", () => ({
+  QuotaBanner: () => null,
+}));
+
 vi.mock("./sidebar", () => ({
   Sidebar: ({ user }: { user: { name: string; email: string } }) => (
     <div data-testid="sidebar">

@@ -22,6 +22,10 @@ vi.mock("@/components/ui/theme-toggle", () => ({
   ThemeToggle: () => <div data-testid="theme-toggle" />,
 }));
 
+vi.mock("./quota-usage", () => ({
+  QuotaUsage: () => <div data-testid="quota-usage" />,
+}));
+
 vi.mock("./template-form", () => ({
   TemplateForm: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="template-form">

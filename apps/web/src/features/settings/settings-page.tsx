@@ -12,17 +12,7 @@ import {
   templateDetail,
 } from "@/lib/constants/endpoints";
 import { DELETE } from "@/lib/constants/http";
-import {
-  CheckCircle2,
-  FileText,
-  Link2,
-  Palette,
-  Pencil,
-  Plus,
-  Star,
-  Trash2,
-  Unlink,
-} from "lucide-react";
+import { CheckCircle2, FileText, Pencil, Plus, Star, Trash2, Unlink } from "lucide-react";
 import { useState } from "react";
 import { QuotaUsage } from "./quota-usage";
 import { TemplateForm } from "./template-form";
@@ -102,19 +92,13 @@ export function SettingsPage() {
 
       {/* Quota */}
       <section className="py-8">
-        <h2 className="flex items-center gap-2 mb-4 font-semibold text-lg">
-          <Star size={18} />
-          Plan & Usage
-        </h2>
+        <h2 className="mb-4 font-semibold text-lg">Plan & Usage</h2>
         <QuotaUsage />
       </section>
 
       {/* Appearance */}
       <section className="py-8">
-        <h2 className="flex items-center gap-2 mb-4 font-semibold text-lg">
-          <Palette size={18} />
-          Appearance
-        </h2>
+        <h2 className="mb-4 font-semibold text-lg">Appearance</h2>
 
         <div className="flex justify-between items-center">
           <div>
@@ -129,10 +113,7 @@ export function SettingsPage() {
 
       {/* Integrations */}
       <section className="py-8">
-        <h2 className="flex items-center gap-2 mb-4 font-semibold text-lg">
-          <Link2 size={18} />
-          Integrations
-        </h2>
+        <h2 className="mb-4 font-semibold text-lg">Integrations</h2>
 
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -166,10 +147,7 @@ export function SettingsPage() {
       {/* Templates */}
       <section className="py-8">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="flex items-center gap-2 font-semibold text-lg">
-            <FileText size={18} />
-            Templates
-          </h2>
+          <h2 className="font-semibold text-lg">Templates</h2>
           {!showForm && (
             <Button variant="outlined" onClick={handleNewTemplate}>
               <Plus size={14} />
