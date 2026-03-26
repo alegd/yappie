@@ -31,6 +31,8 @@ Thumbs.db
 
 # Testing
 coverage/
+playwright-report/
+test-results/
 
 # Docker
 docker-compose.override.yml
