@@ -28,6 +28,7 @@
     "@nestjs/websockets": "^11.1.17",
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
+    "@sentry/nestjs": "^10.46.0",
     "@yappie/shared": "workspace:*",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.71.0",
