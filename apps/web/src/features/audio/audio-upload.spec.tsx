@@ -172,4 +172,73 @@ describe("AudioUpload", () => {
       expect(screen.getByText("Upload failed")).toBeInTheDocument();
     });
   });
+
+  it("should trigger file input when upload button is clicked", async () => {
+    const user = (await import("@testing-library/user-event")).default.setup();
+    const { container } = render(<AudioUpload onUploaded={mockOnUploaded} />);
+
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const clickSpy = vi.spyOn(input, "click");
+
+    const uploadButton = screen.getByText("Upload audio").closest("button")!;
+    await user.click(uploadButton);
+
+    expect(clickSpy).toHaveBeenCalled();
+  });
+
+  it("should upload recorded audio after stopping", async () => {
+    const mockResult = { id: "a-1", fileName: "recording.webm" };
+    mockApiFetcher.mockResolvedValue(mockResult);
+
+    let capturedOnDataAvailable: ((e: { data: Blob }) => void) | null = null;
+    let capturedOnStop: (() => void) | null = null;
+
+    const mockStream = {
+      getTracks: vi.fn().mockReturnValue([{ stop: vi.fn() }]),
+    };
+
+    Object.defineProperty(navigator, "mediaDevices", {
+      value: { getUserMedia: vi.fn().mockResolvedValue(mockStream) },
+      configurable: true,
+    });
+
+    class MockMediaRecorder {
+      set ondataavailable(fn: (e: { data: Blob }) => void) {
+        capturedOnDataAvailable = fn;
+      }
+      set onstop(fn: () => void) {
+        capturedOnStop = fn;
+      }
+      start = vi.fn();
+      stop = vi.fn().mockImplementation(() => {
+        capturedOnDataAvailable?.({ data: new Blob(["audio-data"], { type: "audio/webm" }) });
+        capturedOnStop?.();
+      });
+    }
+    vi.stubGlobal("MediaRecorder", MockMediaRecorder);
+
+    const user = (await import("@testing-library/user-event")).default.setup();
+    render(<AudioUpload onUploaded={mockOnUploaded} />);
+
+    // Start recording
+    await user.click(screen.getByText("Record").closest("button")!);
+    await waitFor(() => expect(screen.getByText("Stop")).toBeInTheDocument());
+
+    // Stop recording — triggers ondataavailable + onstop → uploadFile
+    await user.click(screen.getByText("Stop").closest("button")!);
+
+    await waitFor(() => {
+      expect(mockApiFetcher).toHaveBeenCalledWith(
+        "/v1/audio/upload",
+        expect.objectContaining({
+          method: "POST",
+          headers: { "Content-Type": "multipart/form-data" },
+        }),
+      );
+    });
+
+    await waitFor(() => {
+      expect(mockOnUploaded).toHaveBeenCalledWith(mockResult);
+    });
+  });
 });
