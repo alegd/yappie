@@ -8,7 +8,12 @@ import { Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Server, type Socket } from "socket.io";
 
-@WebSocketGateway({ cors: { origin: "*" } })
+@WebSocketGateway({
+  cors: {
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+  },
+})
 export class AudioGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(AudioGateway.name);
 
