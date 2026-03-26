@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth } from "@/config/auth.config";
 import { NextRequest, NextResponse } from "next/server";
 import { CALLBACK_URL_KEY } from "./lib/constants/common";
 import { HOME_PAGE, LOGIN_PAGE, REGISTER_PAGE } from "./lib/constants/pages";

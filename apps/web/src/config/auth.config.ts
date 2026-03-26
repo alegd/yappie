@@ -1,7 +1,7 @@
+import { LOGIN_PAGE } from "@/lib/constants/pages";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { LOGIN_PAGE } from "@/lib/constants/pages";
-import { isTokenExpired } from "./jwt-utils";
+import { isTokenExpired } from "../lib/jwt-utils";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 

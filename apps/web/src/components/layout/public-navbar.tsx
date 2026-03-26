@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth } from "@/config/auth.config";
 import { AUDIOS_PAGE, HOME_PAGE, LOGIN_PAGE, REGISTER_PAGE } from "@/lib/constants/pages";
 import Link from "next/link";
 
