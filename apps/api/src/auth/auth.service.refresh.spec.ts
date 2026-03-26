@@ -11,6 +11,7 @@ function createMockPrisma() {
     refreshToken: {
       create: vi.fn(),
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
       update: vi.fn(),
       findMany: vi.fn(),
       updateMany: vi.fn(),
@@ -79,17 +80,38 @@ describe("AuthService - Refresh Tokens", () => {
       await expect(authService.refresh("expired-token")).rejects.toThrow(UnauthorizedException);
     });
 
-    it("should throw UnauthorizedException for revoked token", async () => {
+    it("should throw UnauthorizedException for revoked token outside grace period", async () => {
       mockPrisma.refreshToken.findUnique.mockResolvedValue({
         id: "rt-1",
         token: "revoked-token",
         userId: "user-1",
         expiresAt: new Date(Date.now() + 86400000),
-        revokedAt: new Date(), // already revoked
+        revokedAt: new Date(Date.now() - 60_000), // revoked 60s ago (past 30s grace)
         user: { id: "user-1", email: "john@example.com", name: "John" },
       });
 
       await expect(authService.refresh("revoked-token")).rejects.toThrow(UnauthorizedException);
+    });
+
+    it("should return tokens for recently-revoked token within grace period", async () => {
+      mockPrisma.refreshToken.findUnique.mockResolvedValue({
+        id: "rt-1",
+        token: "revoked-token",
+        userId: "user-1",
+        expiresAt: new Date(Date.now() + 86400000),
+        revokedAt: new Date(Date.now() - 5_000), // revoked 5s ago (within 30s grace)
+        user: { id: "user-1", email: "john@example.com", name: "John" },
+      });
+      mockPrisma.refreshToken.findFirst.mockResolvedValue({
+        id: "rt-2",
+        token: "new-refresh-token",
+        userId: "user-1",
+      });
+
+      const result = await authService.refresh("revoked-token");
+
+      expect(result.accessToken).toBe("new-access-token");
+      expect(result.refreshToken).toBe("new-refresh-token");
     });
 
     it("should throw UnauthorizedException for non-existent token", async () => {
