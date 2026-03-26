@@ -24,6 +24,7 @@ import {
   Unlink,
 } from "lucide-react";
 import { useState } from "react";
+import { QuotaUsage } from "./quota-usage";
 import { TemplateForm } from "./template-form";
 
 interface Template {
@@ -98,6 +99,15 @@ export function SettingsPage() {
   return (
     <div className="mx-auto max-w-2xl divide-y divide-foreground/20">
       <h1 className="pb-8 font-bold text-2xl">Settings</h1>
+
+      {/* Quota */}
+      <section className="py-8">
+        <h2 className="flex items-center gap-2 mb-4 font-semibold text-lg">
+          <Star size={18} />
+          Plan & Usage
+        </h2>
+        <QuotaUsage />
+      </section>
 
       {/* Appearance */}
       <section className="py-8">
