@@ -9,6 +9,7 @@ import { STORAGE_ADAPTER, type StorageAdapter } from "../storage/storage.interfa
 import { TicketsService } from "../tickets/tickets.service";
 import { AudioGateway } from "./audio.gateway.js";
 import { AudioService } from "./audio.service";
+import { QuotasService } from "../quotas/quotas.service.js";
 
 export interface AudioJobData {
   audioId: string;
@@ -28,6 +29,7 @@ export class AudioProcessor extends WorkerHost {
     private readonly audioGateway: AudioGateway,
     @Inject(STORAGE_ADAPTER) private readonly storage: StorageAdapter,
     private readonly prisma: PrismaService,
+    private readonly quotasService: QuotasService,
   ) {
     super();
   }
@@ -87,6 +89,13 @@ export class AudioProcessor extends WorkerHost {
       this.logger.log(`[${audioId}] Completed. ${tickets.length} tickets generated.`);
       await this.audioService.updateStatus(audioId, "COMPLETED");
       this.audioGateway.emitCompleted(userId, audioId, tickets.length);
+      try {
+        await this.quotasService.trackConsumption(userId, audioId);
+      } catch (error) {
+        this.logger.error(
+          `[${audioId}] Failed to track consumption: ${error instanceof Error ? error.message : error}`,
+        );
+      }
     } catch (error) {
       this.logger.error(`[${audioId}] Failed: ${error instanceof Error ? error.message : error}`);
       await this.audioService.updateStatus(audioId, "FAILED");

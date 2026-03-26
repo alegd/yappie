@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { AudioService } from "./audio.service.js";
+import { QuotaExceededException } from "../quotas/quota-exceeded.exception.js";
 
 function createMockPrisma() {
   return {
@@ -34,6 +35,12 @@ function createMockAnalyticsService() {
   };
 }
 
+function createMockQuotasService() {
+  return {
+    canUpload: vi.fn().mockResolvedValue(true),
+  };
+}
+
 function createMockFile(overrides: Partial<Express.Multer.File> = {}): Express.Multer.File {
   return {
     fieldname: "file",
@@ -56,6 +63,7 @@ describe("AudioService", () => {
   let mockStorage: ReturnType<typeof createMockStorage>;
   let mockQueue: ReturnType<typeof createMockQueue>;
   let mockAnalytics: ReturnType<typeof createMockAnalyticsService>;
+  let mockQuotas: ReturnType<typeof createMockQuotasService>;
 
   const userId = "user-1";
 
@@ -64,11 +72,13 @@ describe("AudioService", () => {
     mockStorage = createMockStorage();
     mockQueue = createMockQueue();
     mockAnalytics = createMockAnalyticsService();
+    mockQuotas = createMockQuotasService();
     service = new AudioService(
       mockPrisma as never,
       mockStorage as never,
       mockQueue as never,
       mockAnalytics as never,
+      mockQuotas as never,
     );
   });
 
@@ -112,6 +122,15 @@ describe("AudioService", () => {
       const file = createMockFile({ size: 51 * 1024 * 1024 });
 
       await expect(service.upload(file, userId)).rejects.toThrow(BadRequestException);
+      expect(mockStorage.save).not.toHaveBeenCalled();
+      expect(mockQueue.add).not.toHaveBeenCalled();
+    });
+
+    it("should throw QuotaExceededException when quota is exceeded", async () => {
+      mockQuotas.canUpload.mockResolvedValue(false);
+      const file = createMockFile();
+
+      await expect(service.upload(file, userId)).rejects.toThrow(QuotaExceededException);
       expect(mockStorage.save).not.toHaveBeenCalled();
       expect(mockQueue.add).not.toHaveBeenCalled();
     });

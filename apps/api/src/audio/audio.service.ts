@@ -4,6 +4,8 @@ import { Queue } from "bullmq";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { STORAGE_ADAPTER, StorageAdapter } from "../storage/storage.interface.js";
 import { AnalyticsService } from "../analytics/analytics.service.js";
+import { QuotasService } from "../quotas/quotas.service.js";
+import { QuotaExceededException } from "../quotas/quota-exceeded.exception.js";
 
 const ALLOWED_MIMETYPES = [
   "audio/mpeg",
@@ -27,9 +29,13 @@ export class AudioService {
     @Inject(STORAGE_ADAPTER) private readonly storage: StorageAdapter,
     @InjectQueue("audio-processing") private readonly audioQueue: Queue,
     private readonly analyticsService: AnalyticsService,
+    private readonly quotasService: QuotasService,
   ) {}
 
   async upload(file: Express.Multer.File, userId: string, projectId?: string) {
+    const canUpload = await this.quotasService.canUpload(userId);
+    if (!canUpload) throw new QuotaExceededException();
+
     if (!ALLOWED_MIMETYPES.includes(file.mimetype)) {
       throw new BadRequestException(
         `Invalid audio format: ${file.mimetype}. Allowed: ${ALLOWED_MIMETYPES.join(", ")}`,

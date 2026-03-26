@@ -208,9 +208,9 @@ describe("TicketList", () => {
     setupWithTickets();
     render(<TicketList />);
 
-    expect(screen.getByText("HIGH")).toBeInTheDocument();
-    expect(screen.getByText("DRAFT")).toBeInTheDocument();
-    expect(screen.getByText("EXPORTED")).toBeInTheDocument();
+    expect(screen.getByText("High")).toBeInTheDocument();
+    expect(screen.getByText("Draft")).toBeInTheDocument();
+    expect(screen.getByText("Exported")).toBeInTheDocument();
   });
 
   it("should show Jira key for exported tickets", () => {

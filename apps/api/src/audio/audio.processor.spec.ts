@@ -56,6 +56,12 @@ function createMockPrisma() {
   };
 }
 
+function createMockQuotasService() {
+  return {
+    trackConsumption: vi.fn().mockResolvedValue(undefined),
+  };
+}
+
 describe("AudioProcessor", () => {
   let processor: AudioProcessor;
   let mockAudioService: ReturnType<typeof createMockAudioService>;
@@ -66,6 +72,7 @@ describe("AudioProcessor", () => {
   let mockGateway: ReturnType<typeof createMockGateway>;
   let mockStorage: ReturnType<typeof createMockStorageAdapter>;
   let mockPrisma: ReturnType<typeof createMockPrisma>;
+  let mockQuotas: ReturnType<typeof createMockQuotasService>;
 
   beforeEach(() => {
     mockAudioService = createMockAudioService();
@@ -76,6 +83,7 @@ describe("AudioProcessor", () => {
     mockGateway = createMockGateway();
     mockStorage = createMockStorageAdapter();
     mockPrisma = createMockPrisma();
+    mockQuotas = createMockQuotasService();
 
     processor = new AudioProcessor(
       mockAudioService as never,
@@ -86,6 +94,7 @@ describe("AudioProcessor", () => {
       mockGateway as never,
       mockStorage as never,
       mockPrisma as never,
+      mockQuotas as never,
     );
   });
 
@@ -149,6 +158,9 @@ describe("AudioProcessor", () => {
       where: { id: "audio-1" },
       data: { transcription: "We need auth and a dashboard", duration: 45.5 },
     });
+
+    // Verify consumption tracked after completion
+    expect(mockQuotas.trackConsumption).toHaveBeenCalledWith("user-1", "audio-1");
   });
 
   it("should work without project context", async () => {
@@ -172,6 +184,7 @@ describe("AudioProcessor", () => {
     expect(mockProjectsService.findOne).not.toHaveBeenCalled();
     expect(mockAIService.decompose).toHaveBeenCalledWith("Some task", undefined);
     expect(mockGateway.emitCompleted).toHaveBeenCalledWith("user-1", "audio-1", 0);
+    expect(mockQuotas.trackConsumption).toHaveBeenCalledWith("user-1", "audio-1");
   });
 
   it("should emit failed event and set status to FAILED on error", async () => {
@@ -191,5 +204,31 @@ describe("AudioProcessor", () => {
 
     expect(mockAudioService.updateStatus).toHaveBeenCalledWith("audio-1", "FAILED");
     expect(mockGateway.emitFailed).toHaveBeenCalledWith("user-1", "audio-1", "OpenAI API error");
+    expect(mockQuotas.trackConsumption).not.toHaveBeenCalled();
+  });
+
+  it("should not fail pipeline when trackConsumption throws", async () => {
+    const audioBuffer = Buffer.from("fake-audio");
+    mockStorage.get.mockResolvedValue(audioBuffer);
+    mockAudioService.findOne.mockResolvedValue({
+      id: "audio-1",
+      filePath: "user-1/recording.mp3",
+      fileName: "recording.mp3",
+      userId: "user-1",
+      projectId: null,
+    });
+    mockAIService.transcribe.mockResolvedValue({ text: "Some task", duration: 12.3 });
+    mockAIService.decompose.mockResolvedValue([]);
+    mockAIService.generateTickets.mockResolvedValue([]);
+    mockAudioService.updateStatus.mockResolvedValue({});
+    mockQuotas.trackConsumption.mockRejectedValue(new Error("Analytics down"));
+
+    await processor.process({
+      data: { audioId: "audio-1", userId: "user-1" },
+    } as never);
+
+    // Pipeline completed despite trackConsumption failure
+    expect(mockGateway.emitCompleted).toHaveBeenCalledWith("user-1", "audio-1", 0);
+    expect(mockAudioService.updateStatus).toHaveBeenCalledWith("audio-1", "COMPLETED");
   });
 });
