@@ -38,6 +38,9 @@ const envSchema = z.object({
   JIRA_CLIENT_SECRET: z.string().optional(),
   JIRA_CALLBACK_URL: z.string().optional(),
 
+  // Encryption
+  ENCRYPTION_KEY: z.string().min(32),
+
   // Quotas
   QUOTA_FREE_MINUTES: z.coerce.number(),
   QUOTA_PRO_MINUTES: z.coerce.number(),

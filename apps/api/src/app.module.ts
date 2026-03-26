@@ -14,6 +14,7 @@ import { AnalyticsModule } from "./analytics/analytics.module.js";
 import { UsersModule } from "./users/users.module.js";
 import { TemplatesModule } from "./templates/templates.module.js";
 import { QuotasModule } from "./quotas/quotas.module.js";
+import { CryptoModule } from "./crypto/crypto.module.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
 import { StorageModule } from "./storage/storage.module.js";
 
@@ -27,6 +28,7 @@ import { StorageModule } from "./storage/storage.module.js";
       { name: "medium", ttl: 10000, limit: 20 },
       { name: "long", ttl: 60000, limit: 60 },
     ]),
+    CryptoModule,
     PrismaModule,
     StorageModule,
     BullModule.forRoot({
