@@ -11,7 +11,7 @@ describe("Badge", () => {
   it("should apply default variant styles", () => {
     render(<Badge>LOW</Badge>);
     const badge = screen.getByText("LOW");
-    expect(badge.className).toContain("text-info");
+    expect(badge.className).toContain("text-foreground/60");
   });
 
   it("should apply success variant", () => {
