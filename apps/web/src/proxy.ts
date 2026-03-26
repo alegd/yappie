@@ -1,6 +1,6 @@
 import { auth } from "@/config/auth.config";
 import createIntlMiddleware from "next-intl/middleware";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { routing } from "./i18n/routing";
 import { CALLBACK_URL_KEY } from "./lib/constants/common";
 import { HOME_PAGE, LOGIN_PAGE, REGISTER_PAGE } from "./lib/constants/pages";
@@ -13,7 +13,7 @@ const intlMiddleware = createIntlMiddleware({
   ...routing,
 });
 
-export default auth(async function proxy(req: NextRequest & { auth?: { user?: unknown } }) {
+export default auth(async function proxy(req) {
   const { nextUrl } = req;
 
   // Session is already available via req.auth (injected by the auth() wrapper).
