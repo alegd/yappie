@@ -1,5 +1,6 @@
 "use client";
 
+import { AppSelect } from "@/components/ui/app-select";
 import { cn } from "@/lib/utils";
 import { Table } from "@tanstack/react-table";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
@@ -25,17 +26,13 @@ export function Pagination<T>({ table, total }: Readonly<PaginationProps<T>>) {
     <div className="sm:flex justify-between items-center px-4 pb-4 text-sm">
       <div className="flex items-center gap-2">
         <span className="text-muted-foreground">Rows per page</span>
-        <select
-          value={pageSize}
-          onChange={(e) => table.setPageSize(Number(e.target.value))}
-          className="bg-surface px-2 py-1 border border-border-hover focus:border-primary rounded-lg focus:outline-none text-sm"
-        >
-          {PAGE_SIZES.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
+        <AppSelect
+          value={String(pageSize)}
+          onChange={(val) => table.setPageSize(Number(val))}
+          options={PAGE_SIZES.map((size) => ({ value: String(size), label: String(size) }))}
+          ariaLabel="Rows per page"
+          className="min-w-[70px]"
+        />
       </div>
 
       <div className="flex items-center gap-2">

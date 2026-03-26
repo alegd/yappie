@@ -20,10 +20,8 @@ import {
   ExternalLink,
   Loader2,
   Pencil,
-  Save,
   Trash2,
   Upload,
-  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -242,14 +240,12 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
 
       {/* Edit actions */}
       {editing && (
-        <div className="flex gap-2 mb-6">
-          <Button size="sm" onClick={handleSave} disabled={saving}>
-            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            {saving ? "Saving..." : "Save changes"}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={cancelEditing}>
-            <X size={14} />
+        <div className="flex gap-3 mb-6 justify-end">
+          <Button variant="outlined" onClick={cancelEditing}>
             Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? "Saving..." : "Save changes"}
           </Button>
         </div>
       )}

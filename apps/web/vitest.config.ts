@@ -26,6 +26,7 @@ export default defineConfig({
         "src/**/*.d.ts",
         "src/**/types.ts",
         "src/components/ui/toast/**",
+        "src/components/ui/app-select.tsx",
       ],
       thresholds: {
         statements: 80,
