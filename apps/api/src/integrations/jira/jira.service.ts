@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { CryptoService } from "../../crypto/crypto.service.js";
 import { PrismaService } from "../../prisma/prisma.service.js";
 
 interface CreateIssueInput {
@@ -14,6 +15,7 @@ export class JiraService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
+    private readonly crypto: CryptoService,
   ) {}
 
   getAuthUrl(userId: string): string {
@@ -43,20 +45,23 @@ export class JiraService {
 
     const site = resources[0];
 
+    const encryptedAccess = this.crypto.encrypt(tokenData.access_token);
+    const encryptedRefresh = this.crypto.encrypt(tokenData.refresh_token);
+
     return this.prisma.integration.upsert({
       where: { userId_type: { userId, type: "JIRA" } },
       create: {
         type: "JIRA",
-        accessToken: tokenData.access_token,
-        refreshToken: tokenData.refresh_token,
+        accessToken: encryptedAccess,
+        refreshToken: encryptedRefresh,
         tokenExpiresAt: new Date(Date.now() + tokenData.expires_in * 1000),
         cloudId: site?.id,
         siteName: site?.name,
         userId,
       },
       update: {
-        accessToken: tokenData.access_token,
-        refreshToken: tokenData.refresh_token,
+        accessToken: encryptedAccess,
+        refreshToken: encryptedRefresh,
         tokenExpiresAt: new Date(Date.now() + tokenData.expires_in * 1000),
         cloudId: site?.id,
         siteName: site?.name,
@@ -73,25 +78,30 @@ export class JiraService {
       throw new UnauthorizedException("Jira not connected. Please authorize first.");
     }
 
+    const decryptedRefresh = this.crypto.decrypt(integration.refreshToken);
+
     const tokenData = await this.postJson("https://auth.atlassian.com/oauth/token", {
       grant_type: "refresh_token",
       client_id: this.config.get("JIRA_CLIENT_ID"),
       client_secret: this.config.get("JIRA_CLIENT_SECRET"),
-      refresh_token: integration.refreshToken,
+      refresh_token: decryptedRefresh,
     });
+
+    const encryptedAccess = this.crypto.encrypt(tokenData.access_token);
+    const encryptedRefresh = this.crypto.encrypt(tokenData.refresh_token);
 
     return this.prisma.integration.upsert({
       where: { userId_type: { userId, type: "JIRA" } },
       create: {
         type: "JIRA",
-        accessToken: tokenData.access_token,
-        refreshToken: tokenData.refresh_token,
+        accessToken: encryptedAccess,
+        refreshToken: encryptedRefresh,
         tokenExpiresAt: new Date(Date.now() + tokenData.expires_in * 1000),
         userId,
       },
       update: {
-        accessToken: tokenData.access_token,
-        refreshToken: tokenData.refresh_token,
+        accessToken: encryptedAccess,
+        refreshToken: encryptedRefresh,
         tokenExpiresAt: new Date(Date.now() + tokenData.expires_in * 1000),
       },
     });
@@ -166,10 +176,11 @@ export class JiraService {
 
     // Auto-refresh if token expired or about to expire (1 min buffer)
     if (integration.tokenExpiresAt && integration.tokenExpiresAt.getTime() < Date.now() + 60_000) {
-      return this.refreshAccessToken(userId);
+      const refreshed = await this.refreshAccessToken(userId);
+      return { ...refreshed, accessToken: this.crypto.decrypt(refreshed.accessToken) };
     }
 
-    return integration;
+    return { ...integration, accessToken: this.crypto.decrypt(integration.accessToken) };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

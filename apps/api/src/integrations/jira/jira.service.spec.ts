@@ -25,6 +25,13 @@ function createMockConfigService() {
   };
 }
 
+function createMockCryptoService() {
+  return {
+    encrypt: vi.fn((val: string) => `encrypted:${val}`),
+    decrypt: vi.fn((val: string) => val.replace("encrypted:", "")),
+  };
+}
+
 function mockFetchResponse(data: unknown, ok = true, status = 200) {
   return vi.fn().mockResolvedValue({
     ok,
@@ -38,12 +45,14 @@ describe("JiraService", () => {
   let service: JiraService;
   let mockPrisma: ReturnType<typeof createMockPrisma>;
   let mockConfig: ReturnType<typeof createMockConfigService>;
+  let mockCrypto: ReturnType<typeof createMockCryptoService>;
   const originalFetch = globalThis.fetch;
 
   beforeEach(() => {
     mockPrisma = createMockPrisma();
     mockConfig = createMockConfigService();
-    service = new JiraService(mockPrisma as never, mockConfig as never);
+    mockCrypto = createMockCryptoService();
+    service = new JiraService(mockPrisma as never, mockConfig as never, mockCrypto as never);
   });
 
   afterEach(() => {
