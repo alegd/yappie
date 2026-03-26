@@ -138,8 +138,14 @@ const mockTickets = {
   limit: 50,
 };
 
-const jiraConnected = { connected: true, siteName: "My Site" };
-const jiraDisconnected = { connected: false, siteName: null };
+interface JiraStatus {
+  connected: boolean;
+  siteName: string | null;
+}
+
+const jiraConnected: JiraStatus = { connected: true, siteName: "My Site" };
+const jiraDisconnected: JiraStatus = { connected: false, siteName: null };
+
 const stableMutate = vi.fn();
 
 function setupWithTickets(jira = jiraConnected) {
