@@ -24,6 +24,7 @@ model User {
   integrations    Integration[]
   usageEvents     UsageEvent[]
   ticketTemplates TicketTemplate[]
+  subscriptions   Subscription[]
 
   @@map("users")
 }
@@ -74,6 +75,11 @@ enum AudioStatus {
   ANALYZING
   COMPLETED
   FAILED
+}
+
+enum Plan {
+  FREE
+  PRO
 }
 
 model AudioRecording {
@@ -197,4 +203,21 @@ model UsageEvent {
   @@index([type])
   @@index([createdAt])
   @@map("usage_events")
+}
+
+// ─── Subscriptions ─────────────────────────────────────
+
+model Subscription {
+  id        String    @id @default(cuid())
+  plan      Plan      @default(FREE)
+  startDate DateTime  @default(now()) @map("start_date")
+  endDate   DateTime? @map("end_date")
+  userId    String    @map("user_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("subscriptions")
 }

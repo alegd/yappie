@@ -1,5 +1,5 @@
 import { DashboardContent } from "@/components/layout/dashboard-content";
-import { auth } from "@/lib/auth";
+import { auth } from "@/config/auth.config";
 import { LOGIN_PAGE } from "@/lib/constants/pages";
 import { redirect } from "next/navigation";
 

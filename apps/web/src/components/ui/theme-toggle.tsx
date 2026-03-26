@@ -3,6 +3,7 @@
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { Button } from "./button";
 
 const themes = [
   { value: "light", icon: Sun, label: "Light" },
@@ -21,18 +22,14 @@ export function ThemeToggle() {
   return (
     <div className="flex items-center gap-1 p-1 rounded-lg">
       {themes.map(({ value, icon: Icon, label }) => (
-        <button
+        <Button
           key={value}
           onClick={() => setTheme(value)}
-          className={`rounded-md p-1.5 transition ${
-            theme === value
-              ? "bg-surface-hover text-foreground shadow-sm"
-              : "text-muted hover:text-foreground"
-          }`}
+          variant={theme === value ? "outlined" : "ghost"}
           aria-label={`${label} theme`}
         >
-          <Icon size={14} />
-        </button>
+          <Icon size={18} />
+        </Button>
       ))}
     </div>
   );

@@ -37,6 +37,10 @@ const envSchema = z.object({
   JIRA_CLIENT_ID: z.string().optional(),
   JIRA_CLIENT_SECRET: z.string().optional(),
   JIRA_CALLBACK_URL: z.string().optional(),
+
+  // Quotas
+  QUOTA_FREE_MINUTES: z.coerce.number(),
+  QUOTA_PRO_MINUTES: z.coerce.number(),
 });
 
 export type Env = z.infer<typeof envSchema>;

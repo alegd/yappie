@@ -2,7 +2,7 @@
 
 import { LOGOUT_PAGE } from "@/lib/constants/pages";
 import { redirect } from "next/navigation";
-import { auth } from "./auth";
+import { auth } from "../config/auth.config";
 import { parseSearchParams } from "./parsers";
 import { parseResponse } from "./response";
 import { createServerAction, ServerActionError } from "./server-action";
