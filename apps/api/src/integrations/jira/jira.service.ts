@@ -1,7 +1,10 @@
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { CacheService } from "../../common/cache.service.js";
 import { CryptoService } from "../../crypto/crypto.service.js";
 import { PrismaService } from "../../prisma/prisma.service.js";
+
+const PROJECTS_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
 interface CreateIssueInput {
   projectKey: string;
@@ -16,6 +19,7 @@ export class JiraService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly crypto: CryptoService,
+    private readonly cache: CacheService,
   ) {}
 
   getAuthUrl(userId: string): string {
@@ -108,12 +112,19 @@ export class JiraService {
   }
 
   async getProjects(userId: string) {
+    const cacheKey = `jira:projects:${userId}`;
+    const cached = this.cache.get(cacheKey);
+    if (cached) return cached;
+
     const integration = await this.getIntegration(userId);
 
-    return this.getJson(
+    const projects = await this.getJson(
       `https://api.atlassian.com/ex/jira/${integration.cloudId}/rest/api/3/project`,
       integration.accessToken,
     );
+
+    this.cache.set(cacheKey, projects, PROJECTS_CACHE_TTL);
+    return projects;
   }
 
   async createIssue(userId: string, input: CreateIssueInput) {
@@ -163,6 +174,7 @@ export class JiraService {
     await this.prisma.integration.delete({
       where: { userId_type: { userId, type: "JIRA" } },
     });
+    this.cache.invalidate(`jira:projects:${userId}`);
   }
 
   private async getIntegration(userId: string) {

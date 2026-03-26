@@ -11,6 +11,15 @@ function createMockPrisma() {
   };
 }
 
+function createMockCache() {
+  return {
+    get: vi.fn().mockReturnValue(null),
+    set: vi.fn(),
+    del: vi.fn(),
+    invalidate: vi.fn(),
+  };
+}
+
 describe("AnalyticsService", () => {
   let service: AnalyticsService;
   let mockPrisma: ReturnType<typeof createMockPrisma>;
@@ -18,7 +27,7 @@ describe("AnalyticsService", () => {
 
   beforeEach(() => {
     mockPrisma = createMockPrisma();
-    service = new AnalyticsService(mockPrisma as never);
+    service = new AnalyticsService(mockPrisma as never, createMockCache() as never);
   });
 
   describe("track", () => {
