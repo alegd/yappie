@@ -17,6 +17,7 @@ import {
 } from "@/lib/constants/endpoints";
 import { DELETE, POST } from "@/lib/constants/http";
 import { ticketDetailPage } from "@/lib/constants/pages";
+import { capitalize } from "@/lib/string";
 import { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import {
   CheckCircle2,
@@ -197,14 +198,18 @@ export function TicketList() {
       accessorKey: "priority",
       header: "Priority",
       cell: ({ row }) => (
-        <Badge variant={priorityVariants[row.original.priority]}>{row.original.priority}</Badge>
+        <Badge variant={priorityVariants[row.original.priority]}>
+          {capitalize(row.original.priority)}
+        </Badge>
       ),
     },
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => (
-        <Badge variant={statusVariants[row.original.status]}>{row.original.status}</Badge>
+        <Badge variant={statusVariants[row.original.status]}>
+          {capitalize(row.original.status)}
+        </Badge>
       ),
     },
     {
@@ -217,10 +222,10 @@ export function TicketList() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-2 hover:text-blue-500 text-sm transition"
+            className="flex items-center gap-3 hover:text-blue-500 text-sm transition"
           >
-            {row.original.jiraIssueKey}
             <SquareArrowOutUpRightIcon size={14} />
+            {row.original.jiraIssueKey}
           </a>
         ) : (
           <span className="text-muted-foreground text-sm">—</span>

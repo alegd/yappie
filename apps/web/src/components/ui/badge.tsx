@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 const VARIANT_STYLES = {
-  default: "text-info bg-[rgba(91,134,229,0.12)] border-transparent",
+  default: "text-foreground/60 bg-[rgba(91,134,229,0.12)] border-transparent",
   info: "text-info bg-[rgba(91,134,229,0.12)] border-transparent",
   success: "text-success bg-[rgba(46,212,122,0.12)] border-transparent",
   warning: "text-warning bg-[rgba(255,179,71,0.12)] border-transparent",
@@ -13,7 +13,7 @@ const VARIANT_STYLES = {
 type BadgeVariant = keyof typeof VARIANT_STYLES;
 
 const BASE_STYLES =
-  "inline-flex items-center px-2.5 py-0.5 rounded-sm font-body font-medium text-xs border transition-colors";
+  "inline-flex items-center px-2.5 py-0.5 rounded-sm font-body font-medium text-sm border transition-colors";
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;
