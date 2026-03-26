@@ -12,23 +12,23 @@
 
 ### Core
 
-| Nombre        | Hex       | Variable CSS     | Uso                                               |
-| ------------- | --------- | ---------------- | ------------------------------------------------- |
-| Yappie Orange | `#FF6B35` | `--yp-primary`   | Primary: CTAs, logo, enlaces activos, focus rings |
-| Warm Amber    | `#FFB347` | `--yp-secondary` | Highlights, badges hover, gradientes con orange   |
-| Success Green | `#2ED47A` | `--yp-success`   | Completado, exportado, status OK                  |
-| Error Red     | `#FF4757` | `--yp-error`     | Errores, fallos, destructive actions              |
-| Info Blue     | `#5B86E5` | `--yp-info`      | Informativos, draft status, links secundarios     |
+| Nombre        | Hex                   | Variable CSS     | Uso                                               |
+| ------------- | --------------------- | ---------------- | ------------------------------------------------- |
+| Yappie Orange | `#E8612F` / `#FF6B35` | `--yp-primary`   | Primary: CTAs, logo, enlaces activos (dark/light) |
+| Warm Amber    | `#FFB347`             | `--yp-secondary` | Highlights, badges hover, gradientes con orange   |
+| Success Green | `#15803D` / `#16A34A` | `--yp-success`   | Completado, exportado, status OK (dark/light)     |
+| Error Red     | `#FF4757`             | `--yp-error`     | Errores, fallos, destructive actions              |
+| Info Blue     | `#5B86E5`             | `--yp-info`      | Informativos, draft status, links secundarios     |
 
 ### Dark mode
 
-| Nombre         | Hex                      | Variable CSS | Uso                                |
-| -------------- | ------------------------ | ------------ | ---------------------------------- |
-| Deep Navy      | `#1B1B2F`                | `--yp-navy`  | Fondo principal dark mode          |
-| Surface Plum   | `#2D2B55`                | `--yp-plum`  | Cards, sidebars, surfaces elevadas |
-| Text Primary   | `#F5F5F5`                | —            | Texto principal sobre dark bg      |
-| Text Secondary | `#A0A0B8`                | —            | Texto secundario, hints            |
-| Border         | `rgba(255,255,255,0.08)` | —            | Bordes sutiles                     |
+| Nombre         | Hex                      | Variable CSS   | Uso                                                |
+| -------------- | ------------------------ | -------------- | -------------------------------------------------- |
+| Deep Navy      | `#1C1C28`                | `--yp-navy`    | Fondo principal dark mode (neutral con toque azul) |
+| Surface        | `#2A2A38`                | `--yp-surface` | Cards, sidebars, surfaces elevadas                 |
+| Text Primary   | `#F5F5F5`                | —              | Texto principal sobre dark bg                      |
+| Text Secondary | `#A0A0B8`                | —              | Texto secundario, hints                            |
+| Border         | `rgba(255,255,255,0.08)` | —              | Bordes sutiles                                     |
 
 ### Light mode
 
@@ -55,13 +55,13 @@
 ```css
 :root {
   /* Colors */
-  --yp-orange: #ff6b35;
+  --yp-orange: #e8612f; /* dark */ / #ff6b35; /* light */
   --yp-amber: #ffb347;
-  --yp-green: #2ed47a;
+  --yp-green: #15803d; /* dark */ / #16a34a; /* light */
   --yp-red: #ff4757;
   --yp-blue: #5b86e5;
-  --yp-navy: #1b1b2f;
-  --yp-plum: #2d2b55;
+  --yp-navy: #1c1c28;
+  --yp-surface: #2a2a38;
   --yp-light-bg: #fffaf5;
 
   /* Typography */
@@ -90,8 +90,8 @@ module.exports = {
           green: "#2ED47A",
           red: "#FF4757",
           blue: "#5B86E5",
-          navy: "#1B1B2F",
-          plum: "#2D2B55",
+          navy: "#1C1C28",
+          surface: "#2A2A38",
           "light-bg": "#FFFAF5",
         },
       },

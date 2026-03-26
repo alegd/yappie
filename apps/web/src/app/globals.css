@@ -37,22 +37,22 @@
  * Dark mode (default — dark-first per brand guidelines)
  */
 :root {
-  --background: #1b1b2f;
+  --background: #1c1c28;
   --foreground: #f5f5f5;
-  --muted: #2d2b55;
+  --muted: #2a2a38;
   --muted-foreground: #a0a0b8;
-  --surface: #2d2b55;
-  --surface-hover: #3d3b65;
+  --surface: #2a2a38;
+  --surface-hover: #38384a;
   --border: rgba(255, 255, 255, 0.08);
   --border-hover: rgba(255, 255, 255, 0.15);
-  --primary: #ff6b35;
-  --primary-hover: #ff8555;
+  --primary: #e8612f;
+  --primary-hover: #f07040;
   --primary-foreground: #ffffff;
   --accent: #ffb347;
   --accent-foreground: #ffb347;
-  --accent-surface: rgba(255, 107, 53, 0.12);
+  --accent-surface: rgba(232, 97, 47, 0.12);
   --destructive: #ff4757;
-  --success: #2ed47a;
+  --success: #15803d;
   --info: #5b86e5;
   --warning: #d4940a;
 }
@@ -76,7 +76,7 @@ html:not(.dark) {
   --accent-foreground: #ff6b35;
   --accent-surface: rgba(255, 107, 53, 0.08);
   --destructive: #ff4757;
-  --success: #2ed47a;
+  --success: #16a34a;
   --info: #5b86e5;
   --warning: #d4940a;
 }
