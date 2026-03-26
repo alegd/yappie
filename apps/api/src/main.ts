@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { ValidationPipe } from "@nestjs/common";
 import helmet from "helmet";
 import { AppModule } from "./app.module.js";
+import { ThrottleExceptionFilter } from "./common/throttle-exception.filter.js";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -28,6 +29,7 @@ async function bootstrap() {
   // Whitelist strips unknown properties from DTOs (prevents mass assignment)
   // Transform enables auto-transformation of payloads to DTO instances
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalFilters(new ThrottleExceptionFilter());
 
   const config = new DocumentBuilder()
     .setTitle("Yappie API")

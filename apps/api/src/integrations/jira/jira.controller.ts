@@ -12,6 +12,7 @@ import {
   HttpCode,
   HttpStatus,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
 import { Response } from "express";
 import { JiraService } from "./jira.service.js";
 import { ExportService } from "./export.service.js";
@@ -53,6 +54,7 @@ export class JiraController {
     return this.jiraService.getProjects(req.user.sub);
   }
 
+  @Throttle({ short: { ttl: 60000, limit: 20 } })
   @Post("export/:ticketId")
   exportOne(
     @Param("ticketId") ticketId: string,
@@ -62,6 +64,7 @@ export class JiraController {
     return this.exportService.exportOne(req.user.sub, ticketId, projectKey);
   }
 
+  @Throttle({ short: { ttl: 60000, limit: 5 } })
   @Post("export-bulk")
   exportBulk(
     @Body() body: { ticketIds: string[]; projectKey: string },
