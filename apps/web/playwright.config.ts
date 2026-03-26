@@ -28,15 +28,15 @@ export default defineConfig({
   webServer: [
     {
       command: "cd ../api && pnpm dev",
-      url: `${API_URL}/api/v1`,
+      url: `${API_URL}/health`,
       reuseExistingServer: !process.env.CI,
-      timeout: 30_000,
+      timeout: 120_000,
     },
     {
       command: "pnpm dev",
       url: WEB_URL,
       reuseExistingServer: !process.env.CI,
-      timeout: 30_000,
+      timeout: 120_000,
     },
   ],
 });

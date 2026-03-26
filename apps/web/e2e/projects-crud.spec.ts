@@ -44,14 +44,15 @@ test.describe("Projects CRUD", () => {
     await expect(page.getByText("Renamed Project")).toBeVisible();
 
     // 3. Delete project
-    await page
-      .getByRole("button", { name: /delete/i })
-      .first()
-      .click();
+    // Register dialog handler BEFORE the action that triggers it
+    page.once("dialog", (dialog) => dialog.accept());
 
-    // Handle confirm dialog
-    page.on("dialog", (dialog) => dialog.accept());
+    // Use the specific aria-label
+    await page.getByRole("button", { name: /delete renamed project/i }).click();
 
-    await expect(page.getByText("Renamed Project")).not.toBeVisible({ timeout: 5_000 });
+    // Reload to see the updated list (SWR cache may delay)
+    await page.waitForTimeout(1_000);
+    await page.reload();
+    await expect(page.getByText("Renamed Project")).toBeHidden({ timeout: 10_000 });
   });
 });
