@@ -34,6 +34,9 @@ export const templateDetail = (id: string) => `${API_V1}/templates/${id}`;
 export const analyticsOverview = (from: string, to: string) =>
   `${API_V1}/analytics/overview?from=${from}&to=${to}`;
 
+// ─── Quotas ─────────────────────────────────────────────
+export const QUOTAS = `${API_V1}/quotas`;
+
 // ─── Integrations — Jira ─────────────────────────────────
 export const JIRA_STATUS = `${API_V1}/integrations/jira/status`;
 export const JIRA_AUTH = `${API_V1}/integrations/jira/auth`;
