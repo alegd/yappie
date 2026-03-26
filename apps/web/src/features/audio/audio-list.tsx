@@ -113,7 +113,7 @@ export function AudioList() {
                       {formatSize(audio.fileSize)} · {formatDate(audio.createdAt)}
                     </p>
                   </div>
-                  <Badge variant={status.variant} className="flex items-center gap-1.5">
+                  <Badge variant={status.variant} className="flex items-center gap-1.5 uppercase">
                     {status.label}
                   </Badge>
                 </Link>

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 const VARIANT_STYLES = {
   default: "text-foreground/60 bg-[rgba(91,134,229,0.12)] border-transparent",
   info: "text-info bg-[rgba(91,134,229,0.12)] border-transparent",
-  success: "text-success bg-[rgba(46,212,122,0.12)] border-transparent",
+  success: "text-success bg-[rgba(46,212,122,0.09)] border-transparent",
   warning: "text-warning bg-[rgba(255,179,71,0.12)] border-transparent",
   danger: "text-destructive bg-[rgba(255,71,87,0.12)] border-transparent",
   orange: "text-primary bg-[rgba(255,107,53,0.12)] border-transparent",

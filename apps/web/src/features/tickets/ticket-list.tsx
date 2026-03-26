@@ -17,7 +17,6 @@ import {
 } from "@/lib/constants/endpoints";
 import { DELETE, POST } from "@/lib/constants/http";
 import { ticketDetailPage } from "@/lib/constants/pages";
-import { capitalize } from "@/lib/string";
 import { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import {
   CheckCircle2,
@@ -198,18 +197,14 @@ export function TicketList() {
       accessorKey: "priority",
       header: "Priority",
       cell: ({ row }) => (
-        <Badge variant={priorityVariants[row.original.priority]}>
-          {capitalize(row.original.priority)}
-        </Badge>
+        <Badge variant={priorityVariants[row.original.priority]}>{row.original.priority}</Badge>
       ),
     },
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => (
-        <Badge variant={statusVariants[row.original.status]}>
-          {capitalize(row.original.status)}
-        </Badge>
+        <Badge variant={statusVariants[row.original.status]}>{row.original.status}</Badge>
       ),
     },
     {
