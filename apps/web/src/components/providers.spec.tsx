@@ -16,6 +16,10 @@ vi.mock("@/config/swr.config", () => ({
   SwrConfig: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+vi.mock("next-intl", () => ({
+  NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 describe("Providers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -23,7 +27,7 @@ describe("Providers", () => {
 
   it("should render children", () => {
     render(
-      <Providers>
+      <Providers locale="en" messages={{}}>
         <div>App content</div>
       </Providers>,
     );

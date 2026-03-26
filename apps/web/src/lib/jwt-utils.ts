@@ -1,6 +1,5 @@
-// Buffer before actual expiry to refresh proactively
-// TODO: revert to 2 * 60 * 1000 after testing
-const REFRESH_BUFFER_MS = 15 * 1000; // 15 seconds for testing
+// Buffer before actual expiry to refresh proactively (2 minutes)
+const REFRESH_BUFFER_MS = 2 * 60 * 1000;
 
 export function decodeJwtExp(token: string): number {
   try {
