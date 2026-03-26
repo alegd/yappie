@@ -1,5 +1,16 @@
 import { ApiBearerAuth } from "@nestjs/swagger";
-import { Body, Controller, Post, Get, Delete, Param, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Param,
+  HttpCode,
+  HttpStatus,
+  Req,
+} from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
 import { AuthService } from "./auth.service.js";
 import { RegisterDto } from "./dto/register.dto.js";
 import { LoginDto } from "./dto/login.dto.js";
@@ -12,12 +23,14 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
+  @Throttle({ short: { ttl: 60000, limit: 5 } })
   @Post("register")
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
 
   @Public()
+  @Throttle({ short: { ttl: 60000, limit: 10 } })
   @Post("login")
   @HttpCode(HttpStatus.OK)
   login(@Body() dto: LoginDto) {
@@ -37,20 +50,20 @@ export class AuthController {
     return this.authService.logout(dto.refreshToken);
   }
 
-  @Get("sessions/:userId")
-  getSessions(@Param("userId") userId: string) {
-    return this.authService.getSessions(userId);
+  @Get("sessions")
+  getSessions(@Req() req: { user: { sub: string } }) {
+    return this.authService.getSessions(req.user.sub);
   }
 
-  @Delete("sessions/:userId/:sessionId")
+  @Delete("sessions/:sessionId")
   @HttpCode(HttpStatus.NO_CONTENT)
-  revokeSession(@Param("sessionId") sessionId: string, @Param("userId") userId: string) {
-    return this.authService.revokeSession(sessionId, userId);
+  revokeSession(@Param("sessionId") sessionId: string, @Req() req: { user: { sub: string } }) {
+    return this.authService.revokeSession(sessionId, req.user.sub);
   }
 
-  @Delete("sessions/:userId")
+  @Delete("sessions")
   @HttpCode(HttpStatus.NO_CONTENT)
-  revokeAllSessions(@Param("userId") userId: string) {
-    return this.authService.revokeAllSessions(userId);
+  revokeAllSessions(@Req() req: { user: { sub: string } }) {
+    return this.authService.revokeAllSessions(req.user.sub);
   }
 }
