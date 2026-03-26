@@ -2,6 +2,29 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ColumnDef } from "@tanstack/react-table";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@/components/ui/app-select", () => ({
+  AppSelect: ({
+    value,
+    onChange,
+    options,
+    ariaLabel,
+  }: {
+    value: string;
+    onChange: (v: string) => void;
+    options: Array<{ value: string; label: string }>;
+    ariaLabel?: string;
+  }) => (
+    <select value={value} onChange={(e) => onChange(e.target.value)} aria-label={ariaLabel}>
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  ),
+}));
+
 import { DataTable } from "./data-table";
 
 interface TestRow {

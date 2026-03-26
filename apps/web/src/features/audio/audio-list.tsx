@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card/Card";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { AUDIO_LIST, audioByProject, PROJECTS_LIST } from "@/lib/constants/endpoints";
 import { audioDetailPage } from "@/lib/constants/pages";
+import { AppSelect } from "@/components/ui/app-select";
 import { AlertCircle, CheckCircle2, Clock, FileAudio, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -69,19 +70,13 @@ export function AudioList() {
         <h1 className="font-bold text-2xl">Audios</h1>
         <div className="flex items-center gap-3">
           {projects.length > 0 && (
-            <select
+            <AppSelect
               value={selectedProjectId}
-              onChange={(e) => handleProjectChange(e.target.value)}
-              className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none text-sm"
-              aria-label="Filter by project"
-            >
-              <option value="">All projects</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+              onChange={handleProjectChange}
+              options={projects.map((p) => ({ value: p.id, label: p.name }))}
+              placeholder="All projects"
+              ariaLabel="Filter by project"
+            />
           )}
           <AudioUpload projectId={selectedProjectId || undefined} onUploaded={handleUploaded} />
         </div>

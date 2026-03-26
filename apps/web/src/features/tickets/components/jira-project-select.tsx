@@ -1,5 +1,6 @@
 "use client";
 
+import { AppSelect } from "@/components/ui/app-select";
 import { useQuery } from "@/hooks/use-query";
 import { JIRA_PROJECTS } from "@/lib/constants/endpoints";
 
@@ -20,40 +21,43 @@ export function JiraProjectSelect({ value, onChange, disabled }: JiraProjectSele
 
   if (isLoading) {
     return (
-      <select
+      <AppSelect
+        value=""
+        onChange={() => {}}
+        options={[]}
+        placeholder="Loading..."
         disabled
-        className="bg-surface opacity-50 px-3 py-1.5 border border-border-hover rounded-lg text-sm"
-      >
-        <option>Loading...</option>
-      </select>
+        ariaLabel="Jira project"
+      />
     );
   }
 
   if (!projects?.length) {
     return (
-      <select
+      <AppSelect
+        value=""
+        onChange={() => {}}
+        options={[]}
+        placeholder="No projects"
         disabled
-        className="bg-surface opacity-50 px-3 py-1.5 border border-border-hover rounded-lg text-sm"
-      >
-        <option>No projects</option>
-      </select>
+        ariaLabel="Jira project"
+      />
     );
   }
 
+  const options = projects.map((p) => ({
+    value: p.key,
+    label: `${p.key} — ${p.name}`,
+  }));
+
   return (
-    <select
+    <AppSelect
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={onChange}
+      options={options}
+      placeholder="Select project"
       disabled={disabled}
-      className="bg-surface px-3 py-1.5 border border-border-hover focus:border-primary rounded-lg focus:outline-none text-sm transition"
-      aria-label="Jira project"
-    >
-      <option value="">Select project</option>
-      {projects.map((p) => (
-        <option key={p.id} value={p.key}>
-          {p.key} — {p.name}
-        </option>
-      ))}
-    </select>
+      ariaLabel="Jira project"
+    />
   );
 }
