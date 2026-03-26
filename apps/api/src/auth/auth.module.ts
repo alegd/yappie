@@ -9,7 +9,7 @@ import { JwtAuthGuard } from "./guards/jwt-auth.guard.js";
   imports: [
     JwtModule.register({
       secret: process.env.JWT_SECRET || "dev-secret",
-      signOptions: { expiresIn: "15m" },
+      signOptions: { expiresIn: "1m" }, // TODO: revert to 15m after testing
     }),
   ],
   controllers: [AuthController],
