@@ -32,6 +32,15 @@ function createMockCryptoService() {
   };
 }
 
+function createMockCacheService() {
+  return {
+    get: vi.fn().mockReturnValue(null),
+    set: vi.fn(),
+    del: vi.fn(),
+    invalidate: vi.fn(),
+  };
+}
+
 function mockFetchResponse(data: unknown, ok = true, status = 200) {
   return vi.fn().mockResolvedValue({
     ok,
@@ -52,7 +61,12 @@ describe("JiraService", () => {
     mockPrisma = createMockPrisma();
     mockConfig = createMockConfigService();
     mockCrypto = createMockCryptoService();
-    service = new JiraService(mockPrisma as never, mockConfig as never, mockCrypto as never);
+    service = new JiraService(
+      mockPrisma as never,
+      mockConfig as never,
+      mockCrypto as never,
+      createMockCacheService() as never,
+    );
   });
 
   afterEach(() => {
