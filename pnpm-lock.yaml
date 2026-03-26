@@ -107,6 +107,9 @@ importers:
       dotenv:
         specifier: ^17.3.1
         version: 17.3.1
+      helmet:
+        specifier: ^8.1.0
+        version: 8.1.0
       openai:
         specifier: ^6.32.0
         version: 6.32.0(ws@8.18.3)(zod@4.3.6)
@@ -3289,6 +3292,10 @@ packages:
 
   headers-polyfill@4.0.3:
     resolution: {integrity: sha512-IScLbePpkvO846sIwOtOTDjutRMWdXdJmXdMvk6gCBHxFO8d+QKOQedyZSxFTTFYRSmlgSTDtXqqq4pcenBXLQ==}
+
+  helmet@8.1.0:
+    resolution: {integrity: sha512-jOiHyAZsmnr8LqoPGmCjYAaiuWwjAPLgY8ZX2XrmHawt99/u1y6RgrZMTeoPfpUbV96HOalYgz1qzkRbw54Pmg==}
+    engines: {node: '>=18.0.0'}
 
   hono@4.11.4:
     resolution: {integrity: sha512-U7tt8JsyrxSRKspfhtLET79pU8K+tInj5QZXs1jSugO1Vq5dFj3kmZsRldo29mTBfcjDRVRXrEZ6LS63Cog9ZA==}
@@ -8010,6 +8017,8 @@ snapshots:
       function-bind: 1.1.2
 
   headers-polyfill@4.0.3: {}
+
+  helmet@8.1.0: {}
 
   hono@4.11.4: {}
 
