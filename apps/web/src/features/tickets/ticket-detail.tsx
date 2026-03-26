@@ -188,12 +188,7 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
             </Button>
           )}
           {ticket.status === "DRAFT" && (
-            <Button
-              size="sm"
-              onClick={handleApprove}
-              disabled={acting}
-              className="bg-success hover:bg-success/80"
-            >
+            <Button size="sm" onClick={handleApprove} disabled={acting} variant="success">
               {acting ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
               Approve
             </Button>
