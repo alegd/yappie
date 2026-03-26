@@ -19,7 +19,7 @@ vi.mock("@/lib/api-fetcher", () => ({
 }));
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: mockRouterPush }),
 }));
 
 vi.mock("next/link", () => ({
@@ -46,6 +46,8 @@ vi.mock("./components/jira-project-select", () => ({
 
 import { Ticket } from "./types";
 
+const mockRouterPush = vi.fn();
+
 const mockTicket: Ticket = {
   id: "t-1",
   title: "Fix Safari login bug",
@@ -62,15 +64,17 @@ const mockTicket: Ticket = {
 };
 
 const jiraConnected = { connected: true };
+const jiraDisconnected = { connected: false };
+const stableMutate = vi.fn();
 
 function setupMocks(ticket = mockTicket, jira = jiraConnected) {
   let callIndex = 0;
   mockUseQuery.mockImplementation(() => {
-    const idx = callIndex++;
-    if (idx % 2 === 0) {
-      return { data: ticket, error: undefined, isLoading: false, mutate: vi.fn() };
+    const position = callIndex++ % 2;
+    if (position === 0) {
+      return { data: ticket, error: undefined, isLoading: false, mutate: stableMutate };
     }
-    return { data: jira, error: undefined, isLoading: false, mutate: vi.fn() };
+    return { data: jira, error: undefined, isLoading: false, mutate: stableMutate };
   });
 }
 
@@ -217,5 +221,73 @@ describe("TicketDetail", () => {
     render(<TicketDetail ticketId="t-1" />);
 
     expect(screen.getByText("YAP-42")).toBeInTheDocument();
+  });
+
+  it("should call delete API and navigate to tickets page", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    setupMocks();
+    mockApiFetcher.mockResolvedValue({});
+    render(<TicketDetail ticketId="t-1" />);
+
+    await user.click(screen.getByRole("button", { name: /delete/i }));
+
+    await waitFor(() => {
+      expect(mockApiFetcher).toHaveBeenCalledWith("/v1/tickets/t-1", { method: "DELETE" });
+    });
+    expect(mockRouterPush).toHaveBeenCalledWith("/dashboard/tickets");
+  });
+
+  it("should not delete when confirm is cancelled", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    setupMocks();
+    render(<TicketDetail ticketId="t-1" />);
+
+    await user.click(screen.getByRole("button", { name: /delete/i }));
+
+    expect(mockApiFetcher).not.toHaveBeenCalled();
+  });
+
+  it("should call export API with selected Jira project", async () => {
+    const user = userEvent.setup();
+    setupMocks({ ...mockTicket, status: "APPROVED" });
+    mockApiFetcher.mockResolvedValue({});
+    render(<TicketDetail ticketId="t-1" />);
+
+    const select = screen.getByTestId("jira-project-select");
+    await user.selectOptions(select, "YAP");
+
+    await user.click(screen.getByRole("button", { name: /export/i }));
+
+    await waitFor(() => {
+      expect(mockApiFetcher).toHaveBeenCalledWith(
+        "/v1/integrations/jira/export/t-1?projectKey=YAP",
+        { method: "POST" },
+      );
+    });
+  });
+
+  it("should disable Export button when no Jira project selected", () => {
+    setupMocks({ ...mockTicket, status: "APPROVED" });
+    render(<TicketDetail ticketId="t-1" />);
+
+    const exportButton = screen.getByRole("button", { name: /export/i });
+    expect(exportButton).toBeDisabled();
+  });
+
+  it("should not show Export button when Jira is disconnected", () => {
+    setupMocks({ ...mockTicket, status: "APPROVED" }, jiraDisconnected);
+    render(<TicketDetail ticketId="t-1" />);
+
+    expect(screen.queryByRole("button", { name: /export/i })).not.toBeInTheDocument();
+  });
+
+  it("should not show Edit or Approve for EXPORTED tickets", () => {
+    setupMocks({ ...mockTicket, status: "EXPORTED", jiraIssueKey: "YAP-42" });
+    render(<TicketDetail ticketId="t-1" />);
+
+    expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /approve/i })).not.toBeInTheDocument();
   });
 });
