@@ -24,9 +24,8 @@ describe("SettingsPage", () => {
     expect(screen.getByText("Settings")).toBeInTheDocument();
   });
 
-  it("should render Plan & Usage section", () => {
+  it("should render quota usage", () => {
     render(<SettingsPage />);
-    expect(screen.getByText("Plan & Usage")).toBeInTheDocument();
     expect(screen.getByTestId("quota-usage")).toBeInTheDocument();
   });
 

@@ -92,7 +92,7 @@ describe("IntegrationsSection", () => {
     it("should not show Connect Jira button", () => {
       render(<IntegrationsSection />);
 
-      expect(screen.queryByRole("button", { name: /connect jira/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /^connect jira$/i })).not.toBeInTheDocument();
     });
 
     it("should disconnect when confirmed", async () => {

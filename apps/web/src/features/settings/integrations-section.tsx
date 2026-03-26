@@ -69,6 +69,7 @@ export function IntegrationsSection() {
               onClick={handleDisconnectJira}
               disabled={disconnecting}
               className="hover:text-destructive"
+              aria-label="Disconnect Jira"
             >
               <Unlink size={18} />
             </Button>
