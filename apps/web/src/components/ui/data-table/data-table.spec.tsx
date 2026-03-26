@@ -130,4 +130,73 @@ describe("DataTable", () => {
     // Header should be rendered with sort indicator
     expect(screen.getByText("Name")).toBeInTheDocument();
   });
+
+  describe("pagination interactions", () => {
+    const paginatedProps = {
+      ...defaultProps,
+      count: 100,
+      pageSize: 2,
+      page: 1,
+    };
+
+    it("should navigate to next page", async () => {
+      const user = userEvent.setup();
+      render(<DataTable {...paginatedProps} />);
+
+      await user.click(screen.getByRole("button", { name: "Next page" }));
+
+      expect(paginatedProps.onPaginationChange).toHaveBeenCalled();
+    });
+
+    it("should navigate to previous page", async () => {
+      const user = userEvent.setup();
+      render(<DataTable {...paginatedProps} />);
+
+      await user.click(screen.getByRole("button", { name: "Previous page" }));
+
+      expect(paginatedProps.onPaginationChange).toHaveBeenCalled();
+    });
+
+    it("should navigate to first page", async () => {
+      const user = userEvent.setup();
+      render(<DataTable {...paginatedProps} />);
+
+      await user.click(screen.getByRole("button", { name: "First page" }));
+
+      expect(paginatedProps.onPaginationChange).toHaveBeenCalled();
+    });
+
+    it("should navigate to last page", async () => {
+      const user = userEvent.setup();
+      render(<DataTable {...paginatedProps} />);
+
+      await user.click(screen.getByRole("button", { name: "Last page" }));
+
+      expect(paginatedProps.onPaginationChange).toHaveBeenCalled();
+    });
+
+    it("should change page size", async () => {
+      const user = userEvent.setup();
+      render(<DataTable {...paginatedProps} />);
+
+      const select = screen.getByRole("combobox");
+      await user.selectOptions(select, "25");
+
+      expect(paginatedProps.onPaginationChange).toHaveBeenCalled();
+    });
+
+    it("should disable prev/first buttons on first page", () => {
+      render(<DataTable {...paginatedProps} page={0} />);
+
+      expect(screen.getByRole("button", { name: "First page" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Previous page" })).toBeDisabled();
+    });
+
+    it("should show correct range text", () => {
+      render(<DataTable {...paginatedProps} />);
+
+      // page=1, pageSize=2 → rows 3-4 of 100
+      expect(screen.getByText("3–4 of 100")).toBeInTheDocument();
+    });
+  });
 });
