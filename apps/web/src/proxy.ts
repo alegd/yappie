@@ -45,8 +45,6 @@ export default auth(async function proxy(req) {
   return intlMiddleware(req);
 });
 
-export const runtime = "nodejs";
-
 export const config = {
   // Skip all paths that should not be internationalized
   matcher: ["/((?!api|_next|.*\\..*).*)"],
