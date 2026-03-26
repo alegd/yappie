@@ -1,28 +1,12 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { LOGIN_PAGE } from "@/lib/constants/pages";
+import { isTokenExpired } from "./jwt-utils";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-// Buffer before actual expiry to refresh proactively (2 minutes)
-const REFRESH_BUFFER_MS = 2 * 60 * 1000;
-
 // Mutex to prevent concurrent refresh calls (token rotation race condition)
 let refreshPromise: Promise<Record<string, unknown>> | null = null;
-
-function decodeJwtExp(token: string): number {
-  try {
-    const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
-    return payload.exp * 1000; // convert seconds to milliseconds
-  } catch {
-    return 0;
-  }
-}
-
-function isTokenExpired(accessToken: string): boolean {
-  const exp = decodeJwtExp(accessToken);
-  return exp > 0 && Date.now() >= exp - REFRESH_BUFFER_MS;
-}
 
 async function refreshAccessToken(token: Record<string, unknown>) {
   if (refreshPromise) {
