@@ -20,11 +20,12 @@ export default defineConfig({
         "src/lib/**/*.{ts,tsx}",
       ],
       exclude: [
+        "src/config/*.{ts,tsx}",
         "src/**/*.spec.{ts,tsx}",
         "src/**/*.test.{ts,tsx}",
         "src/**/*.d.ts",
         "src/**/types.ts",
-        "src/lib/auth.ts",
+        "src/components/ui/toast/**",
       ],
       thresholds: {
         statements: 80,
