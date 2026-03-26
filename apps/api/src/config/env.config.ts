@@ -38,6 +38,9 @@ const envSchema = z.object({
   JIRA_CLIENT_SECRET: z.string().optional(),
   JIRA_CALLBACK_URL: z.string().optional(),
 
+  // Sentry (optional — disabled in dev if not set)
+  SENTRY_DSN: z.string().optional(),
+
   // Encryption
   ENCRYPTION_KEY: z.string().min(32),
 
