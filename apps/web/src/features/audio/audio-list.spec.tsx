@@ -12,6 +12,31 @@ vi.mock("@/hooks/use-query", () => ({
   invalidateQuery: mockInvalidateQuery,
 }));
 
+vi.mock("@/components/ui/app-select", () => ({
+  AppSelect: ({
+    value,
+    onChange,
+    options,
+    ariaLabel,
+    placeholder,
+  }: {
+    value: string;
+    onChange: (v: string) => void;
+    options: Array<{ value: string; label: string }>;
+    ariaLabel?: string;
+    placeholder?: string;
+  }) => (
+    <select value={value} onChange={(e) => onChange(e.target.value)} aria-label={ariaLabel}>
+      {placeholder && <option value="">{placeholder}</option>}
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  ),
+}));
+
 vi.mock("./audio-upload", () => ({
   AudioUpload: () => <div data-testid="audio-upload" />,
 }));
