@@ -13,7 +13,7 @@ const mockRedirect = vi.fn((url: string) => {
   throw new RedirectError(url);
 });
 
-vi.mock("./auth", () => ({
+vi.mock("@/config/auth.config", () => ({
   auth: () => mockAuth(),
 }));
 
@@ -146,5 +146,108 @@ describe("apiFetcher", () => {
         }),
       }),
     );
+  });
+
+  it("should send multipart form data when Content-Type is multipart/form-data", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({ id: "a-1" }),
+    });
+
+    const file = new File(["audio"], "test.mp3", { type: "audio/mpeg" });
+
+    await apiFetcher("/v1/audio/upload", {
+      method: "POST",
+      data: { file: { name: "file", value: [file] } },
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        method: "POST",
+        body: expect.any(FormData),
+      }),
+    );
+  });
+
+  it("should return error with 'Forbidden' for 403 response", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 403,
+      text: async () => JSON.stringify({ statusCode: 403, error: { message: "No access" } }),
+    });
+
+    const result = await apiFetcher("/v1/admin");
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        success: false,
+        error: "Forbidden",
+      }),
+    );
+  });
+
+  it("should return error with 'Not Found' for 404 response", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 404,
+      text: async () => JSON.stringify({ statusCode: 404, error: { message: "Missing" } }),
+    });
+
+    const result = await apiFetcher("/v1/tickets/nonexistent");
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        success: false,
+        error: "Not Found",
+      }),
+    );
+  });
+
+  it("should return error message for 422 response", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 422,
+      text: async () => JSON.stringify({ statusCode: 422, error: { message: "Invalid input" } }),
+    });
+
+    const result = await apiFetcher("/v1/tickets");
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        success: false,
+        error: "Invalid input",
+      }),
+    );
+  });
+
+  it("should return error message for 500 response", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: async () =>
+        JSON.stringify({ statusCode: 500, error: { message: "Internal server error" } }),
+    });
+
+    const result = await apiFetcher("/v1/tickets");
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        success: false,
+        error: "Internal server error",
+      }),
+    );
+  });
+
+  it("should return null for empty response body", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      text: async () => "",
+    });
+
+    const result = await apiFetcher("/v1/tickets/t-1", { method: "DELETE" });
+
+    expect(result).toBeNull();
   });
 });
