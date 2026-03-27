@@ -1,15 +1,11 @@
-import "@fontsource/dm-sans/400.css";
-import "@fontsource/dm-sans/500.css";
-import "@fontsource/dm-sans/700.css";
-import "@fontsource/sora/500.css";
-import "@fontsource/sora/600.css";
-import "@fontsource/sora/700.css";
-import "@fontsource/sora/800.css";
 import "./globals.css";
 
-import { Providers } from "@/components/providers";
-import type { Metadata } from "next";
-import { getMessages } from "next-intl/server";
+import type { Metadata, Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: {
@@ -25,6 +21,15 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
   },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_HOST_URL!),
+  robots: { index: true, follow: true },
+  icons: { icon: "/favicon.ico" },
+  twitter: {
+    card: "summary_large_image",
+    title: "Yappie — Audio to Jira Tickets with AI",
+    description:
+      "Record voice notes, let AI decompose them into tasks, and export structured tickets to Jira.",
+  },
 };
 
 export default async function RootLayout({
@@ -34,17 +39,11 @@ export default async function RootLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const messages = await getMessages();
-
   const { locale } = await params;
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className="bg-background text-foreground font-body antialiased">
-        <Providers locale={locale} messages={messages}>
-          {children}
-        </Providers>
-      </body>
+      <body className="bg-background text-foreground font-body antialiased">{children}</body>
     </html>
   );
 }
