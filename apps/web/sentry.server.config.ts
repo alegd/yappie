@@ -4,12 +4,20 @@
 import * as Sentry from "@sentry/nextjs";
 import { parseSentryRate } from "./src/lib/sentry-utils";
 
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
 
-  tracesSampleRate: parseSentryRate("NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE"),
+if (dsn) {
+  try {
+    Sentry.init({
+      dsn,
 
-  enableLogs: true,
+      tracesSampleRate: parseSentryRate("NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE"),
 
-  sendDefaultPii: true,
-});
+      enableLogs: true,
+
+      sendDefaultPii: true,
+    });
+  } catch (error) {
+    console.error("[Sentry] Failed to initialize server:", error);
+  }
+}

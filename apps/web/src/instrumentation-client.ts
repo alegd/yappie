@@ -4,20 +4,28 @@
 import * as Sentry from "@sentry/nextjs";
 import { parseSentryRate } from "@/lib/sentry-utils";
 
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
 
-  integrations: [Sentry.replayIntegration()],
+if (dsn) {
+  try {
+    Sentry.init({
+      dsn,
 
-  tracesSampleRate: parseSentryRate("NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE"),
+      integrations: [Sentry.replayIntegration()],
 
-  enableLogs: true,
+      tracesSampleRate: parseSentryRate("NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE"),
 
-  replaysSessionSampleRate: parseSentryRate("NEXT_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE"),
+      enableLogs: true,
 
-  replaysOnErrorSampleRate: parseSentryRate("NEXT_PUBLIC_SENTRY_REPLAYS_ERROR_SAMPLE_RATE"),
+      replaysSessionSampleRate: parseSentryRate("NEXT_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE"),
 
-  sendDefaultPii: true,
-});
+      replaysOnErrorSampleRate: parseSentryRate("NEXT_PUBLIC_SENTRY_REPLAYS_ERROR_SAMPLE_RATE"),
 
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+      sendDefaultPii: true,
+    });
+  } catch (error) {
+    console.error("[Sentry] Failed to initialize client:", error);
+  }
+}
+
+export const onRouterTransitionStart = dsn ? Sentry.captureRouterTransitionStart : () => {};

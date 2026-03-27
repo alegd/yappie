@@ -52,7 +52,7 @@ export function LandingPage() {
       <PublicNavbar />
 
       {/* Hero */}
-      <section className="mx-auto px-6 py-24 max-w-4xl text-center">
+      <section className="mx-auto px-6 py-24 max-w-4xl text-center pt-40">
         <div className="inline-block mb-6 px-3 py-1 border border-border rounded-full font-semibold text-accent text-xs uppercase tracking-wider bg-accent-surface">
           Powered by AI
         </div>
