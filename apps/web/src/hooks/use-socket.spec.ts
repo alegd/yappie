@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import { useSocket } from "./use-socket";
 
 const mockOn = vi.fn();
@@ -34,14 +34,18 @@ describe("useSocket", () => {
     });
   });
 
-  it("should not connect when token is null", () => {
-    renderHook(() => useSocket({ token: null }));
+  it("should not connect when token is null", async () => {
+    await act(async () => {
+      renderHook(() => useSocket({ token: null }));
+    });
 
     expect(mockIo).not.toHaveBeenCalled();
   });
 
-  it("should connect with token in auth", () => {
-    renderHook(() => useSocket({ token: "jwt-123" }));
+  it("should connect with token in auth", async () => {
+    await act(async () => {
+      renderHook(() => useSocket({ token: "jwt-123" }));
+    });
 
     expect(mockIo).toHaveBeenCalledWith(
       expect.any(String),
@@ -52,8 +56,10 @@ describe("useSocket", () => {
     );
   });
 
-  it("should register all three event listeners", () => {
-    renderHook(() => useSocket({ token: "jwt-123" }));
+  it("should register all three event listeners", async () => {
+    await act(async () => {
+      renderHook(() => useSocket({ token: "jwt-123" }));
+    });
 
     const eventNames = mockOn.mock.calls.map((call: string[]) => call[0]);
     expect(eventNames).toContain("audio:progress");
@@ -61,8 +67,12 @@ describe("useSocket", () => {
     expect(eventNames).toContain("audio:failed");
   });
 
-  it("should disconnect on unmount", () => {
-    const { unmount } = renderHook(() => useSocket({ token: "jwt-123" }));
+  it("should disconnect on unmount", async () => {
+    let unmount!: () => void;
+
+    await act(async () => {
+      ({ unmount } = renderHook(() => useSocket({ token: "jwt-123" })));
+    });
 
     unmount();
 
