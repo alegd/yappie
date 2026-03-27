@@ -1,5 +1,6 @@
 import "./globals.css";
 
+import { ThemeWrapper } from "@/components/theme-wrapper";
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, Sora } from "next/font/google";
 
@@ -61,7 +62,7 @@ export default async function RootLayout({
       <body
         className={`${dmSans.variable} ${sora.variable} bg-background text-foreground font-body antialiased`}
       >
-        {children}
+        <ThemeWrapper>{children}</ThemeWrapper>
       </body>
     </html>
   );
