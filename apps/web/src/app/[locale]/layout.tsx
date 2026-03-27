@@ -37,7 +37,9 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_HOST_URL!),
+  metadataBase: process.env.NEXT_PUBLIC_HOST_URL
+    ? new URL(process.env.NEXT_PUBLIC_HOST_URL)
+    : undefined,
   robots: { index: true, follow: true },
   icons: { icon: "/favicon.ico" },
   twitter: {
