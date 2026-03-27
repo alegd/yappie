@@ -1,0 +1,61 @@
+language: es
+early_access: false
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  collapse_walkthrough: true
+  path_instructions:
+    - path: "apps/api/**"
+      instructions: |
+        NestJS 11 backend with Prisma 7. Follow feature-based modular architecture.
+        Controllers must be thin — delegate to services. Use NestJS DI and built-in exceptions.
+        Ensure proper use of guards, decorators, and ValidationPipe.
+    - path: "apps/api/**/*.spec.ts"
+      instructions: |
+        Tests use Vitest with Arrange-Act-Assert pattern.
+        Mock naming convention: mockPrisma, mockJwt, mockAIService, etc.
+        Test all happy paths AND error paths. Coverage threshold: 80%.
+    - path: "apps/web/src/app/**"
+      instructions: |
+        Next.js 16 App Router pages. Pages must be thin (max 5 lines) — import and render a feature component.
+        Use "use client" only where needed. No useMemo/useCallback (React Compiler handles it).
+        Root layout is pure RSC with ThemeWrapper. Providers are in dashboard layout only.
+    - path: "apps/web/src/features/**"
+      instructions: |
+        Feature modules with React 19. Named exports only.
+        Use Zustand for global state, useState for local. Minimize useEffect.
+        Data fetching via useQuery/useMutation hooks (SWR-based).
+        Tailwind CSS 4 with cn() helper. Dark theme by default.
+    - path: "apps/web/src/components/**"
+      instructions: |
+        Shared components used by 2+ features. If only used by one feature, it belongs in features/.
+        All interactive elements need tabIndex, aria-label, keyboard handlers.
+        Use semantic HTML elements.
+    - path: "packages/**"
+      instructions: |
+        Shared packages (types, config). Changes here affect both apps — ensure backwards compatibility.
+    - path: "*.ts"
+      instructions: |
+        TypeScript strict mode. Always declare types for params and returns. Avoid any.
+        PascalCase for types/interfaces, camelCase for variables/functions.
+        Functions start with a verb. Boolean vars use is/has/can prefix.
+        Short functions (<20 lines), early returns, RO-RO for 3+ params.
+    - path: "prisma/**"
+      instructions: |
+        Prisma 7 with PrismaPg adapter. Check for proper relations, indexes, and enums.
+        Ensure migrations are reversible.
+
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+    drafts: false
+    base_branches:
+      - main
+
+chat:
+  auto_reply: true
