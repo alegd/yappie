@@ -22,8 +22,8 @@
   --color-warning: var(--warning);
 
   /* Typography */
-  --font-heading: "Sora", sans-serif;
-  --font-body: "DM Sans", sans-serif;
+  --font-heading: var(--font-sora), sans-serif;
+  --font-body: var(--font-dm-sans), sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
   /* Radius */

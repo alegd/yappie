@@ -6,7 +6,7 @@ export async function PublicNavbar() {
   const session = await auth();
 
   return (
-    <nav className="fixed w-full bg-background/80 backdrop-blur-sm">
+    <nav className="fixed w-full bg-background/65 backdrop-blur-md">
       <div className="flex justify-between items-center mx-auto px-6 py-4 max-w-6xl mx-auto">
         <Link href={HOME_PAGE} className="font-bold text-xl tracking-tight">
           Yappie
