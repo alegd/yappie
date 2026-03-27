@@ -1,6 +1,21 @@
 import "./globals.css";
 
 import type { Metadata, Viewport } from "next";
+import { DM_Sans, Sora } from "next/font/google";
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
+
+const sora = Sora({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-sora",
+  display: "swap",
+});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -43,7 +58,11 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className="bg-background text-foreground font-body antialiased">{children}</body>
+      <body
+        className={`${dmSans.variable} ${sora.variable} bg-background text-foreground font-body antialiased`}
+      >
+        {children}
+      </body>
     </html>
   );
 }

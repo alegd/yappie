@@ -16,8 +16,6 @@
     "e2e:ui": "playwright test --ui"
   },
   "dependencies": {
-    "@fontsource/dm-sans": "^5.2.8",
-    "@fontsource/sora": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-select": "^2.2.6",
     "@sentry/nextjs": "^10",
