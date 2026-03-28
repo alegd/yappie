@@ -30,7 +30,6 @@
     "@prisma/client": "^7.5.0",
     "@sentry/nestjs": "^10.46.0",
     "@yappie/shared": "workspace:*",
-    "bcryptjs": "^3.0.3",
     "bullmq": "^5.71.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
@@ -51,7 +50,6 @@
   "devDependencies": {
     "@nestjs/cli": "^11.0.16",
     "@nestjs/testing": "^11.1.16",
-    "@types/bcryptjs": "^3.0.0",
     "@types/express": "^5.0.6",
     "@types/multer": "^2.1.0",
     "@types/passport-jwt": "^4.0.1",
