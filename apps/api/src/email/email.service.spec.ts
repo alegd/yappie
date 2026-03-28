@@ -15,7 +15,7 @@ describe("EmailService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSend.mockResolvedValue({ data: { id: "email-1" } });
-    service = new EmailService("re_test_key");
+    service = new EmailService("re_test_key", "Yappie <noreply@test.com>");
   });
 
   it("should send OTP email with correct params", async () => {

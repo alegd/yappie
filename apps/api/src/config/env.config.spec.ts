@@ -23,6 +23,7 @@ describe("validateEnv", () => {
     FRONTEND_URL: "http://localhost:3000",
     ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
     RESEND_API_KEY: "re_test_key",
+    EMAIL_FROM: "Yappie <noreply@test.com>",
     QUOTA_FREE_MINUTES: "30",
     QUOTA_PRO_MINUTES: "300",
   };

@@ -46,6 +46,7 @@ const envSchema = z.object({
 
   // Email
   RESEND_API_KEY: z.string().min(1),
+  EMAIL_FROM: z.string().min(1),
 
   // Quotas
   QUOTA_FREE_MINUTES: z.coerce.number(),

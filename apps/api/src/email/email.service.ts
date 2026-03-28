@@ -5,13 +5,16 @@ import { Resend } from "resend";
 export class EmailService {
   private readonly resend: Resend;
 
-  constructor(apiKey: string) {
+  private readonly from: string;
+
+  constructor(apiKey: string, from: string) {
     this.resend = new Resend(apiKey);
+    this.from = from;
   }
 
   async sendOtp(email: string, code: string): Promise<void> {
     await this.resend.emails.send({
-      from: "Yappie <onboarding@resend.dev>",
+      from: this.from,
       to: email,
       subject: `Your Yappie code: ${code}`,
       html: `
