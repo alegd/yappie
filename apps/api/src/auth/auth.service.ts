@@ -1,9 +1,8 @@
 import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service.js";
-import { RegisterDto } from "./dto/register.dto.js";
-import { LoginDto } from "./dto/login.dto.js";
+import { OtpService } from "./otp.service.js";
+import { EmailService } from "../email/email.service.js";
 import { randomBytes } from "crypto";
 
 @Injectable()
@@ -11,44 +10,57 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly otpService: OtpService,
+    private readonly emailService: EmailService,
   ) {}
 
-  async register(dto: RegisterDto) {
+  async requestOtp(email: string) {
+    const code = await this.otpService.generateAndStore(email);
+    await this.emailService.sendOtp(email, code);
+    return { sent: true };
+  }
+
+  async verifyOtp(email: string, code: string) {
+    const isValid = await this.otpService.verify(email, code);
+
+    if (!isValid) {
+      throw new UnauthorizedException("Invalid or expired code");
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (user) {
+      await this.otpService.delete(email);
+      const tokens = await this.generateTokens(user);
+      return { ...tokens, isNewUser: false };
+    }
+
+    await this.otpService.markVerified(email);
+    return { verified: true, isNewUser: true };
+  }
+
+  async completeRegister(email: string, code: string, name: string) {
+    const isVerified = await this.otpService.isVerified(email, code);
+
+    if (!isVerified) {
+      throw new UnauthorizedException("Invalid or expired verification");
+    }
+
     const existing = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email },
     });
 
     if (existing) {
       throw new ConflictException("Email already registered");
     }
 
-    const hashedPassword = await this.hashPassword(dto.password);
-
     const user = await this.prisma.user.create({
-      data: {
-        name: dto.name,
-        email: dto.email,
-        password: hashedPassword,
-      },
+      data: { email, name },
     });
 
-    return this.generateTokens(user);
-  }
-
-  async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException("Invalid credentials");
-    }
-
-    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException("Invalid credentials");
-    }
+    await this.otpService.delete(email);
 
     return this.generateTokens(user);
   }
@@ -166,10 +178,6 @@ export class AuthService {
       },
       data: { revokedAt: new Date() },
     });
-  }
-
-  private async hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, 10);
   }
 
   private async generateTokens(user: { id: string; email: string; name: string }) {
