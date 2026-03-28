@@ -1,13 +1,13 @@
 "use client";
 
-import { LOGIN_PAGE } from "@/lib/constants/pages";
+import { AUTH_PAGE } from "@/lib/constants/pages";
 import { signOut } from "next-auth/react";
 import { useEffect } from "react";
 
 export default function LogoutPage() {
   useEffect(() => {
     signOut({
-      callbackUrl: LOGIN_PAGE,
+      callbackUrl: AUTH_PAGE,
       redirect: true,
     });
   }, []);

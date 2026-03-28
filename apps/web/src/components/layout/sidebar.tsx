@@ -3,7 +3,7 @@
 import {
   ANALYTICS_PAGE,
   AUDIOS_PAGE,
-  LOGIN_PAGE,
+  AUTH_PAGE,
   PROJECTS_PAGE,
   SETTINGS_PAGE,
   TICKETS_PAGE,
@@ -32,7 +32,7 @@ export function Sidebar({ user }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = () => {
-    signOut({ redirectTo: LOGIN_PAGE });
+    signOut({ redirectTo: AUTH_PAGE });
   };
 
   return (

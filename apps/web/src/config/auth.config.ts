@@ -1,4 +1,4 @@
-import { LOGIN_PAGE } from "@/lib/constants/pages";
+import { AUTH_PAGE } from "@/lib/constants/pages";
 import { decodeJwtExp } from "@/lib/jwt-utils";
 import NextAuth from "next-auth";
 import { JWT } from "next-auth/jwt";
@@ -72,29 +72,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
       credentials: {
+        accessToken: {},
+        refreshToken: {},
+        userId: {},
         email: {},
-        password: {},
+        name: {},
       },
       async authorize(credentials) {
-        const response = await fetch(`${API_URL}/api/v1/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: credentials.email,
-            password: credentials.password,
-          }),
-        });
-
-        if (!response.ok) return null;
-
-        const data = await response.json();
-
+        if (!credentials?.accessToken) return null;
         return {
-          id: data.user.id,
-          name: data.user.name,
-          email: data.user.email,
-          accessToken: data.accessToken,
-          refreshToken: data.refreshToken,
+          id: credentials.userId as string,
+          email: credentials.email as string,
+          name: credentials.name as string,
+          accessToken: credentials.accessToken as string,
+          refreshToken: credentials.refreshToken as string,
         };
       },
     }),
@@ -133,7 +124,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   pages: {
-    signIn: LOGIN_PAGE,
+    signIn: AUTH_PAGE,
   },
   session: {
     strategy: "jwt",

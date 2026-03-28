@@ -3,9 +3,9 @@ import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
 import { routing } from "./i18n/routing";
 import { CALLBACK_URL_KEY } from "./lib/constants/common";
-import { HOME_PAGE, LOGIN_PAGE, REGISTER_PAGE } from "./lib/constants/pages";
+import { AUTH_PAGE, HOME_PAGE } from "./lib/constants/pages";
 
-const authPages = [LOGIN_PAGE, REGISTER_PAGE];
+const authPages = [AUTH_PAGE];
 
 const publicPages = [HOME_PAGE];
 
@@ -38,7 +38,7 @@ export default auth(async function proxy(req) {
     const callbackUrl = nextUrl.pathname + nextUrl.search;
 
     return NextResponse.redirect(
-      new URL(`${LOGIN_PAGE}?${CALLBACK_URL_KEY}=${encodeURIComponent(callbackUrl)}`, req.url),
+      new URL(`${AUTH_PAGE}?${CALLBACK_URL_KEY}=${encodeURIComponent(callbackUrl)}`, req.url),
     );
   }
 

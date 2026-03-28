@@ -12,8 +12,9 @@ import {
 } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
 import { AuthService } from "./auth.service.js";
-import { RegisterDto } from "./dto/register.dto.js";
-import { LoginDto } from "./dto/login.dto.js";
+import { RequestOtpDto } from "./dto/request-otp.dto.js";
+import { VerifyOtpDto } from "./dto/verify-otp.dto.js";
+import { CompleteRegisterDto } from "./dto/complete-register.dto.js";
 import { RefreshDto } from "./dto/refresh.dto.js";
 import { Public } from "./decorators/public.decorator.js";
 
@@ -24,17 +25,24 @@ export class AuthController {
 
   @Public()
   @Throttle({ short: { ttl: 60000, limit: 5 } })
-  @Post("register")
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+  @Post("request-otp")
+  requestOtp(@Body() dto: RequestOtpDto) {
+    return this.authService.requestOtp(dto.email);
   }
 
   @Public()
   @Throttle({ short: { ttl: 60000, limit: 10 } })
-  @Post("login")
+  @Post("verify-otp")
   @HttpCode(HttpStatus.OK)
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  verifyOtp(@Body() dto: VerifyOtpDto) {
+    return this.authService.verifyOtp(dto.email, dto.code);
+  }
+
+  @Public()
+  @Throttle({ short: { ttl: 60000, limit: 5 } })
+  @Post("complete-register")
+  completeRegister(@Body() dto: CompleteRegisterDto) {
+    return this.authService.completeRegister(dto.email, dto.code, dto.name);
   }
 
   @Public()

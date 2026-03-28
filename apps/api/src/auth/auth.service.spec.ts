@@ -1,9 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ConflictException, UnauthorizedException } from "@nestjs/common";
 import { AuthService } from "./auth.service.js";
-import * as bcrypt from "bcryptjs";
 
-// Mock PrismaService
 function createMockPrisma() {
   return {
     user: {
@@ -16,10 +14,25 @@ function createMockPrisma() {
   };
 }
 
-// Mock JwtService
 function createMockJwt() {
   return {
     signAsync: vi.fn().mockResolvedValue("mock-jwt-token"),
+  };
+}
+
+function createMockOtp() {
+  return {
+    generateAndStore: vi.fn(),
+    verify: vi.fn(),
+    markVerified: vi.fn(),
+    isVerified: vi.fn(),
+    delete: vi.fn(),
+  };
+}
+
+function createMockEmail() {
+  return {
+    sendOtp: vi.fn(),
   };
 }
 
@@ -27,122 +40,147 @@ describe("AuthService", () => {
   let authService: AuthService;
   let mockPrisma: ReturnType<typeof createMockPrisma>;
   let mockJwt: ReturnType<typeof createMockJwt>;
+  let mockOtp: ReturnType<typeof createMockOtp>;
+  let mockEmail: ReturnType<typeof createMockEmail>;
 
   beforeEach(() => {
     mockPrisma = createMockPrisma();
     mockJwt = createMockJwt();
-    authService = new AuthService(mockPrisma as never, mockJwt as never);
+    mockOtp = createMockOtp();
+    mockEmail = createMockEmail();
+    authService = new AuthService(
+      mockPrisma as never,
+      mockJwt as never,
+      mockOtp as never,
+      mockEmail as never,
+    );
   });
 
-  describe("register", () => {
-    const registerDto = {
-      name: "John Doe",
-      email: "john@example.com",
-      password: "securePassword123",
-    };
+  describe("requestOtp", () => {
+    it("should generate OTP and send email, returning { sent: true }", async () => {
+      // Arrange
+      mockOtp.generateAndStore.mockResolvedValue("1234");
+      mockEmail.sendOtp.mockResolvedValue(undefined);
 
-    it("should hash the password before saving", async () => {
-      mockPrisma.user.findUnique.mockResolvedValue(null);
-      mockPrisma.user.create.mockResolvedValue({
-        id: "user-1",
-        email: registerDto.email,
-        name: registerDto.name,
-        password: "hashed-password",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      mockPrisma.refreshToken.create.mockResolvedValue({
-        id: "rt-1",
-        token: "refresh-token",
-      });
+      // Act
+      const result = await authService.requestOtp("john@example.com");
 
-      await authService.register(registerDto);
+      // Assert
+      expect(mockOtp.generateAndStore).toHaveBeenCalledWith("john@example.com");
+      expect(mockEmail.sendOtp).toHaveBeenCalledWith("john@example.com", "1234");
+      expect(result).toEqual({ sent: true });
+    });
+  });
 
-      const createCall = mockPrisma.user.create.mock.calls[0][0];
-      expect(createCall.data.password).not.toBe(registerDto.password);
-      expect(await bcrypt.compare(registerDto.password, createCall.data.password)).toBe(true);
+  describe("verifyOtp", () => {
+    it("should throw UnauthorizedException for invalid code", async () => {
+      // Arrange
+      mockOtp.verify.mockResolvedValue(false);
+
+      // Act & Assert
+      await expect(authService.verifyOtp("john@example.com", "0000")).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(authService.verifyOtp("john@example.com", "0000")).rejects.toThrow(
+        "Invalid or expired code",
+      );
     });
 
-    it("should create a user and return tokens", async () => {
-      mockPrisma.user.findUnique.mockResolvedValue(null);
-      mockPrisma.user.create.mockResolvedValue({
+    it("should return tokens with isNewUser: false for existing user", async () => {
+      // Arrange
+      const existingUser = {
         id: "user-1",
-        email: registerDto.email,
-        name: registerDto.name,
-        password: "hashed",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      mockPrisma.refreshToken.create.mockResolvedValue({
-        id: "rt-1",
-        token: "refresh-token",
-      });
+        email: "john@example.com",
+        name: "John Doe",
+      };
+      mockOtp.verify.mockResolvedValue(true);
+      mockPrisma.user.findUnique.mockResolvedValue(existingUser);
+      mockPrisma.refreshToken.create.mockResolvedValue({ id: "rt-1", token: "refresh" });
 
-      const result = await authService.register(registerDto);
+      // Act
+      const result = await authService.verifyOtp("john@example.com", "1234");
 
-      expect(result).toHaveProperty("accessToken");
+      // Assert
+      expect(mockOtp.verify).toHaveBeenCalledWith("john@example.com", "1234");
+      expect(mockOtp.delete).toHaveBeenCalledWith("john@example.com");
+      expect(result).toMatchObject({
+        accessToken: "mock-jwt-token",
+        isNewUser: false,
+        user: { id: "user-1", email: "john@example.com", name: "John Doe" },
+      });
       expect(result).toHaveProperty("refreshToken");
-      expect(result).toHaveProperty("user");
-      expect(result.user.email).toBe(registerDto.email);
-      expect(result.user).not.toHaveProperty("password");
     });
 
-    it("should throw ConflictException if email already exists", async () => {
+    it("should return verified: true with isNewUser: true for new user", async () => {
+      // Arrange
+      mockOtp.verify.mockResolvedValue(true);
+      mockPrisma.user.findUnique.mockResolvedValue(null);
+
+      // Act
+      const result = await authService.verifyOtp("new@example.com", "1234");
+
+      // Assert
+      expect(mockOtp.verify).toHaveBeenCalledWith("new@example.com", "1234");
+      expect(mockOtp.markVerified).toHaveBeenCalledWith("new@example.com");
+      expect(result).toEqual({ verified: true, isNewUser: true });
+      expect(mockOtp.delete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("completeRegister", () => {
+    it("should create user and return tokens when OTP is verified", async () => {
+      // Arrange
+      const newUser = {
+        id: "user-2",
+        email: "new@example.com",
+        name: "Jane Doe",
+      };
+      mockOtp.isVerified.mockResolvedValue(true);
+      mockPrisma.user.findUnique.mockResolvedValue(null);
+      mockPrisma.user.create.mockResolvedValue(newUser);
+      mockPrisma.refreshToken.create.mockResolvedValue({ id: "rt-1", token: "refresh" });
+
+      // Act
+      const result = await authService.completeRegister("new@example.com", "1234", "Jane Doe");
+
+      // Assert
+      expect(mockOtp.isVerified).toHaveBeenCalledWith("new@example.com", "1234");
+      expect(mockPrisma.user.create).toHaveBeenCalledWith({
+        data: { email: "new@example.com", name: "Jane Doe" },
+      });
+      expect(mockOtp.delete).toHaveBeenCalledWith("new@example.com");
+      expect(result).toMatchObject({
+        accessToken: "mock-jwt-token",
+        user: { id: "user-2", email: "new@example.com", name: "Jane Doe" },
+      });
+      expect(result).toHaveProperty("refreshToken");
+    });
+
+    it("should throw UnauthorizedException when OTP is not verified", async () => {
+      // Arrange
+      mockOtp.isVerified.mockResolvedValue(false);
+
+      // Act & Assert
+      await expect(
+        authService.completeRegister("new@example.com", "0000", "Jane Doe"),
+      ).rejects.toThrow(UnauthorizedException);
+      await expect(
+        authService.completeRegister("new@example.com", "0000", "Jane Doe"),
+      ).rejects.toThrow("Invalid or expired verification");
+    });
+
+    it("should throw ConflictException when email already exists", async () => {
+      // Arrange
+      mockOtp.isVerified.mockResolvedValue(true);
       mockPrisma.user.findUnique.mockResolvedValue({
         id: "existing-user",
-        email: registerDto.email,
+        email: "existing@example.com",
       });
 
-      await expect(authService.register(registerDto)).rejects.toThrow(ConflictException);
-    });
-  });
-
-  describe("login", () => {
-    const loginDto = {
-      email: "john@example.com",
-      password: "securePassword123",
-    };
-
-    it("should return tokens for valid credentials", async () => {
-      const hashedPassword = await bcrypt.hash(loginDto.password, 10);
-      mockPrisma.user.findUnique.mockResolvedValue({
-        id: "user-1",
-        email: loginDto.email,
-        name: "John Doe",
-        password: hashedPassword,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      mockPrisma.refreshToken.create.mockResolvedValue({
-        id: "rt-1",
-        token: "refresh-token",
-      });
-
-      const result = await authService.login(loginDto);
-
-      expect(result).toHaveProperty("accessToken");
-      expect(result).toHaveProperty("refreshToken");
-      expect(result.user.email).toBe(loginDto.email);
-      expect(result.user).not.toHaveProperty("password");
-    });
-
-    it("should throw UnauthorizedException for non-existent email", async () => {
-      mockPrisma.user.findUnique.mockResolvedValue(null);
-
-      await expect(authService.login(loginDto)).rejects.toThrow(UnauthorizedException);
-    });
-
-    it("should throw UnauthorizedException for wrong password", async () => {
-      mockPrisma.user.findUnique.mockResolvedValue({
-        id: "user-1",
-        email: loginDto.email,
-        name: "John Doe",
-        password: await bcrypt.hash("differentPassword", 10),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      await expect(authService.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      // Act & Assert
+      await expect(
+        authService.completeRegister("existing@example.com", "1234", "Jane Doe"),
+      ).rejects.toThrow(ConflictException);
     });
   });
 });
