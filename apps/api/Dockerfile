@@ -15,7 +15,7 @@ COPY packages/shared/package.json packages/shared/
 COPY packages/config/package.json packages/config/
 
 # Install all dependencies (devDeps needed for build stage)
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # ── Stage 2: build ────────────────────────────────────
 FROM deps AS build
@@ -29,7 +29,7 @@ COPY packages/config/ packages/config/
 RUN pnpm --filter @yappie/api build
 
 # Create isolated production deployment
-RUN pnpm deploy --prod --filter @yappie/api /app/deploy
+RUN pnpm deploy --prod --legacy --filter @yappie/api /app/deploy
 
 # ── Stage 3: runtime ──────────────────────────────────
 FROM node:22-alpine AS runtime
