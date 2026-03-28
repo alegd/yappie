@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AUDIOS_PAGE, REGISTER_PAGE } from "@/lib/constants/pages";
+import { AUDIOS_PAGE, AUTH_PAGE } from "@/lib/constants/pages";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
@@ -67,7 +67,7 @@ export function LoginForm() {
 
         <p className="mt-6 text-muted-foreground text-center">
           Don&apos;t have an account?{" "}
-          <Link href={REGISTER_PAGE} className="text-accent hover:text-accent">
+          <Link href={AUTH_PAGE} className="text-accent hover:text-accent">
             Sign up
           </Link>
         </p>

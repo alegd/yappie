@@ -29,12 +29,12 @@ describe("LoginForm", () => {
     expect(screen.getByRole("button", { name: "Log in" })).toBeInTheDocument();
   });
 
-  it("should have link to register page with href '/register'", () => {
+  it("should have link to auth page with href '/auth'", () => {
     render(<LoginForm />);
 
     const link = screen.getByRole("link", { name: "Sign up" });
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", "/register");
+    expect(link).toHaveAttribute("href", "/auth");
   });
 
   it("should show 'Logging in...' while submitting", async () => {

@@ -3,17 +3,12 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RegisterForm } from "./register-form";
 
-const { mockSignIn, mockApiFetcher } = vi.hoisted(() => ({
-  mockSignIn: vi.fn(),
-  mockApiFetcher: vi.fn(),
+const { mockPush } = vi.hoisted(() => ({
+  mockPush: vi.fn(),
 }));
 
-vi.mock("next-auth/react", () => ({
-  signIn: mockSignIn,
-}));
-
-vi.mock("@/lib/api-fetcher", () => ({
-  apiFetcher: mockApiFetcher,
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mockPush }),
 }));
 
 vi.mock("next/link", () => ({
@@ -27,6 +22,7 @@ vi.mock("next/link", () => ({
 describe("RegisterForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPush.mockResolvedValue(undefined);
   });
 
   it("should render form with name, email, and password fields", () => {
@@ -43,16 +39,16 @@ describe("RegisterForm", () => {
     expect(screen.getByRole("button", { name: "Create account" })).toBeInTheDocument();
   });
 
-  it("should have link to login page with href '/login'", () => {
+  it("should have link to auth page with href '/auth'", () => {
     render(<RegisterForm />);
 
     const link = screen.getByRole("link", { name: "Log in" });
-    expect(link).toHaveAttribute("href", "/login");
+    expect(link).toHaveAttribute("href", "/auth");
   });
 
   it("should show 'Creating account...' while submitting", async () => {
     const user = userEvent.setup();
-    mockApiFetcher.mockReturnValue(new Promise(() => {}));
+    mockPush.mockReturnValue(new Promise(() => {}));
 
     render(<RegisterForm />);
 
@@ -64,10 +60,8 @@ describe("RegisterForm", () => {
     expect(screen.getByRole("button", { name: "Creating account..." })).toBeInTheDocument();
   });
 
-  it("should call apiFetcher then signIn on successful registration", async () => {
+  it("should redirect to /auth on form submit", async () => {
     const user = userEvent.setup();
-    mockApiFetcher.mockResolvedValue({ id: "user-1" });
-    mockSignIn.mockResolvedValue(undefined);
 
     render(<RegisterForm />);
 
@@ -77,56 +71,7 @@ describe("RegisterForm", () => {
     await user.click(screen.getByRole("button", { name: "Create account" }));
 
     await waitFor(() => {
-      expect(mockApiFetcher).toHaveBeenCalledWith("/auth/register", {
-        data: {
-          name: "John Doe",
-          email: "john@example.com",
-          password: "password123",
-        },
-        method: "POST",
-      });
-    });
-
-    await waitFor(() => {
-      expect(mockSignIn).toHaveBeenCalledWith("credentials", {
-        email: "john@example.com",
-        password: "password123",
-        redirectTo: "/dashboard/audios",
-      });
-    });
-  });
-
-  it("should show error when backend returns error", async () => {
-    const user = userEvent.setup();
-    mockApiFetcher.mockRejectedValue(new Error("Email already in use"));
-
-    render(<RegisterForm />);
-
-    await user.type(screen.getByLabelText("Name"), "John Doe");
-    await user.type(screen.getByLabelText("Email"), "john@example.com");
-    await user.type(screen.getByLabelText("Password (min 8 characters)"), "password123");
-    await user.click(screen.getByRole("button", { name: "Create account" }));
-
-    await waitFor(() => {
-      expect(screen.getByText("Email already in use")).toBeInTheDocument();
-    });
-
-    expect(mockSignIn).not.toHaveBeenCalled();
-  });
-
-  it("should show generic error when non-Error is thrown", async () => {
-    const user = userEvent.setup();
-    mockApiFetcher.mockRejectedValue("something went wrong");
-
-    render(<RegisterForm />);
-
-    await user.type(screen.getByLabelText("Name"), "John Doe");
-    await user.type(screen.getByLabelText("Email"), "john@example.com");
-    await user.type(screen.getByLabelText("Password (min 8 characters)"), "password123");
-    await user.click(screen.getByRole("button", { name: "Create account" }));
-
-    await waitFor(() => {
-      expect(screen.getByText("Registration failed")).toBeInTheDocument();
+      expect(mockPush).toHaveBeenCalledWith("/auth");
     });
   });
 

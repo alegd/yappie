@@ -3,7 +3,9 @@ export const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api`;
 const API_V1 = "/v1";
 
 // ─── Auth ────────────────────────────────────────────────
-export const AUTH_REGISTER = "/auth/register";
+export const AUTH_REQUEST_OTP = `${API_V1}/auth/request-otp`;
+export const AUTH_VERIFY_OTP = `${API_V1}/auth/verify-otp`;
+export const AUTH_COMPLETE_REGISTER = `${API_V1}/auth/complete-register`;
 
 // ─── Audio ───────────────────────────────────────────────
 export const AUDIO_LIST = `${API_V1}/audio?limit=50`;

@@ -2,15 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { apiFetcher } from "@/lib/api-fetcher";
-import { AUTH_REGISTER } from "@/lib/constants/endpoints";
-import { POST } from "@/lib/constants/http";
-import { AUDIOS_PAGE, LOGIN_PAGE } from "@/lib/constants/pages";
-import { signIn } from "next-auth/react";
+import { AUTH_PAGE } from "@/lib/constants/pages";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function RegisterForm() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,13 +21,7 @@ export function RegisterForm() {
     setLoading(true);
 
     try {
-      await apiFetcher(AUTH_REGISTER, { data: { name, email, password }, method: POST });
-
-      await signIn("credentials", {
-        email,
-        password,
-        redirectTo: AUDIOS_PAGE,
-      });
+      router.push(AUTH_PAGE);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
       setLoading(false);
@@ -82,7 +74,7 @@ export function RegisterForm() {
 
         <p className="mt-6 text-muted-foreground text-center">
           Already have an account?{" "}
-          <Link href={LOGIN_PAGE} className="text-accent hover:text-accent">
+          <Link href={AUTH_PAGE} className="text-accent hover:text-accent">
             Log in
           </Link>
         </p>
