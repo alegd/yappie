@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { invalidateQuery } from "@/hooks/use-query";
 import { apiFetcher } from "@/lib/api-fetcher";
 import { TEMPLATES_CREATE, TEMPLATES_LIST, templateDetail } from "@/lib/constants/endpoints";
@@ -69,20 +70,14 @@ export function TemplateForm({ template, onClose }: TemplateFormProps) {
         </div>
       )}
 
-      <div>
-        <label htmlFor="template-name" className="block mb-1 font-medium text-muted text-sm">
-          Name
-        </label>
-        <input
-          id="template-name"
-          type="text"
-          required
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Bug Report"
-          className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full text-sm transition"
-        />
-      </div>
+      <Input
+        id="template-name"
+        label="Name"
+        required
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Bug Report"
+      />
 
       <div>
         <label htmlFor="template-content" className="block mb-1 font-medium text-muted text-sm">

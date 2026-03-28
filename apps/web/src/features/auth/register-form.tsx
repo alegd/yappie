@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { apiFetcher } from "@/lib/api-fetcher";
 import { AUTH_REGISTER } from "@/lib/constants/endpoints";
 import { POST } from "@/lib/constants/http";
@@ -47,55 +48,39 @@ export function RegisterForm() {
             </div>
           )}
 
-          <div>
-            <label htmlFor="name" className="block mb-1 font-medium text-foreground/50 text-sm">
-              Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full text-sm transition"
-            />
-          </div>
+          <Input
+            id="name"
+            label="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
 
-          <div>
-            <label htmlFor="email" className="block mb-1 font-medium text-muted text-sm">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full text-sm transition"
-            />
-          </div>
+          <Input
+            id="email"
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-          <div>
-            <label htmlFor="password" className="block mb-1 font-medium text-muted text-sm">
-              Password (min 8 characters)
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full text-sm transition"
-            />
-          </div>
+          <Input
+            id="password"
+            label="Password (min 8 characters)"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={8}
+          />
 
-          <Button type="submit" disabled={loading} className="w-full">
+          <Button type="submit" disabled={loading} className="w-full mt-8">
             {loading ? "Creating account..." : "Create account"}
           </Button>
         </form>
 
-        <p className="mt-6 text-muted-foreground text-sm text-center">
+        <p className="mt-6 text-muted-foreground text-center">
           Already have an account?{" "}
           <Link href={LOGIN_PAGE} className="text-accent hover:text-accent">
             Log in

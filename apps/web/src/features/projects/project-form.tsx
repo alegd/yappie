@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useQuery } from "@/hooks/use-query";
 import { projectDetail } from "@/lib/constants/endpoints";
 import { PROJECTS_PAGE } from "@/lib/constants/pages";
@@ -101,38 +102,21 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div>
-          <label htmlFor="name" className="block mb-1.5 font-medium text-foreground/75 text-sm">
-            Name
-          </label>
-          <input
-            id="name"
-            type="text"
-            {...register("name")}
-            placeholder="My Project"
-            className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full transition"
-          />
-          {errors.name && <p className="mt-1 text-red-400 text-xs">{errors.name.message}</p>}
-        </div>
+        <Input
+          id="name"
+          label="Name"
+          placeholder="My Project"
+          error={errors.name?.message}
+          {...register("name")}
+        />
 
-        <div>
-          <label
-            htmlFor="description"
-            className="block mb-1.5 font-medium text-foreground/75 text-sm"
-          >
-            Description
-          </label>
-          <input
-            id="description"
-            type="text"
-            {...register("description")}
-            placeholder="Brief description of the project"
-            className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full transition"
-          />
-          {errors.description && (
-            <p className="mt-1 text-red-400 text-xs">{errors.description.message}</p>
-          )}
-        </div>
+        <Input
+          id="description"
+          label="Description"
+          placeholder="Brief description of the project"
+          error={errors.description?.message}
+          {...register("description")}
+        />
 
         <div>
           <label htmlFor="context" className="block mb-1.5 font-medium text-foreground/75 text-sm">
