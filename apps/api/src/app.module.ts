@@ -20,6 +20,7 @@ import { CryptoModule } from "./crypto/crypto.module.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
 import { StorageModule } from "./storage/storage.module.js";
 import { RedisModule } from "./redis/redis.module.js";
+import { EmailModule } from "./email/email.module.js";
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { RedisModule } from "./redis/redis.module.js";
     PrismaModule,
     StorageModule,
     RedisModule,
+    EmailModule,
     BullModule.forRoot({
       connection: (() => {
         const url = new URL(process.env.REDIS_URL || "redis://localhost:6379");

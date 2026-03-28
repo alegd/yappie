@@ -44,6 +44,9 @@ const envSchema = z.object({
   // Encryption
   ENCRYPTION_KEY: z.string().min(32),
 
+  // Email
+  RESEND_API_KEY: z.string().min(1),
+
   // Quotas
   QUOTA_FREE_MINUTES: z.coerce.number(),
   QUOTA_PRO_MINUTES: z.coerce.number(),
