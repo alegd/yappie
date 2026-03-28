@@ -42,16 +42,16 @@ interface RegisterResponse {
 }
 
 const TITLES: Record<Step, string> = {
-  email: "Sign in to Yappie",
-  otp: "Enter your code",
-  name: "Almost there!",
+  email: "What's your email?",
+  otp: "Check your inbox",
+  name: "What should we call you?",
 };
 
 function getSubtitle(step: Step, email: string): string {
   const subtitles: Record<Step, string> = {
-    email: "We'll send you a code",
-    otp: `Check ${email}`,
-    name: "What should we call you?",
+    email: "We'll send you a code to sign in",
+    otp: `We sent a 4-digit code to ${email}`,
+    name: "One last thing before you get started",
   };
   return subtitles[step];
 }
@@ -247,8 +247,8 @@ export function AuthFlow() {
           <form onSubmit={handleRequestOtp} className="space-y-4">
             <Input
               id="email"
-              label="Email"
               type="email"
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

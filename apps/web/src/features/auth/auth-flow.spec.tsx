@@ -24,8 +24,8 @@ describe("AuthFlow", () => {
   it("should render email step by default", () => {
     render(<AuthFlow />);
 
-    expect(screen.getByRole("heading", { name: "Sign in to Yappie" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Email")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /what's your email/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("you@example.com")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Continue" })).toBeInTheDocument();
   });
 
@@ -35,7 +35,7 @@ describe("AuthFlow", () => {
 
     render(<AuthFlow />);
 
-    await user.type(screen.getByLabelText("Email"), "test@example.com");
+    await user.type(screen.getByPlaceholderText("you@example.com"), "test@example.com");
     await user.click(screen.getByRole("button", { name: "Continue" }));
 
     await waitFor(() => {
@@ -49,14 +49,14 @@ describe("AuthFlow", () => {
 
     render(<AuthFlow />);
 
-    await user.type(screen.getByLabelText("Email"), "test@example.com");
+    await user.type(screen.getByPlaceholderText("you@example.com"), "test@example.com");
     await user.click(screen.getByRole("button", { name: "Continue" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Enter your code" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Check your inbox" })).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Check test@example.com")).toBeInTheDocument();
+    expect(screen.getByText("We sent a 4-digit code to test@example.com")).toBeInTheDocument();
   });
 
   it("should show 'Resend code' text on OTP step during cooldown", async () => {
@@ -65,11 +65,11 @@ describe("AuthFlow", () => {
 
     render(<AuthFlow />);
 
-    await user.type(screen.getByLabelText("Email"), "test@example.com");
+    await user.type(screen.getByPlaceholderText("you@example.com"), "test@example.com");
     await user.click(screen.getByRole("button", { name: "Continue" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Enter your code" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Check your inbox" })).toBeInTheDocument();
     });
 
     // During cooldown, resend text with timer is visible
@@ -82,7 +82,7 @@ describe("AuthFlow", () => {
 
     render(<AuthFlow />);
 
-    await user.type(screen.getByLabelText("Email"), "test@example.com");
+    await user.type(screen.getByPlaceholderText("you@example.com"), "test@example.com");
     await user.click(screen.getByRole("button", { name: "Continue" }));
 
     await waitFor(() => {
@@ -96,16 +96,16 @@ describe("AuthFlow", () => {
 
     render(<AuthFlow />);
 
-    await user.type(screen.getByLabelText("Email"), "test@example.com");
+    await user.type(screen.getByPlaceholderText("you@example.com"), "test@example.com");
     await user.click(screen.getByRole("button", { name: "Continue" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Enter your code" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Check your inbox" })).toBeInTheDocument();
     });
 
     await user.click(screen.getByRole("button", { name: "Back" }));
 
-    expect(screen.getByRole("heading", { name: "Sign in to Yappie" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "What's your email?" })).toBeInTheDocument();
   });
 
   it("should call signIn for existing user after OTP verification", async () => {
@@ -120,11 +120,11 @@ describe("AuthFlow", () => {
 
     render(<AuthFlow />);
 
-    await user.type(screen.getByLabelText("Email"), "test@example.com");
+    await user.type(screen.getByPlaceholderText("you@example.com"), "test@example.com");
     await user.click(screen.getByRole("button", { name: "Continue" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Enter your code" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Check your inbox" })).toBeInTheDocument();
     });
 
     const codeInputs = screen
@@ -157,11 +157,11 @@ describe("AuthFlow", () => {
 
     render(<AuthFlow />);
 
-    await user.type(screen.getByLabelText("Email"), "new@example.com");
+    await user.type(screen.getByPlaceholderText("you@example.com"), "new@example.com");
     await user.click(screen.getByRole("button", { name: "Continue" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Enter your code" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Check your inbox" })).toBeInTheDocument();
     });
 
     const codeInputs = screen
@@ -174,7 +174,7 @@ describe("AuthFlow", () => {
     await user.type(codeInputs[3], "8");
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Almost there!" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "What should we call you?" })).toBeInTheDocument();
     });
 
     expect(screen.getByLabelText("Name")).toBeInTheDocument();
@@ -196,12 +196,12 @@ describe("AuthFlow", () => {
     render(<AuthFlow />);
 
     // Step 1: email
-    await user.type(screen.getByLabelText("Email"), "new@example.com");
+    await user.type(screen.getByPlaceholderText("you@example.com"), "new@example.com");
     await user.click(screen.getByRole("button", { name: "Continue" }));
 
     // Step 2: OTP
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Enter your code" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Check your inbox" })).toBeInTheDocument();
     });
 
     const codeInputs = screen
@@ -215,7 +215,7 @@ describe("AuthFlow", () => {
 
     // Step 3: name
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Almost there!" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "What should we call you?" })).toBeInTheDocument();
     });
 
     await user.type(screen.getByLabelText("Name"), "New User");
@@ -239,7 +239,7 @@ describe("AuthFlow", () => {
 
     render(<AuthFlow />);
 
-    await user.type(screen.getByLabelText("Email"), "test@example.com");
+    await user.type(screen.getByPlaceholderText("you@example.com"), "test@example.com");
     await user.click(screen.getByRole("button", { name: "Continue" }));
 
     expect(screen.getByRole("button", { name: "Sending..." })).toBeInTheDocument();
