@@ -36,6 +36,7 @@
     "class-validator": "^0.15.1",
     "dotenv": "^17.3.1",
     "helmet": "^8.1.0",
+    "ioredis": "^5.10.1",
     "openai": "^6.32.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

@@ -19,6 +19,7 @@ import { CommonModule } from "./common/common.module.js";
 import { CryptoModule } from "./crypto/crypto.module.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
 import { StorageModule } from "./storage/storage.module.js";
+import { RedisModule } from "./redis/redis.module.js";
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { StorageModule } from "./storage/storage.module.js";
     CryptoModule,
     PrismaModule,
     StorageModule,
+    RedisModule,
     BullModule.forRoot({
       connection: (() => {
         const url = new URL(process.env.REDIS_URL || "redis://localhost:6379");
