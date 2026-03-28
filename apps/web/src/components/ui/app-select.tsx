@@ -33,7 +33,7 @@ export function AppSelect({
       <SelectPrimitive.Trigger
         aria-label={ariaLabel}
         className={cn(
-          "inline-flex items-center justify-between gap-2 rounded-lg border border-border-hover bg-surface px-3 py-1.5 text-sm transition",
+          "inline-flex items-center justify-between gap-2 rounded-lg border border-border-hover bg-surface px-3 py-1.5 transition",
           "focus:border-primary focus:outline-none",
           "disabled:cursor-not-allowed disabled:opacity-50",
           "min-w-[140px]",
@@ -61,7 +61,7 @@ export function AppSelect({
                 key={option.value}
                 value={option.value}
                 className={cn(
-                  "relative flex cursor-pointer select-none items-center rounded-md px-3 py-1.5 text-sm outline-none transition",
+                  "relative flex cursor-pointer select-none items-center rounded-md px-3 py-1.5 outline-none transition",
                   "hover:bg-surface-hover focus:bg-surface-hover",
                   "data-[state=checked]:text-primary",
                 )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AUDIOS_PAGE, REGISTER_PAGE } from "@/lib/constants/pages";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
@@ -41,40 +42,30 @@ export function LoginForm() {
             </div>
           )}
 
-          <div>
-            <label htmlFor="email" className="block mb-1 font-medium text-foreground/50 text-sm">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full transition"
-            />
-          </div>
+          <Input
+            id="email"
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-          <div>
-            <label htmlFor="password" className="block mb-1 font-medium text-foreground/50 text-sm">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="bg-surface px-3 py-2 border border-border-hover focus:border-primary rounded-lg focus:outline-none w-full transition"
-            />
-          </div>
+          <Input
+            id="password"
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
 
-          <Button type="submit" disabled={loading} className="w-full">
+          <Button type="submit" disabled={loading} className="w-full mt-8">
             {loading ? "Logging in..." : "Log in"}
           </Button>
         </form>
 
-        <p className="mt-6 text-muted-foreground  text-center">
+        <p className="mt-6 text-muted-foreground text-center">
           Don&apos;t have an account?{" "}
           <Link href={REGISTER_PAGE} className="text-accent hover:text-accent">
             Sign up
