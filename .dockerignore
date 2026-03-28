@@ -9,3 +9,10 @@ dist
 .env
 .env.local
 .env.*.local
+apps/web
+apps/mobile
+docs
+.github
+e2e
+.vscode
+.idea
