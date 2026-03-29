@@ -101,7 +101,7 @@ export function AudioList() {
         </div>
         <OnboardingChecklist
           jiraConnected={jiraConnected}
-          jiraSiteName={jiraStatus?.siteName}
+          jiraSiteName={jiraStatus?.siteName ?? undefined}
           hasProjects={false}
         />
       </div>
