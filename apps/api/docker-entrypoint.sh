@@ -1,13 +1,14 @@
 #!/bin/sh
-set -e
 
-# Build DATABASE_URL from individual env vars (matches prisma.config.ts convention)
-# Prisma 7 with no url in schema.prisma falls back to DATABASE_URL env var
+# Build DATABASE_URL from individual env vars
 DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT:-5432}/${DB_NAME}"
 export DATABASE_URL
 
 echo "[entrypoint] Running database migrations..."
-npx --no-install prisma migrate deploy --schema ./prisma/schema.prisma --datasource-url "$DATABASE_URL"
+pnpm exec prisma migrate deploy || echo "[entrypoint] WARNING: migrations failed"
 
 echo "[entrypoint] Starting API..."
-exec node dist/main
+node dist/main || {
+  echo "[entrypoint] API failed to start. Keeping container alive for debugging..."
+  tail -f /dev/null
+}
