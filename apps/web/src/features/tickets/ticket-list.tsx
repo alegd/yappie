@@ -98,8 +98,12 @@ export function TicketList() {
   const handleBulkApprove = async () => {
     setBulkActing("approve");
     try {
-      for (const ticket of draftSelected) {
-        await apiFetcher(ticketApprove(ticket.id), { method: POST });
+      const results = await Promise.allSettled(
+        draftSelected.map((ticket) => apiFetcher(ticketApprove(ticket.id), { method: POST })),
+      );
+      const failed = results.filter((r) => r.status === "rejected");
+      if (failed.length > 0) {
+        toast.error(`${failed.length} of ${results.length} tickets failed to approve`);
       }
       invalidateQuery(TICKETS_LIST);
       setRowSelection({});
@@ -127,8 +131,12 @@ export function TicketList() {
     if (!confirm(`Delete ${selectedIds.length} ticket(s)?`)) return;
     setBulkActing("delete");
     try {
-      for (const id of selectedIds) {
-        await apiFetcher(ticketDetail(id), { method: DELETE });
+      const results = await Promise.allSettled(
+        selectedIds.map((id) => apiFetcher(ticketDetail(id), { method: DELETE })),
+      );
+      const failed = results.filter((r) => r.status === "rejected");
+      if (failed.length > 0) {
+        toast.error(`${failed.length} of ${results.length} tickets failed to delete`);
       }
       invalidateQuery(TICKETS_LIST);
       setRowSelection({});
