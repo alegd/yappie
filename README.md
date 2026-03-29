@@ -9,6 +9,8 @@ Record your thoughts after a meeting, standup, or brainstorm. Yappie uses AI to 
 [![CI](https://github.com/alegd/yappie/actions/workflows/ci.yml/badge.svg)](https://github.com/alegd/yappie/actions/workflows/ci.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 
+**[Live Demo](https://yappie.gueden.com)** | **[API](https://api.yappie.gueden.com/health)** | **[Slides](docs/slides.pdf)**
+
 <!-- TODO: Replace with actual screenshot of the dashboard -->
 
 ![Yappie Dashboard](docs/images/dashboard.png)
@@ -216,6 +218,20 @@ For detailed auth flow documentation, see [docs/auth-system.md](docs/auth-system
 | `POST`  | `/integrations/jira/export-bulk` | JWT  | Bulk export (max 50)              |
 
 All endpoints under `/api/v1/`. Full Swagger docs at `/api/docs` in development.
+
+## Deployment
+
+The application is deployed and available at:
+
+| Service          | URL                                                                  |
+| ---------------- | -------------------------------------------------------------------- |
+| **Web App**      | [yappie.gueden.com](https://yappie.gueden.com)                       |
+| **API**          | [api.yappie.gueden.com](https://api.yappie.gueden.com)               |
+| **Health Check** | [api.yappie.gueden.com/health](https://api.yappie.gueden.com/health) |
+
+- **Frontend** hosted on Vercel (auto-deploy on push to main)
+- **API** hosted on Coolify (Docker, auto-deploy via webhook)
+- **Database** PostgreSQL 16 + Redis 7 on Coolify
 
 ## Contributing
 
