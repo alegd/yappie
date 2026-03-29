@@ -1,7 +1,7 @@
 import { DashboardContent } from "@/components/layout/dashboard-content";
 import { Providers } from "@/components/providers";
 import { auth } from "@/config/auth.config";
-import { LOGIN_PAGE } from "@/lib/constants/pages";
+import { AUTH_PAGE } from "@/lib/constants/pages";
 import { getMessages } from "next-intl/server";
 import { redirect } from "next/navigation";
 
@@ -15,7 +15,7 @@ export default async function DashboardLayout({
   const session = await auth();
 
   if (!session) {
-    redirect(LOGIN_PAGE);
+    redirect(AUTH_PAGE);
   }
 
   const { locale } = await params;

@@ -72,7 +72,7 @@ describe("Sidebar", () => {
     const logoutButton = logoutButtons.find((btn) => !btn.getAttribute("aria-label"));
     await user.click(logoutButton!);
 
-    expect(mockSignOut).toHaveBeenCalledWith({ redirectTo: "/login" });
+    expect(mockSignOut).toHaveBeenCalledWith({ redirectTo: "/auth" });
   });
 
   it("should have mobile toggle button", () => {

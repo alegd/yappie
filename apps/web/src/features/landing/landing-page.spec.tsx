@@ -32,12 +32,12 @@ describe("LandingPage", () => {
     expect(screen.getByText("Powered by AI")).toBeInTheDocument();
   });
 
-  it("should render CTA links pointing to /register", () => {
+  it("should render CTA links pointing to /auth", () => {
     render(<LandingPage />);
 
     const ctaLinks = screen
       .getAllByRole("link")
-      .filter((link) => link.getAttribute("href") === "/register");
+      .filter((link) => link.getAttribute("href") === "/auth");
 
     expect(ctaLinks).toHaveLength(2);
     expect(screen.getByText("Start for free")).toBeInTheDocument();

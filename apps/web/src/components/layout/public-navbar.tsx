@@ -1,5 +1,5 @@
 import { auth } from "@/config/auth.config";
-import { AUDIOS_PAGE, HOME_PAGE, LOGIN_PAGE, REGISTER_PAGE } from "@/lib/constants/pages";
+import { AUDIOS_PAGE, AUTH_PAGE, HOME_PAGE } from "@/lib/constants/pages";
 import Link from "next/link";
 
 export async function PublicNavbar() {
@@ -21,11 +21,8 @@ export async function PublicNavbar() {
             </Link>
           ) : (
             <>
-              <Link href={LOGIN_PAGE} className="text-foreground hover:text-foreground transition">
-                Log in
-              </Link>
               <Link
-                href={REGISTER_PAGE}
+                href={AUTH_PAGE}
                 className="bg-primary hover:bg-primary-hover px-4 py-2 rounded-lg font-medium text-white  transition"
               >
                 Get Started

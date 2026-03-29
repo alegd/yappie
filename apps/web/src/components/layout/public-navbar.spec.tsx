@@ -36,16 +36,12 @@ describe("PublicNavbar", () => {
       expect(logo.closest("a")).toHaveAttribute("href", "/");
     });
 
-    it("should show login and register links", async () => {
+    it("should show Get Started link pointing to /auth", async () => {
       render(await PublicNavbar());
 
-      const loginLink = screen.getByText("Log in");
-      expect(loginLink).toBeInTheDocument();
-      expect(loginLink.closest("a")).toHaveAttribute("href", "/login");
-
-      const registerLink = screen.getByText("Get Started");
-      expect(registerLink).toBeInTheDocument();
-      expect(registerLink.closest("a")).toHaveAttribute("href", "/register");
+      const getStartedLink = screen.getByText("Get Started");
+      expect(getStartedLink).toBeInTheDocument();
+      expect(getStartedLink.closest("a")).toHaveAttribute("href", "/auth");
     });
 
     it("should not show dashboard link", async () => {
