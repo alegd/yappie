@@ -442,4 +442,74 @@ describe("AuthFlow", () => {
     // First input should now have focus
     expect(document.activeElement).toBe(codeInputs[0]);
   });
+
+  it("should show error when resend OTP fails", async () => {
+    vi.useFakeTimers();
+    mockPublicFetcher
+      .mockResolvedValueOnce({ sent: true })
+      .mockRejectedValueOnce(new Error("Too many requests"));
+
+    render(<AuthFlow />);
+
+    fireEvent.change(screen.getByPlaceholderText("you@example.com"), {
+      target: { value: "test@example.com" },
+    });
+    fireEvent.submit(screen.getByRole("button", { name: "Continue" }).closest("form")!);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.getByRole("heading", { name: "Check your inbox" })).toBeInTheDocument();
+
+    // Drain the 60s cooldown
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60_000);
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Resend code" }));
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.getByText("Too many requests")).toBeInTheDocument();
+  });
+
+  it("should go back to OTP step when back button is clicked on name step", async () => {
+    const user = userEvent.setup();
+    mockPublicFetcher
+      .mockResolvedValueOnce({ sent: true })
+      .mockResolvedValueOnce({ isNewUser: true, verified: true });
+
+    render(<AuthFlow />);
+
+    // Step 1: email
+    await user.type(screen.getByPlaceholderText("you@example.com"), "new@example.com");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    // Step 2: OTP
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Check your inbox" })).toBeInTheDocument();
+    });
+
+    const codeInputs = screen
+      .getAllByRole("textbox")
+      .filter((input) => (input as HTMLInputElement).maxLength === 1);
+
+    await user.type(codeInputs[0], "1");
+    await user.type(codeInputs[1], "2");
+    await user.type(codeInputs[2], "3");
+    await user.type(codeInputs[3], "4");
+
+    // Step 3: name
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "What should we call you?" })).toBeInTheDocument();
+    });
+
+    // Click back from name step — should return to OTP step
+    await user.click(screen.getByRole("button", { name: "Back" }));
+
+    expect(screen.getByRole("heading", { name: "Check your inbox" })).toBeInTheDocument();
+  });
 });

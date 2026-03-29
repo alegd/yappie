@@ -3,10 +3,11 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { IntegrationsSection } from "./integrations-section";
 
-const { mockApiFetcher, mockInvalidateQuery, mockUseQuery } = vi.hoisted(() => ({
+const { mockApiFetcher, mockInvalidateQuery, mockUseQuery, mockToastError } = vi.hoisted(() => ({
   mockApiFetcher: vi.fn(),
   mockInvalidateQuery: vi.fn(),
   mockUseQuery: vi.fn(),
+  mockToastError: vi.fn(),
 }));
 
 vi.mock("@/lib/api-fetcher", () => ({
@@ -16,6 +17,14 @@ vi.mock("@/lib/api-fetcher", () => ({
 vi.mock("@/hooks/use-query", () => ({
   useQuery: mockUseQuery,
   invalidateQuery: mockInvalidateQuery,
+}));
+
+vi.mock("@/components/ui/toast/Toast", () => ({
+  toast: {
+    error: mockToastError,
+    success: vi.fn(),
+    info: vi.fn(),
+  },
 }));
 
 describe("IntegrationsSection", () => {
@@ -139,6 +148,41 @@ describe("IntegrationsSection", () => {
       render(<IntegrationsSection />);
 
       expect(screen.getByRole("button", { name: /connect jira/i })).toBeInTheDocument();
+    });
+  });
+
+  describe("error handling", () => {
+    it("should show toast error when Connect Jira fails", async () => {
+      const user = userEvent.setup();
+      mockUseQuery.mockReturnValue({
+        data: { connected: false, siteName: null, connectedAt: null },
+      });
+      mockApiFetcher.mockRejectedValue(new Error("Auth service unavailable"));
+
+      render(<IntegrationsSection />);
+
+      await user.click(screen.getByRole("button", { name: /connect jira/i }));
+
+      await waitFor(() => {
+        expect(mockToastError).toHaveBeenCalledWith("Auth service unavailable");
+      });
+    });
+
+    it("should show toast error when disconnect fails", async () => {
+      const user = userEvent.setup();
+      mockUseQuery.mockReturnValue({
+        data: { connected: true, siteName: "my-site", connectedAt: "2024-01-01" },
+      });
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+      mockApiFetcher.mockRejectedValue(new Error("Disconnect failed"));
+
+      render(<IntegrationsSection />);
+
+      await user.click(screen.getByRole("button", { name: /disconnect/i }));
+
+      await waitFor(() => {
+        expect(mockToastError).toHaveBeenCalledWith("Disconnect failed");
+      });
     });
   });
 });

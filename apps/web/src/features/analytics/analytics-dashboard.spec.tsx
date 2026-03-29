@@ -113,4 +113,36 @@ describe("AnalyticsDashboard", () => {
     render(<AnalyticsDashboard />);
     expect(screen.queryByTestId("bar-chart")).not.toBeInTheDocument();
   });
+
+  it("should use fallback config for unknown event types in stat cards", () => {
+    mockUseQuery.mockReturnValue({
+      data: [{ type: "unknown.event", count: 5 }],
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
+
+    render(<AnalyticsDashboard />);
+
+    // The raw event type is used as label when config is not found
+    expect(screen.getByText("unknown.event")).toBeInTheDocument();
+    expect(screen.getByText("5")).toBeInTheDocument();
+  });
+
+  it("should use fallback fill color for unknown event types in chart data", () => {
+    const unknownEvent = { type: "custom.action", count: 3 };
+    mockUseQuery.mockReturnValue({
+      data: [unknownEvent],
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
+
+    render(<AnalyticsDashboard />);
+
+    // Chart renders with fallback — bar chart container must be present
+    expect(screen.getByTestId("bar-chart")).toBeInTheDocument();
+    // The label in the chart will be the raw type (no config entry maps it)
+    expect(screen.getByText("custom.action")).toBeInTheDocument();
+  });
 });

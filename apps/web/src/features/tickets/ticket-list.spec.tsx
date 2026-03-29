@@ -3,6 +3,18 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TicketList } from "./ticket-list";
 
+const { mockToastError } = vi.hoisted(() => ({
+  mockToastError: vi.fn(),
+}));
+
+vi.mock("@/components/ui/toast/Toast", () => ({
+  toast: {
+    error: mockToastError,
+    success: vi.fn(),
+    info: vi.fn(),
+  },
+}));
+
 const { mockUseQuery, mockInvalidateQuery, mockApiFetcher } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
   mockInvalidateQuery: vi.fn(),
@@ -335,5 +347,223 @@ describe("TicketList", () => {
     });
 
     expect(screen.getByText("Delete")).toBeInTheDocument();
+  });
+
+  it("should not call bulk delete when confirm is cancelled", async () => {
+    const user = userEvent.setup();
+    setupWithTickets();
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    render(<TicketList />);
+
+    act(() => {
+      latestOnRowSelectionChange?.({ "t-1": true });
+    });
+
+    await user.click(screen.getByText("Delete"));
+
+    expect(mockApiFetcher).not.toHaveBeenCalled();
+  });
+
+  it("should call bulk delete API when confirm is accepted", async () => {
+    const user = userEvent.setup();
+    setupWithTickets();
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    mockApiFetcher.mockResolvedValue({});
+    render(<TicketList />);
+
+    act(() => {
+      latestOnRowSelectionChange?.({ "t-1": true });
+    });
+
+    await user.click(screen.getByText("Delete"));
+
+    await waitFor(() => {
+      expect(mockApiFetcher).toHaveBeenCalledWith(
+        expect.stringContaining("t-1"),
+        expect.objectContaining({ method: "DELETE" }),
+      );
+    });
+  });
+
+  it("should show toast error when bulk approve has partial failures", async () => {
+    const user = userEvent.setup();
+    setupWithTickets();
+    mockApiFetcher.mockRejectedValue(new Error("Server error"));
+    render(<TicketList />);
+
+    act(() => {
+      latestOnRowSelectionChange?.({ "t-1": true });
+    });
+
+    await user.click(screen.getByText("Approve 1"));
+
+    await waitFor(() => {
+      expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining("failed to approve"));
+    });
+  });
+
+  it("should show toast error when bulk delete has partial failures", async () => {
+    const user = userEvent.setup();
+    setupWithTickets();
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    mockApiFetcher.mockRejectedValue(new Error("Delete failed"));
+    render(<TicketList />);
+
+    act(() => {
+      latestOnRowSelectionChange?.({ "t-1": true });
+    });
+
+    await user.click(screen.getByText("Delete"));
+
+    await waitFor(() => {
+      expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining("failed to delete"));
+    });
+  });
+
+  it("should show spinner on Approve button while bulk approving", async () => {
+    setupWithTickets();
+    // Simulate bulkActing === "approve" by making the API call hang
+    let resolveApprove!: () => void;
+    mockApiFetcher.mockReturnValue(
+      new Promise((resolve) => {
+        resolveApprove = resolve;
+      }),
+    );
+    render(<TicketList />);
+
+    act(() => {
+      latestOnRowSelectionChange?.({ "t-1": true });
+    });
+
+    // Click approve — starts the bulk operation
+    act(() => {
+      screen.getByText("Approve 1").closest("button")!.click();
+    });
+
+    // While pending, the Approve button should be disabled
+    await waitFor(() => {
+      expect(screen.getByText("Approve 1").closest("button")).toBeDisabled();
+    });
+
+    // Clean up the pending promise
+    resolveApprove();
+  });
+
+  it("should not call bulk export when no jira project key is set", () => {
+    setupWithTickets();
+    mockApiFetcher.mockResolvedValue({});
+    render(<TicketList />);
+
+    // Select APPROVED ticket but don't set a project key
+    act(() => {
+      latestOnRowSelectionChange?.({ "t-2": true });
+    });
+
+    // Export button should not be visible without a project key
+    expect(screen.queryByText("Export 1")).not.toBeInTheDocument();
+  });
+
+  it("should render jira link with fallback href when jiraIssueUrl is null", () => {
+    let callIndex = 0;
+    mockUseQuery.mockImplementation(() => {
+      const position = callIndex++ % 2;
+      if (position === 0) {
+        return {
+          data: {
+            data: [
+              {
+                id: "t-4",
+                title: "Exported ticket",
+                status: "EXPORTED",
+                priority: "LOW",
+                jiraIssueKey: "PROJ-99",
+                jiraIssueUrl: null,
+                createdAt: "2026-03-21T10:00:00.000Z",
+              },
+            ],
+            total: 1,
+            page: 1,
+            limit: 50,
+          },
+          error: undefined,
+          isLoading: false,
+          mutate: stableMutate,
+        };
+      }
+      return { data: jiraConnected, error: undefined, isLoading: false, mutate: stableMutate };
+    });
+
+    render(<TicketList />);
+
+    const link = screen.getByText("PROJ-99").closest("a");
+    expect(link).toHaveAttribute("href", "#");
+  });
+
+  it("should render CRITICAL priority badge with danger variant", () => {
+    let callIndex = 0;
+    mockUseQuery.mockImplementation(() => {
+      const position = callIndex++ % 2;
+      if (position === 0) {
+        return {
+          data: {
+            data: [
+              {
+                id: "t-5",
+                title: "Critical issue",
+                status: "REJECTED",
+                priority: "CRITICAL",
+                jiraIssueKey: null,
+                createdAt: "2026-03-21T10:00:00.000Z",
+              },
+            ],
+            total: 1,
+            page: 1,
+            limit: 50,
+          },
+          error: undefined,
+          isLoading: false,
+          mutate: stableMutate,
+        };
+      }
+      return { data: jiraConnected, error: undefined, isLoading: false, mutate: stableMutate };
+    });
+
+    render(<TicketList />);
+
+    expect(screen.getByText("CRITICAL")).toBeInTheDocument();
+    expect(screen.getByText("REJECTED")).toBeInTheDocument();
+  });
+
+  it("should show Export button spinner while bulk exporting", async () => {
+    const user = userEvent.setup();
+    setupWithTickets();
+
+    let resolveExport!: () => void;
+    mockApiFetcher.mockReturnValue(
+      new Promise((resolve) => {
+        resolveExport = resolve;
+      }),
+    );
+
+    render(<TicketList />);
+
+    const select = screen.getByTestId("jira-project-select");
+    await user.selectOptions(select, "YAP");
+
+    act(() => {
+      latestOnRowSelectionChange?.({ "t-2": true });
+    });
+
+    // Click export — starts the operation
+    act(() => {
+      screen.getByText("Export 1").closest("button")!.click();
+    });
+
+    // While pending, the Export button should be disabled
+    await waitFor(() => {
+      expect(screen.getByText("Export 1").closest("button")).toBeDisabled();
+    });
+
+    resolveExport();
   });
 });
