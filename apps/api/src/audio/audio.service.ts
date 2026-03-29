@@ -67,10 +67,16 @@ export class AudioService {
     });
 
     // 3. Enqueue processing job
-    await this.audioQueue.add("process-audio", {
-      audioId: recording.id,
-      userId,
-    });
+    await this.audioQueue.add(
+      "process-audio",
+      { audioId: recording.id, userId },
+      {
+        attempts: 3,
+        backoff: { type: "exponential", delay: 5000 },
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    );
 
     // 4. Track event
     await this.analyticsService.track(userId, "audio.uploaded", {

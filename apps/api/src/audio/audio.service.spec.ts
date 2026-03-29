@@ -103,11 +103,15 @@ describe("AudioService", () => {
         expect.stringContaining("user-1/"),
         file.buffer,
       );
-      // Job enqueued
-      expect(mockQueue.add).toHaveBeenCalledWith("process-audio", {
-        audioId: "audio-1",
-        userId,
-      });
+      // Job enqueued with retry config
+      expect(mockQueue.add).toHaveBeenCalledWith(
+        "process-audio",
+        { audioId: "audio-1", userId },
+        expect.objectContaining({
+          attempts: 3,
+          backoff: { type: "exponential", delay: 5000 },
+        }),
+      );
     });
 
     it("should reject invalid audio format", async () => {

@@ -46,8 +46,11 @@ export class AudioProcessor extends WorkerHost {
       await this.audioService.updateStatus(audioId, "TRANSCRIBING");
       this.audioGateway.emitProgress(userId, audioId, "TRANSCRIBING");
       const audioBuffer = await this.storage.get(recording.filePath);
+      if (!audioBuffer) {
+        throw new Error(`Audio file not found in storage: ${recording.filePath}`);
+      }
       const { text: transcription, duration } = await this.aiService.transcribe(
-        audioBuffer!,
+        audioBuffer,
         recording.fileName,
       );
       await this.prisma.audioRecording.update({
@@ -70,23 +73,40 @@ export class AudioProcessor extends WorkerHost {
       const tasks = await this.aiService.decompose(transcription, projectContext);
       const tickets = await this.aiService.generateTickets(tasks, projectContext);
 
-      // Step 3: Save tickets + track each one
-      for (const ticket of tickets) {
-        const created = await this.ticketsService.create({
-          title: ticket.title,
-          description: ticket.description,
-          priority: ticket.priority,
-          audioRecordingId: audioId,
-          projectId: recording.projectId ?? undefined,
-          userId,
-        });
-        await this.analyticsService.track(userId, "ticket.generated", {
-          audioId,
-          ticketId: created.id,
-        });
+      // Step 3: Save tickets atomically (idempotent — skip if tickets already exist for this audio)
+      const existingTickets = await this.prisma.ticket.count({
+        where: { audioRecordingId: audioId },
+      });
+
+      let ticketCount = existingTickets;
+
+      if (existingTickets === 0 && tickets.length > 0) {
+        const created = await this.prisma.$transaction(
+          tickets.map((ticket) =>
+            this.prisma.ticket.create({
+              data: {
+                title: ticket.title,
+                description: ticket.description,
+                priority: ticket.priority as never,
+                audioRecordingId: audioId,
+                projectId: recording.projectId ?? undefined,
+                userId,
+              },
+            }),
+          ),
+        );
+
+        ticketCount = created.length;
+
+        for (const ticket of created) {
+          await this.analyticsService.track(userId, "ticket.generated", {
+            audioId,
+            ticketId: ticket.id,
+          });
+        }
       }
 
-      this.logger.log(`[${audioId}] Completed. ${tickets.length} tickets generated.`);
+      this.logger.log(`[${audioId}] Completed. ${ticketCount} tickets generated.`);
       await this.audioService.updateStatus(audioId, "COMPLETED");
       this.audioGateway.emitCompleted(userId, audioId, tickets.length);
       try {

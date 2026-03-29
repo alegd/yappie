@@ -7,8 +7,11 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import helmet from "helmet";
 import { AppModule } from "./app.module.js";
 import { ThrottleExceptionFilter } from "./common/throttle-exception.filter.js";
+import { validateEnv } from "./config/env.config.js";
 
 async function bootstrap() {
+  validateEnv();
+
   const app = await NestFactory.create(AppModule);
 
   // Security headers (CSP, HSTS, X-Frame-Options, etc.)

@@ -53,6 +53,13 @@ function createMockPrisma() {
     audioRecording: {
       update: vi.fn().mockResolvedValue({}),
     },
+    ticket: {
+      count: vi.fn().mockResolvedValue(0),
+      create: vi.fn(),
+    },
+    $transaction: vi
+      .fn()
+      .mockImplementation((promises: Promise<unknown>[]) => Promise.all(promises)),
   };
 }
 
@@ -126,9 +133,11 @@ describe("AudioProcessor", () => {
       { title: "Build dashboard", description: "Main dashboard page", priority: "MEDIUM" },
     ]);
     mockAudioService.updateStatus.mockResolvedValue({});
-    mockTicketsService.create
+    mockPrisma.ticket.count.mockResolvedValue(0);
+    mockPrisma.ticket.create
       .mockResolvedValueOnce({ id: "t-1" })
       .mockResolvedValueOnce({ id: "t-2" });
+    mockPrisma.$transaction.mockResolvedValue([{ id: "t-1" }, { id: "t-2" }]);
 
     await processor.process({
       data: { audioId: "audio-1", userId: "user-1" },
@@ -136,10 +145,7 @@ describe("AudioProcessor", () => {
 
     // Verify pipeline ran
     expect(mockProjectsService.findOne).toHaveBeenCalledWith("proj-1", "user-1");
-    expect(mockTicketsService.create).toHaveBeenCalledTimes(2);
-    expect(mockTicketsService.create).toHaveBeenCalledWith(
-      expect.objectContaining({ userId: "user-1" }),
-    );
+    expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
 
     // Verify analytics tracked per ticket
     expect(mockAnalytics.track).toHaveBeenCalledTimes(2);
@@ -176,6 +182,7 @@ describe("AudioProcessor", () => {
     mockAIService.decompose.mockResolvedValue([]);
     mockAIService.generateTickets.mockResolvedValue([]);
     mockAudioService.updateStatus.mockResolvedValue({});
+    mockPrisma.ticket.count.mockResolvedValue(0);
 
     await processor.process({
       data: { audioId: "audio-1", userId: "user-1" },
@@ -184,6 +191,7 @@ describe("AudioProcessor", () => {
     expect(mockProjectsService.findOne).not.toHaveBeenCalled();
     expect(mockAIService.decompose).toHaveBeenCalledWith("Some task", undefined);
     expect(mockGateway.emitCompleted).toHaveBeenCalledWith("user-1", "audio-1", 0);
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled();
     expect(mockQuotas.trackConsumption).toHaveBeenCalledWith("user-1", "audio-1");
   });
 
@@ -221,6 +229,7 @@ describe("AudioProcessor", () => {
     mockAIService.decompose.mockResolvedValue([]);
     mockAIService.generateTickets.mockResolvedValue([]);
     mockAudioService.updateStatus.mockResolvedValue({});
+    mockPrisma.ticket.count.mockResolvedValue(0);
     mockQuotas.trackConsumption.mockRejectedValue(new Error("Analytics down"));
 
     await processor.process({
