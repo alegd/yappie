@@ -12,4 +12,8 @@ export class CreateProjectDto {
   @IsOptional()
   @IsString()
   context?: string;
+
+  @IsOptional()
+  @IsString()
+  jiraProjectKey?: string;
 }
