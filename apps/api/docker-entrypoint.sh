@@ -19,7 +19,7 @@ export default defineConfig({
 PRISMA_CONFIG
 
 echo "[entrypoint] Running database migrations..."
-npx --no-install prisma migrate deploy --config ./prisma.config.mjs
+npx --no-install prisma migrate deploy --config ./prisma.config.mjs || echo "[entrypoint] WARNING: migrations failed, starting API"
 
 echo "[entrypoint] Starting API..."
 exec node dist/main
