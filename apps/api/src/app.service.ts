@@ -3,7 +3,7 @@ import type Redis from "ioredis";
 import { PrismaService } from "./prisma/prisma.service.js";
 import { REDIS_CLIENT } from "./redis/redis.constants.js";
 
-interface HealthStatus {
+export interface HealthStatus {
   status: "ok" | "degraded";
   timestamp: string;
   services: {
