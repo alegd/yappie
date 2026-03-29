@@ -3,6 +3,7 @@ export interface Project {
   name: string;
   description: string | null;
   context: string | null;
+  jiraProjectKey?: string;
   userId: string;
   createdAt: string;
   updatedAt: string;
