@@ -48,7 +48,7 @@ export class AudioController {
   ) {
     return this.audioService.findAll(
       req.user.sub,
-      { page: parseInt(page, 10), limit: Math.min(parseInt(limit, 10) || 10, 100) },
+      { page: parseInt(page, 10) || 1, limit: Math.min(parseInt(limit, 10) || 10, 100) },
       projectId,
     );
   }

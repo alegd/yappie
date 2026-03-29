@@ -30,7 +30,7 @@ export class TicketsController {
     @Query("projectId") projectId?: string,
   ) {
     return this.ticketsService.findAll({
-      page: parseInt(page, 10),
+      page: parseInt(page, 10) || 1,
       limit: Math.min(parseInt(limit, 10) || 10, 100),
       userId: req.user.sub,
       status,
