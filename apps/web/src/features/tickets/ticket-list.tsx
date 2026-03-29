@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "@/components/ui/toast/Toast";
 import { ActionsMenu } from "./components/actions-menu";
 import { JiraProjectSelect } from "./components/jira-project-select";
 import { Ticket, TicketListResponse } from "./types";
@@ -74,8 +75,8 @@ export function TicketList() {
     try {
       await apiFetcher(ticketApprove(id), { method: POST });
       invalidateQuery(TICKETS_LIST);
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setActing(null);
     }
@@ -87,8 +88,8 @@ export function TicketList() {
     try {
       await apiFetcher(ticketExport(id, jiraProjectKey), { method: POST });
       invalidateQuery(TICKETS_LIST);
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setActing(null);
     }
@@ -97,13 +98,17 @@ export function TicketList() {
   const handleBulkApprove = async () => {
     setBulkActing("approve");
     try {
-      for (const ticket of draftSelected) {
-        await apiFetcher(ticketApprove(ticket.id), { method: POST });
+      const results = await Promise.allSettled(
+        draftSelected.map((ticket) => apiFetcher(ticketApprove(ticket.id), { method: POST })),
+      );
+      const failed = results.filter((r) => r.status === "rejected");
+      if (failed.length > 0) {
+        toast.error(`${failed.length} of ${results.length} tickets failed to approve`);
       }
       invalidateQuery(TICKETS_LIST);
       setRowSelection({});
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setBulkActing(null);
     }
@@ -115,8 +120,8 @@ export function TicketList() {
     try {
       await apiFetcher(ticketDetail(id), { method: DELETE });
       invalidateQuery(TICKETS_LIST);
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setActing(null);
     }
@@ -126,13 +131,17 @@ export function TicketList() {
     if (!confirm(`Delete ${selectedIds.length} ticket(s)?`)) return;
     setBulkActing("delete");
     try {
-      for (const id of selectedIds) {
-        await apiFetcher(ticketDetail(id), { method: DELETE });
+      const results = await Promise.allSettled(
+        selectedIds.map((id) => apiFetcher(ticketDetail(id), { method: DELETE })),
+      );
+      const failed = results.filter((r) => r.status === "rejected");
+      if (failed.length > 0) {
+        toast.error(`${failed.length} of ${results.length} tickets failed to delete`);
       }
       invalidateQuery(TICKETS_LIST);
       setRowSelection({});
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setBulkActing(null);
     }
@@ -151,8 +160,8 @@ export function TicketList() {
       });
       invalidateQuery(TICKETS_LIST);
       setRowSelection({});
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setBulkActing(null);
     }

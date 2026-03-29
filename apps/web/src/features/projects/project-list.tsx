@@ -9,6 +9,7 @@ import { NEW_PROJECT_PAGE, editProjectPage } from "@/lib/constants/pages";
 import { Brain, FolderOpen, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "@/components/ui/toast/Toast";
 import { ProjectListResponse } from "./types";
 
 export function ProjectList() {
@@ -24,8 +25,8 @@ export function ProjectList() {
     try {
       await apiFetcher(projectDetail(id), { method: DELETE });
       invalidateQuery(PROJECTS_LIST);
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     }
   };
 

@@ -8,11 +8,11 @@ test.describe("Auth and Upload Flow", () => {
   const user = generateUser();
 
   test("should register, login, create project, and upload audio", async ({ page }) => {
-    // 1. Register via API (faster)
+    // 1. Register via API (OTP flow through Redis)
     await registerUserViaApi(user);
 
-    // 2. Login via UI
-    await loginViaUi(page, user.email, user.password);
+    // 2. Login via UI (OTP flow)
+    await loginViaUi(page, user.email);
     await expect(page).toHaveURL(/audios/);
 
     // 3. Create a project

@@ -114,6 +114,23 @@ describe("ExportService", () => {
       expect(result.results).toHaveLength(3);
     });
 
+    it("should use 'Unknown error' when a non-Error is thrown", async () => {
+      mockTickets.findOne.mockResolvedValueOnce({
+        id: "t-1",
+        title: "Task 1",
+        description: "Desc 1",
+        priority: "HIGH",
+        status: "APPROVED",
+      });
+      // Throw a non-Error value (plain string)
+      mockJira.createIssue.mockRejectedValueOnce("plain string error");
+
+      const result = await service.exportBulk("user-1", ["t-1"], "PROJ");
+
+      expect(result.failed).toBe(1);
+      expect(result.results[0]).toHaveProperty("error", "Unknown error");
+    });
+
     it("should handle partial failures gracefully", async () => {
       const tickets = [
         { id: "t-1", title: "Task 1", description: "Desc 1", priority: "HIGH", status: "APPROVED" },

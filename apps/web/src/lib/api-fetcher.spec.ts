@@ -250,4 +250,117 @@ describe("apiFetcher", () => {
 
     expect(result).toBeNull();
   });
+
+  it("should append nested object fields as key[nested] in multipart form data", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({ id: "a-2" }),
+    });
+
+    await apiFetcher("/v1/audio/upload", {
+      method: "POST",
+      data: {
+        file: { name: "file", value: [] },
+        meta: { projectId: "p-1", label: "test" },
+      },
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    const [, calledOptions] = mockFetch.mock.calls[0];
+    const formData = calledOptions.body as FormData;
+    expect(formData.get("meta[projectId]")).toBe("p-1");
+    expect(formData.get("meta[label]")).toBe("test");
+  });
+
+  it("should append array values as JSON string in multipart form data", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({ id: "a-3" }),
+    });
+
+    await apiFetcher("/v1/audio/upload", {
+      method: "POST",
+      data: {
+        file: { name: "file", value: [] },
+        tags: ["a", "b"],
+      },
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    const [, calledOptions] = mockFetch.mock.calls[0];
+    const formData = calledOptions.body as FormData;
+    expect(formData.get("tags")).toBe(JSON.stringify(["a", "b"]));
+  });
+
+  it("should append primitive field values in multipart form data", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({ id: "a-4" }),
+    });
+
+    await apiFetcher("/v1/audio/upload", {
+      method: "POST",
+      data: {
+        file: { name: "file", value: [] },
+        title: "My recording",
+      },
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    const [, calledOptions] = mockFetch.mock.calls[0];
+    const formData = calledOptions.body as FormData;
+    expect(formData.get("title")).toBe("My recording");
+  });
+
+  it("should skip null/undefined fields in multipart form data", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({ id: "a-5" }),
+    });
+
+    await apiFetcher("/v1/audio/upload", {
+      method: "POST",
+      data: {
+        file: { name: "file", value: [] },
+        notes: null,
+      },
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    const [, calledOptions] = mockFetch.mock.calls[0];
+    const formData = calledOptions.body as FormData;
+    expect(formData.get("notes")).toBeNull();
+  });
+
+  it("should redirect on 401 without invalid_credentials key via parseError", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 401,
+      text: async () =>
+        JSON.stringify({
+          statusCode: 401,
+          error: { message: "Session expired" },
+        }),
+    });
+
+    await expect(apiFetcher("/v1/tickets")).rejects.toThrow("NEXT_REDIRECT:/logout");
+    expect(mockRedirect).toHaveBeenCalledWith("/logout");
+  });
+
+  it("should return error for unknown status code (default case)", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 418,
+      text: async () => JSON.stringify({ statusCode: 418, error: { message: "I'm a teapot" } }),
+    });
+
+    const result = await apiFetcher("/v1/tickets");
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        success: false,
+        error: "I'm a teapot",
+      }),
+    );
+  });
 });

@@ -53,6 +53,19 @@ describe("LocalStorageAdapter", () => {
     });
   });
 
+  describe("get (error propagation)", () => {
+    it("should rethrow non-ENOENT errors", async () => {
+      const permissionError = Object.assign(new Error("EACCES: permission denied"), {
+        code: "EACCES",
+      });
+      vi.mocked(fs.readFile).mockRejectedValue(permissionError);
+
+      await expect(adapter.get("user-1/protected.mp3")).rejects.toThrow(
+        "EACCES: permission denied",
+      );
+    });
+  });
+
   describe("delete", () => {
     it("should delete a file from disk", async () => {
       vi.mocked(fs.unlink).mockResolvedValue(undefined);
@@ -60,6 +73,17 @@ describe("LocalStorageAdapter", () => {
       await adapter.delete("user-1/recording.mp3");
 
       expect(fs.unlink).toHaveBeenCalledWith(path.join(basePath, "user-1/recording.mp3"));
+    });
+
+    it("should rethrow non-ENOENT errors on delete", async () => {
+      const permissionError = Object.assign(new Error("EACCES: permission denied"), {
+        code: "EACCES",
+      });
+      vi.mocked(fs.unlink).mockRejectedValue(permissionError);
+
+      await expect(adapter.delete("user-1/protected.mp3")).rejects.toThrow(
+        "EACCES: permission denied",
+      );
     });
 
     it("should not throw if file does not exist", async () => {

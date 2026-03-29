@@ -8,6 +8,7 @@ import { TEMPLATES_LIST, templateDetail } from "@/lib/constants/endpoints";
 import { DELETE } from "@/lib/constants/http";
 import { FileText, Pencil, Plus, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "@/components/ui/toast/Toast";
 import { TemplateForm } from "./template-form";
 
 interface Template {
@@ -38,8 +39,8 @@ export function TemplatesSection() {
     try {
       await apiFetcher(templateDetail(id), { method: DELETE });
       invalidateQuery(TEMPLATES_LIST);
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     }
   };
 

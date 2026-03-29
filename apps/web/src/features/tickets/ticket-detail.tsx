@@ -26,6 +26,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "@/components/ui/toast/Toast";
 import { JiraProjectSelect } from "./components/jira-project-select";
 import { Ticket } from "./types";
 
@@ -83,8 +84,8 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
       invalidateQuery(ticketDetail(ticketId));
       invalidateQuery(TICKETS_LIST);
       setEditing(false);
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setSaving(false);
     }
@@ -96,8 +97,8 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
       await apiFetcher(ticketApprove(ticketId), { method: POST });
       invalidateQuery(ticketDetail(ticketId));
       invalidateQuery(TICKETS_LIST);
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setActing(false);
     }
@@ -109,8 +110,8 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
       await apiFetcher(ticketDetail(ticketId), { method: DELETE });
       invalidateQuery(TICKETS_LIST);
       router.push(TICKETS_PAGE);
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     }
   };
 
@@ -120,8 +121,8 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
       await apiFetcher(ticketExport(ticketId, jiraProjectKey), { method: POST });
       invalidateQuery(ticketDetail(ticketId));
       invalidateQuery(TICKETS_LIST);
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setActing(false);
     }

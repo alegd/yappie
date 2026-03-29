@@ -13,6 +13,7 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { TicketsService } from "./tickets.service.js";
+import { UpdateTicketDto } from "./dto/update-ticket.dto.js";
 
 @ApiBearerAuth()
 @Controller("tickets")
@@ -29,8 +30,8 @@ export class TicketsController {
     @Query("projectId") projectId?: string,
   ) {
     return this.ticketsService.findAll({
-      page: parseInt(page, 10),
-      limit: parseInt(limit, 10),
+      page: parseInt(page, 10) || 1,
+      limit: Math.max(1, Math.min(parseInt(limit, 10) || 10, 100)),
       userId: req.user.sub,
       status,
       priority,
@@ -47,7 +48,7 @@ export class TicketsController {
   update(
     @Req() req: { user: { sub: string } },
     @Param("id") id: string,
-    @Body() data: { title?: string; description?: string },
+    @Body() data: UpdateTicketDto,
   ) {
     return this.ticketsService.update(id, req.user.sub, data);
   }
