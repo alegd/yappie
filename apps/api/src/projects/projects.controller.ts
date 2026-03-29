@@ -34,7 +34,7 @@ export class ProjectsController {
   ) {
     return this.projectsService.findAll(req.user.sub, {
       page: parseInt(page, 10),
-      limit: parseInt(limit, 10),
+      limit: Math.min(parseInt(limit, 10) || 10, 100),
     });
   }
 

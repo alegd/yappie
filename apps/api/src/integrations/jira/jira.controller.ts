@@ -17,6 +17,7 @@ import { Response } from "express";
 import { JiraService } from "./jira.service.js";
 import { ExportService } from "./export.service.js";
 import { Public } from "../../auth/decorators/public.decorator.js";
+import { ExportBulkDto } from "./dto/export-bulk.dto.js";
 
 @ApiBearerAuth()
 @Controller("integrations/jira")
@@ -40,7 +41,7 @@ export class JiraController {
   @Get("callback")
   async callback(@Query("code") code: string, @Query("state") state: string, @Res() res: Response) {
     await this.jiraService.exchangeCode(code, state);
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const frontendUrl = process.env.FRONTEND_URL;
     return res.redirect(`${frontendUrl}/dashboard/settings?jira=connected`);
   }
 
@@ -66,10 +67,7 @@ export class JiraController {
 
   @Throttle({ short: { ttl: 60000, limit: 5 } })
   @Post("export-bulk")
-  exportBulk(
-    @Body() body: { ticketIds: string[]; projectKey: string },
-    @Req() req: { user: { sub: string } },
-  ) {
+  exportBulk(@Body() body: ExportBulkDto, @Req() req: { user: { sub: string } }) {
     return this.exportService.exportBulk(req.user.sub, body.ticketIds, body.projectKey);
   }
 

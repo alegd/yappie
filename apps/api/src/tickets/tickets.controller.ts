@@ -31,7 +31,7 @@ export class TicketsController {
   ) {
     return this.ticketsService.findAll({
       page: parseInt(page, 10),
-      limit: parseInt(limit, 10),
+      limit: Math.min(parseInt(limit, 10) || 10, 100),
       userId: req.user.sub,
       status,
       priority,
