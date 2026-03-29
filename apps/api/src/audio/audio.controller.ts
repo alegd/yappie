@@ -12,6 +12,7 @@ import {
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { AudioService } from "./audio.service.js";
+import { UploadQueryDto } from "./dto/upload-query.dto.js";
 
 @ApiBearerAuth()
 @Controller("audio")
@@ -34,9 +35,9 @@ export class AudioController {
   upload(
     @UploadedFile() file: Express.Multer.File,
     @Req() req: { user: { sub: string } },
-    @Query("projectId") projectId?: string,
+    @Query() query: UploadQueryDto,
   ) {
-    return this.audioService.upload(file, req.user.sub, projectId);
+    return this.audioService.upload(file, req.user.sub, query.projectId);
   }
 
   @Get()
