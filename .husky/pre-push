@@ -1,3 +1,4 @@
+pnpm type-check
 pnpm --filter @yappie/api exec vitest run --coverage
 pnpm --filter @yappie/web exec vitest run --coverage
 pnpm --filter @yappie/web exec next build

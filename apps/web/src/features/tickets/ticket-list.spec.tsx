@@ -423,7 +423,7 @@ describe("TicketList", () => {
   it("should show spinner on Approve button while bulk approving", async () => {
     setupWithTickets();
     // Simulate bulkActing === "approve" by making the API call hang
-    let resolveApprove!: () => void;
+    let resolveApprove!: (value?: unknown) => void;
     mockApiFetcher.mockReturnValue(
       new Promise((resolve) => {
         resolveApprove = resolve;
@@ -538,7 +538,7 @@ describe("TicketList", () => {
     const user = userEvent.setup();
     setupWithTickets();
 
-    let resolveExport!: () => void;
+    let resolveExport!: (value?: unknown) => void;
     mockApiFetcher.mockReturnValue(
       new Promise((resolve) => {
         resolveExport = resolve;
