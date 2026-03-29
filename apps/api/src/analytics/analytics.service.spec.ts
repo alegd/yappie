@@ -51,6 +51,21 @@ describe("AnalyticsService", () => {
   });
 
   describe("getOverview", () => {
+    it("should return cached result without hitting the database", async () => {
+      const cached = [{ type: "audio.uploaded", count: 3 }];
+      const mockCache = createMockCache();
+      mockCache.get.mockReturnValue(cached);
+      service = new AnalyticsService(mockPrisma as never, mockCache as never);
+
+      const result = await service.getOverview(userId, {
+        from: new Date("2026-01-01"),
+        to: new Date("2026-12-31"),
+      });
+
+      expect(result).toBe(cached);
+      expect(mockPrisma.usageEvent.groupBy).not.toHaveBeenCalled();
+    });
+
     it("should return event counts by type", async () => {
       mockPrisma.usageEvent.groupBy.mockResolvedValue([
         { type: "audio.uploaded", _count: { type: 5 } },

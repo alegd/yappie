@@ -215,6 +215,29 @@ describe("AudioProcessor", () => {
     expect(mockQuotas.trackConsumption).not.toHaveBeenCalled();
   });
 
+  it("should throw an error when storage.get returns null", async () => {
+    mockAudioService.findOne.mockResolvedValue({
+      id: "audio-1",
+      filePath: "user-1/missing.mp3",
+      fileName: "missing.mp3",
+      userId: "user-1",
+      projectId: null,
+    });
+    mockStorage.get.mockResolvedValue(null);
+    mockAudioService.updateStatus.mockResolvedValue({});
+
+    await expect(
+      processor.process({ data: { audioId: "audio-1", userId: "user-1" } } as never),
+    ).rejects.toThrow("Audio file not found in storage: user-1/missing.mp3");
+
+    expect(mockAudioService.updateStatus).toHaveBeenCalledWith("audio-1", "FAILED");
+    expect(mockGateway.emitFailed).toHaveBeenCalledWith(
+      "user-1",
+      "audio-1",
+      "Audio file not found in storage: user-1/missing.mp3",
+    );
+  });
+
   it("should not fail pipeline when trackConsumption throws", async () => {
     const audioBuffer = Buffer.from("fake-audio");
     mockStorage.get.mockResolvedValue(audioBuffer);

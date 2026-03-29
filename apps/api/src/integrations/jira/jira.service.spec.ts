@@ -149,7 +149,36 @@ describe("JiraService", () => {
     });
   });
 
+  describe("refreshAccessToken", () => {
+    it("should throw UnauthorizedException if integration has no refreshToken", async () => {
+      mockPrisma.integration.findUnique.mockResolvedValue({
+        id: "int-1",
+        refreshToken: null,
+        userId: "user-1",
+      });
+
+      await expect(service.refreshAccessToken("user-1")).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
   describe("getProjects", () => {
+    it("should return cached projects without hitting the API", async () => {
+      const cached = [{ id: "10001", key: "PROJ", name: "My Project" }];
+      const mockCacheService = createMockCacheService();
+      mockCacheService.get.mockReturnValue(cached);
+      service = new JiraService(
+        mockPrisma as never,
+        mockConfig as never,
+        mockCrypto as never,
+        mockCacheService as never,
+      );
+
+      const result = await service.getProjects("user-1");
+
+      expect(result).toBe(cached);
+      expect(mockPrisma.integration.findUnique).not.toHaveBeenCalled();
+    });
+
     it("should list Jira projects for user", async () => {
       mockPrisma.integration.findUnique.mockResolvedValue({
         id: "int-1",
@@ -172,6 +201,56 @@ describe("JiraService", () => {
       mockPrisma.integration.findUnique.mockResolvedValue(null);
 
       await expect(service.getProjects("user-1")).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe("getIntegration (auto-refresh)", () => {
+    it("should auto-refresh access token when token is expired", async () => {
+      const expiredAt = new Date(Date.now() - 1000); // already expired
+      mockPrisma.integration.findUnique.mockResolvedValue({
+        id: "int-1",
+        accessToken: "encrypted:old-access",
+        refreshToken: "encrypted:old-refresh",
+        cloudId: "cloud-123",
+        tokenExpiresAt: expiredAt,
+        userId: "user-1",
+      });
+      globalThis.fetch = mockFetchResponse({
+        access_token: "new-access",
+        refresh_token: "new-refresh",
+        expires_in: 3600,
+      });
+      mockPrisma.integration.upsert.mockResolvedValue({
+        id: "int-1",
+        accessToken: "encrypted:new-access",
+        refreshToken: "encrypted:new-refresh",
+        cloudId: "cloud-123",
+        tokenExpiresAt: new Date(Date.now() + 3600 * 1000),
+        userId: "user-1",
+      });
+      // second fetch for getProjects API call
+      globalThis.fetch = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              access_token: "new-access",
+              refresh_token: "new-refresh",
+              expires_in: 3600,
+            }),
+          text: () => Promise.resolve(""),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve([{ id: "10001", key: "PROJ", name: "My Project" }]),
+          text: () => Promise.resolve(""),
+        });
+
+      const result = await service.getProjects("user-1");
+
+      expect(mockPrisma.integration.upsert).toHaveBeenCalled();
+      expect(result).toHaveLength(1);
     });
   });
 

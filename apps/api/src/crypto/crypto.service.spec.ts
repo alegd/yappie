@@ -55,6 +55,19 @@ describe("CryptoService", () => {
     expect(decrypted).toBe(longToken);
   });
 
+  it("should throw on construction when ENCRYPTION_KEY is not 32 bytes", () => {
+    const shortKeyConfig = {
+      get: vi.fn((key: string) => {
+        if (key === "ENCRYPTION_KEY") return "deadbeef"; // only 4 bytes
+        return undefined;
+      }),
+    };
+
+    expect(() => new CryptoService(shortKeyConfig as never)).toThrow(
+      "ENCRYPTION_KEY must be 32 bytes (64 hex characters)",
+    );
+  });
+
   it("should throw on tampered ciphertext", () => {
     const encrypted = service.encrypt("secret");
     const tampered = encrypted.slice(0, -2) + "XX";
