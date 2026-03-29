@@ -3,15 +3,24 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card/Card";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
-import { AUDIO_LIST, audioByProject, PROJECTS_LIST } from "@/lib/constants/endpoints";
+import { AUDIO_LIST, audioByProject, JIRA_STATUS, PROJECTS_LIST } from "@/lib/constants/endpoints";
 import { audioDetailPage } from "@/lib/constants/pages";
 import { AppSelect } from "@/components/ui/app-select";
-import { AlertCircle, CheckCircle2, Clock, FileAudio, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, FileAudio, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { ProjectListResponse } from "../projects/types";
 import { AudioUpload } from "./audio-upload";
+import { OnboardingChecklist } from "./onboarding-checklist";
 import { AudioListResponse } from "./types";
+
+interface JiraStatus {
+  connected: boolean;
+  siteName: string | null;
+  connectedAt: string | null;
+}
+
+const JIRA_BANNER_KEY = "yappie:jira-banner-dismissed";
 
 const statusConfig = {
   PENDING: { label: "Pending", variant: "default" as const, icon: Clock },
@@ -36,17 +45,28 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function getInitialBannerDismissed(): boolean {
+  try {
+    return globalThis.localStorage?.getItem(JIRA_BANNER_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
 export function AudioList() {
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [bannerDismissed, setBannerDismissed] = useState(getInitialBannerDismissed);
 
   const audioKey = selectedProjectId ? audioByProject(selectedProjectId) : AUDIO_LIST;
 
   const { data: audioData, isLoading: isLoadingAudios } = useQuery<AudioListResponse>(audioKey);
-
   const { data: projectData } = useQuery<ProjectListResponse>(PROJECTS_LIST);
+  const { data: jiraStatus } = useQuery<JiraStatus>(JIRA_STATUS);
 
   const audios = audioData?.data ?? [];
   const projects = projectData?.data ?? [];
+  const hasProjects = projects.length > 0;
+  const jiraConnected = jiraStatus?.connected ?? false;
 
   const handleProjectChange = (projectId: string) => {
     setSelectedProjectId(projectId);
@@ -54,6 +74,15 @@ export function AudioList() {
 
   const handleUploaded = () => {
     invalidateQuery(audioKey);
+  };
+
+  const handleDismissBanner = () => {
+    setBannerDismissed(true);
+    try {
+      globalThis.localStorage?.setItem(JIRA_BANNER_KEY, "true");
+    } catch {
+      // localStorage may not be available
+    }
   };
 
   if (isLoadingAudios) {
@@ -64,21 +93,56 @@ export function AudioList() {
     );
   }
 
+  if (!hasProjects) {
+    return (
+      <div>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="font-bold text-2xl">Audios</h1>
+        </div>
+        <OnboardingChecklist
+          jiraConnected={jiraConnected}
+          jiraSiteName={jiraStatus?.siteName ?? undefined}
+          hasProjects={false}
+        />
+      </div>
+    );
+  }
+
   return (
     <div>
+      {hasProjects && !jiraConnected && !bannerDismissed && (
+        <div className="flex items-center justify-between gap-3 mb-4 rounded-lg border border-border bg-surface px-4 py-3">
+          <p className="text-sm">
+            Connect Jira to export your tickets →{" "}
+            <Link href="/dashboard/settings" className="text-primary hover:underline">
+              Go to Settings
+            </Link>
+          </p>
+          <button
+            onClick={handleDismissBanner}
+            className="text-muted-foreground hover:text-foreground transition"
+            aria-label="Dismiss Jira banner"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="font-bold text-2xl">Audios</h1>
         <div className="flex items-center gap-3">
-          {projects.length > 0 && (
-            <AppSelect
-              value={selectedProjectId}
-              onChange={handleProjectChange}
-              options={projects.map((p) => ({ value: p.id, label: p.name }))}
-              placeholder="All projects"
-              ariaLabel="Filter by project"
-            />
-          )}
-          <AudioUpload projectId={selectedProjectId || undefined} onUploaded={handleUploaded} />
+          <AppSelect
+            value={selectedProjectId}
+            onChange={handleProjectChange}
+            options={projects.map((p) => ({ value: p.id, label: p.name }))}
+            placeholder="All projects"
+            ariaLabel="Filter by project"
+          />
+          <AudioUpload
+            projectId={selectedProjectId}
+            disabled={!selectedProjectId}
+            onUploaded={handleUploaded}
+          />
         </div>
       </div>
 
