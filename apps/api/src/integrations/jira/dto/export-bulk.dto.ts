@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsString, MinLength } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsString } from "class-validator";
 
 export class ExportBulkDto {
   @IsArray()
@@ -6,8 +6,4 @@ export class ExportBulkDto {
   @ArrayMinSize(1)
   @ArrayMaxSize(50)
   ticketIds!: string[];
-
-  @IsString()
-  @MinLength(1)
-  projectKey!: string;
 }

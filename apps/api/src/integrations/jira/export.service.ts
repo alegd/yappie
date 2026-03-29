@@ -1,6 +1,5 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
 import { JiraService } from "./jira.service.js";
-import { TicketsService } from "../../tickets/tickets.service.js";
 import { PrismaService } from "../../prisma/prisma.service.js";
 import { AnalyticsService } from "../../analytics/analytics.service.js";
 
@@ -14,13 +13,29 @@ export interface ExportResult {
 export class ExportService {
   constructor(
     private readonly jiraService: JiraService,
-    private readonly ticketsService: TicketsService,
     private readonly prisma: PrismaService,
     private readonly analyticsService: AnalyticsService,
   ) {}
 
-  async exportOne(userId: string, ticketId: string, projectKey: string) {
-    const ticket = await this.ticketsService.findOne(ticketId, userId);
+  async exportOne(userId: string, ticketId: string) {
+    const ticket = await this.prisma.ticket.findFirst({
+      where: { id: ticketId, userId },
+      include: { project: true },
+    });
+
+    if (!ticket) {
+      throw new NotFoundException("Ticket not found");
+    }
+
+    if (!ticket.projectId || !ticket.project) {
+      throw new BadRequestException("Ticket is not assigned to a project");
+    }
+
+    if (!ticket.project.jiraProjectKey) {
+      throw new BadRequestException("Project not linked to a Jira project");
+    }
+
+    const projectKey = ticket.project.jiraProjectKey;
 
     const jiraIssue = await this.jiraService.createIssue(userId, {
       projectKey,
@@ -49,14 +64,14 @@ export class ExportService {
     return jiraIssue;
   }
 
-  async exportBulk(userId: string, ticketIds: string[], projectKey: string) {
+  async exportBulk(userId: string, ticketIds: string[]) {
     const results: ExportResult[] = [];
     let exported = 0;
     let failed = 0;
 
     for (const ticketId of ticketIds) {
       try {
-        const jiraIssue = await this.exportOne(userId, ticketId, projectKey);
+        const jiraIssue = await this.exportOne(userId, ticketId);
         results.push({ ticketId, jiraKey: jiraIssue.key });
         exported++;
       } catch (error) {

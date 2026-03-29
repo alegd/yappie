@@ -57,18 +57,14 @@ export class JiraController {
 
   @Throttle({ short: { ttl: 60000, limit: 20 } })
   @Post("export/:ticketId")
-  exportOne(
-    @Param("ticketId") ticketId: string,
-    @Query("projectKey") projectKey: string,
-    @Req() req: { user: { sub: string } },
-  ) {
-    return this.exportService.exportOne(req.user.sub, ticketId, projectKey);
+  exportOne(@Param("ticketId") ticketId: string, @Req() req: { user: { sub: string } }) {
+    return this.exportService.exportOne(req.user.sub, ticketId);
   }
 
   @Throttle({ short: { ttl: 60000, limit: 5 } })
   @Post("export-bulk")
   exportBulk(@Body() body: ExportBulkDto, @Req() req: { user: { sub: string } }) {
-    return this.exportService.exportBulk(req.user.sub, body.ticketIds, body.projectKey);
+    return this.exportService.exportBulk(req.user.sub, body.ticketIds);
   }
 
   @Delete()
