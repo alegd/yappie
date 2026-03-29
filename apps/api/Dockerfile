@@ -28,8 +28,8 @@ COPY packages/config/ packages/config/
 # Build the API (prisma generate + nest build)
 RUN pnpm --filter @yappie/api build
 
-# Create isolated production deployment
-RUN pnpm deploy --prod --legacy --filter @yappie/api /app/deploy
+# Prune devDependencies after build
+RUN pnpm prune --prod --no-optional
 
 # ── Stage 3: runtime ──────────────────────────────────
 FROM node:22-alpine AS runtime
@@ -38,11 +38,9 @@ RUN addgroup -S yappie && adduser -S yappie -G yappie
 
 WORKDIR /app
 
-# Copy production node_modules from pnpm deploy
-COPY --from=build /app/deploy/node_modules ./node_modules
-
-# Copy generated Prisma client from build stage
-COPY --from=build /app/apps/api/node_modules/.prisma ./node_modules/.prisma
+# Copy node_modules from build stage (pruned to prod only)
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/apps/api/node_modules ./apps/api/node_modules
 
 # Copy compiled application
 COPY --from=build /app/apps/api/dist ./dist
@@ -54,7 +52,7 @@ COPY --from=build /app/apps/api/prisma ./prisma
 COPY apps/api/docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
 
-# Ensure yappie user can write to node_modules (prisma migrate needs it)
+# Ensure yappie user can write (prisma migrate + config generation)
 RUN chown -R yappie:yappie /app
 
 EXPOSE 3001

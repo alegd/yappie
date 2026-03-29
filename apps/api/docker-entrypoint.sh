@@ -1,5 +1,4 @@
 #!/bin/sh
-set -e
 
 # Build DATABASE_URL from individual env vars
 DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT:-5432}/${DB_NAME}"
@@ -19,7 +18,10 @@ export default defineConfig({
 PRISMA_CONFIG
 
 echo "[entrypoint] Running database migrations..."
-npx --no-install prisma migrate deploy --config ./prisma.config.mjs || echo "[entrypoint] WARNING: migrations failed, starting API"
+npx --no-install prisma migrate deploy --config ./prisma.config.mjs || echo "[entrypoint] WARNING: migrations failed"
 
 echo "[entrypoint] Starting API..."
-exec node dist/main
+node dist/main || {
+  echo "[entrypoint] API failed to start. Keeping container alive for debugging..."
+  tail -f /dev/null
+}
