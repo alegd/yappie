@@ -13,4 +13,8 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsString()
   context?: string;
+
+  @IsOptional()
+  @IsString()
+  jiraProjectKey?: string;
 }

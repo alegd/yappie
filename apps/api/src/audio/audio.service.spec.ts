@@ -12,6 +12,9 @@ function createMockPrisma() {
       update: vi.fn(),
       count: vi.fn(),
     },
+    project: {
+      findFirst: vi.fn(),
+    },
   };
 }
 
@@ -83,8 +86,11 @@ describe("AudioService", () => {
   });
 
   describe("upload", () => {
+    const projectId = "project-1";
+
     it("should save file, create record, and enqueue job", async () => {
       const file = createMockFile();
+      mockPrisma.project.findFirst.mockResolvedValue({ id: projectId, userId });
       mockPrisma.audioRecording.create.mockResolvedValue({
         id: "audio-1",
         fileName: file.originalname,
@@ -94,7 +100,7 @@ describe("AudioService", () => {
         userId,
       });
 
-      const result = await service.upload(file, userId);
+      const result = await service.upload(file, userId, projectId);
 
       expect(result).toHaveProperty("id", "audio-1");
       expect(result.status).toBe("PENDING");
@@ -114,27 +120,41 @@ describe("AudioService", () => {
       );
     });
 
+    it("should reject upload with invalid projectId", async () => {
+      mockPrisma.project.findFirst.mockResolvedValue(null);
+      const file = createMockFile();
+
+      await expect(service.upload(file, userId, "invalid-project")).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockStorage.save).not.toHaveBeenCalled();
+      expect(mockQueue.add).not.toHaveBeenCalled();
+    });
+
     it("should reject invalid audio format", async () => {
+      mockPrisma.project.findFirst.mockResolvedValue({ id: projectId, userId });
       const file = createMockFile({ mimetype: "text/plain", originalname: "notes.txt" });
 
-      await expect(service.upload(file, userId)).rejects.toThrow(BadRequestException);
+      await expect(service.upload(file, userId, projectId)).rejects.toThrow(BadRequestException);
       expect(mockStorage.save).not.toHaveBeenCalled();
       expect(mockQueue.add).not.toHaveBeenCalled();
     });
 
     it("should reject files exceeding size limit (50MB)", async () => {
+      mockPrisma.project.findFirst.mockResolvedValue({ id: projectId, userId });
       const file = createMockFile({ size: 51 * 1024 * 1024 });
 
-      await expect(service.upload(file, userId)).rejects.toThrow(BadRequestException);
+      await expect(service.upload(file, userId, projectId)).rejects.toThrow(BadRequestException);
       expect(mockStorage.save).not.toHaveBeenCalled();
       expect(mockQueue.add).not.toHaveBeenCalled();
     });
 
     it("should throw QuotaExceededException when quota is exceeded", async () => {
+      mockPrisma.project.findFirst.mockResolvedValue({ id: projectId, userId });
       mockQuotas.canUpload.mockResolvedValue(false);
       const file = createMockFile();
 
-      await expect(service.upload(file, userId)).rejects.toThrow(QuotaExceededException);
+      await expect(service.upload(file, userId, projectId)).rejects.toThrow(QuotaExceededException);
       expect(mockStorage.save).not.toHaveBeenCalled();
       expect(mockQueue.add).not.toHaveBeenCalled();
     });

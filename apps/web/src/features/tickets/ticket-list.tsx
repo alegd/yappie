@@ -30,7 +30,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { toast } from "@/components/ui/toast/Toast";
 import { ActionsMenu } from "./components/actions-menu";
-import { JiraProjectSelect } from "./components/jira-project-select";
 import { Ticket, TicketListResponse } from "./types";
 
 const priorityVariants: Record<string, "default" | "warning" | "orange" | "danger"> = {
@@ -58,7 +57,6 @@ export function TicketList() {
   const { data: jiraStatus } = useQuery<JiraStatus>(JIRA_STATUS);
   const [acting, setActing] = useState<string | null>(null);
   const [bulkActing, setBulkActing] = useState<string | null>(null);
-  const [jiraProjectKey, setJiraProjectKey] = useState("");
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const tickets = ticketData?.data ?? [];
@@ -83,10 +81,9 @@ export function TicketList() {
   };
 
   const handleExport = async (id: string) => {
-    if (!jiraProjectKey) return;
     setActing(id);
     try {
-      await apiFetcher(ticketExport(id, jiraProjectKey), { method: POST });
+      await apiFetcher(ticketExport(id), { method: POST });
       invalidateQuery(TICKETS_LIST);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
@@ -148,13 +145,11 @@ export function TicketList() {
   };
 
   const handleBulkExport = async () => {
-    if (!jiraProjectKey) return;
     setBulkActing("export");
     try {
       await apiFetcher(TICKETS_EXPORT_BULK, {
         data: {
           ticketIds: approvedSelected.map((t) => t.id),
-          projectKey: jiraProjectKey,
         },
         method: POST,
       });
@@ -249,7 +244,7 @@ export function TicketList() {
             onApprove={handleApprove}
             onExport={handleExport}
             onDelete={handleDelete}
-            canExport={isJiraConnected && !!jiraProjectKey}
+            canExport={isJiraConnected}
           />
         );
       },
@@ -260,11 +255,7 @@ export function TicketList() {
 
   const toolbar = (
     <div className="flex justify-between items-center p-4 pb-0 w-full">
-      <div className="flex items-center gap-4">
-        {isJiraConnected && (
-          <JiraProjectSelect value={jiraProjectKey} onChange={setJiraProjectKey} />
-        )}
-      </div>
+      <div className="flex items-center gap-4" />
 
       {selectedCount > 0 && (
         <div className="flex items-center gap-3">
@@ -284,7 +275,7 @@ export function TicketList() {
               Approve {draftSelected.length}
             </Button>
           )}
-          {approvedSelected.length > 0 && isJiraConnected && jiraProjectKey && (
+          {approvedSelected.length > 0 && isJiraConnected && (
             <Button
               variant="outlined"
               size="sm"

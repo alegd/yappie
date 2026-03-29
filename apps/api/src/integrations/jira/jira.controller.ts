@@ -33,16 +33,20 @@ export class JiraController {
   }
 
   @Get("auth")
-  getAuthUrl(@Req() req: { user: { sub: string } }) {
-    return { url: this.jiraService.getAuthUrl(req.user.sub) };
+  getAuthUrl(@Req() req: { user: { sub: string } }, @Query("returnPath") returnPath?: string) {
+    return { url: this.jiraService.getAuthUrl(req.user.sub, returnPath) };
   }
 
   @Public()
   @Get("callback")
   async callback(@Query("code") code: string, @Query("state") state: string, @Res() res: Response) {
-    await this.jiraService.exchangeCode(code, state);
+    // State format: "userId" or "userId:/return/path"
+    const [userId, ...returnParts] = state.split(":");
+    const returnPath = returnParts.join(":") || "/dashboard/settings";
+
+    await this.jiraService.exchangeCode(code, userId);
     const frontendUrl = process.env.FRONTEND_URL;
-    return res.redirect(`${frontendUrl}/dashboard/settings?jira=connected`);
+    return res.redirect(`${frontendUrl}${returnPath}?jira=connected`);
   }
 
   @Post("exchange")
@@ -57,18 +61,14 @@ export class JiraController {
 
   @Throttle({ short: { ttl: 60000, limit: 20 } })
   @Post("export/:ticketId")
-  exportOne(
-    @Param("ticketId") ticketId: string,
-    @Query("projectKey") projectKey: string,
-    @Req() req: { user: { sub: string } },
-  ) {
-    return this.exportService.exportOne(req.user.sub, ticketId, projectKey);
+  exportOne(@Param("ticketId") ticketId: string, @Req() req: { user: { sub: string } }) {
+    return this.exportService.exportOne(req.user.sub, ticketId);
   }
 
   @Throttle({ short: { ttl: 60000, limit: 5 } })
   @Post("export-bulk")
   exportBulk(@Body() body: ExportBulkDto, @Req() req: { user: { sub: string } }) {
-    return this.exportService.exportBulk(req.user.sub, body.ticketIds, body.projectKey);
+    return this.exportService.exportBulk(req.user.sub, body.ticketIds);
   }
 
   @Delete()

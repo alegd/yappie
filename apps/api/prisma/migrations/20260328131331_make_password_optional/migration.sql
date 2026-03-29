@@ -1,2 +1,2 @@
--- AlterTable
-ALTER TABLE "users" ALTER COLUMN "password" DROP NOT NULL;
+-- This migration is a no-op: password column was already dropped in 20260327000000_remove_user_password
+-- AlterTable (skipped: column does not exist)

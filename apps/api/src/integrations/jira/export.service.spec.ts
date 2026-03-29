@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { NotFoundException, BadRequestException } from "@nestjs/common";
 import { ExportService } from "./export.service.js";
 
 function createMockJiraService() {
@@ -10,16 +11,10 @@ function createMockJiraService() {
   };
 }
 
-function createMockTicketsService() {
-  return {
-    findOne: vi.fn(),
-    update: vi.fn(),
-  };
-}
-
 function createMockPrisma() {
   return {
     ticket: {
+      findFirst: vi.fn(),
       update: vi.fn(),
     },
   };
@@ -31,46 +26,46 @@ function createMockAnalyticsService() {
   };
 }
 
+const baseTicket = {
+  id: "ticket-1",
+  title: "Fix login bug",
+  description: "Fix the Safari login issue",
+  priority: "HIGH",
+  status: "APPROVED",
+  userId: "user-1",
+  projectId: "project-1",
+  project: { id: "project-1", jiraProjectKey: "PROJ" },
+};
+
 describe("ExportService", () => {
   let service: ExportService;
   let mockJira: ReturnType<typeof createMockJiraService>;
-  let mockTickets: ReturnType<typeof createMockTicketsService>;
   let mockPrisma: ReturnType<typeof createMockPrisma>;
   let mockAnalytics: ReturnType<typeof createMockAnalyticsService>;
 
   beforeEach(() => {
     mockJira = createMockJiraService();
-    mockTickets = createMockTicketsService();
     mockPrisma = createMockPrisma();
     mockAnalytics = createMockAnalyticsService();
-    service = new ExportService(
-      mockJira as never,
-      mockTickets as never,
-      mockPrisma as never,
-      mockAnalytics as never,
-    );
+    service = new ExportService(mockJira as never, mockPrisma as never, mockAnalytics as never);
   });
 
   describe("exportOne", () => {
     it("should export a ticket to Jira and save issue key", async () => {
-      mockTickets.findOne.mockResolvedValue({
-        id: "ticket-1",
-        title: "Fix login bug",
-        description: "Fix the Safari login issue",
-        priority: "HIGH",
-        status: "APPROVED",
-        userId: "user-1",
-      });
+      mockPrisma.ticket.findFirst.mockResolvedValue(baseTicket);
       mockJira.createIssue.mockResolvedValue({
         key: "PROJ-42",
         self: "https://mysite.atlassian.net/rest/api/3/issue/10001",
       });
       mockPrisma.ticket.update.mockResolvedValue({});
 
-      const result = await service.exportOne("user-1", "ticket-1", "PROJ");
+      const result = await service.exportOne("user-1", "ticket-1");
 
       expect(result.key).toBe("PROJ-42");
-      expect(mockTickets.findOne).toHaveBeenCalledWith("ticket-1", "user-1");
+      expect(mockPrisma.ticket.findFirst).toHaveBeenCalledWith({
+        where: { id: "ticket-1", userId: "user-1" },
+        include: { project: true },
+      });
       expect(mockPrisma.ticket.update).toHaveBeenCalledWith({
         where: { id: "ticket-1" },
         data: {
@@ -80,24 +75,43 @@ describe("ExportService", () => {
         },
       });
     });
+
+    it("should throw NotFoundException if ticket not found", async () => {
+      mockPrisma.ticket.findFirst.mockResolvedValue(null);
+
+      await expect(service.exportOne("user-1", "ticket-1")).rejects.toThrow(NotFoundException);
+    });
+
+    it("should throw BadRequestException if ticket has no project", async () => {
+      mockPrisma.ticket.findFirst.mockResolvedValue({
+        ...baseTicket,
+        projectId: null,
+        project: null,
+      });
+
+      await expect(service.exportOne("user-1", "ticket-1")).rejects.toThrow(BadRequestException);
+    });
+
+    it("should throw BadRequestException if project has no jiraProjectKey", async () => {
+      mockPrisma.ticket.findFirst.mockResolvedValue({
+        ...baseTicket,
+        project: { id: "project-1", jiraProjectKey: null },
+      });
+
+      await expect(service.exportOne("user-1", "ticket-1")).rejects.toThrow(BadRequestException);
+    });
   });
 
   describe("exportBulk", () => {
     it("should export multiple tickets and return results", async () => {
       const tickets = [
-        { id: "t-1", title: "Task 1", description: "Desc 1", priority: "HIGH", status: "APPROVED" },
-        {
-          id: "t-2",
-          title: "Task 2",
-          description: "Desc 2",
-          priority: "MEDIUM",
-          status: "APPROVED",
-        },
-        { id: "t-3", title: "Task 3", description: "Desc 3", priority: "LOW", status: "APPROVED" },
+        { ...baseTicket, id: "t-1" },
+        { ...baseTicket, id: "t-2" },
+        { ...baseTicket, id: "t-3" },
       ];
 
       for (const t of tickets) {
-        mockTickets.findOne.mockResolvedValueOnce(t);
+        mockPrisma.ticket.findFirst.mockResolvedValueOnce(t);
       }
 
       mockJira.createIssue
@@ -107,7 +121,7 @@ describe("ExportService", () => {
 
       mockPrisma.ticket.update.mockResolvedValue({});
 
-      const result = await service.exportBulk("user-1", ["t-1", "t-2", "t-3"], "PROJ");
+      const result = await service.exportBulk("user-1", ["t-1", "t-2", "t-3"]);
 
       expect(result.exported).toBe(3);
       expect(result.failed).toBe(0);
@@ -115,17 +129,11 @@ describe("ExportService", () => {
     });
 
     it("should use 'Unknown error' when a non-Error is thrown", async () => {
-      mockTickets.findOne.mockResolvedValueOnce({
-        id: "t-1",
-        title: "Task 1",
-        description: "Desc 1",
-        priority: "HIGH",
-        status: "APPROVED",
-      });
+      mockPrisma.ticket.findFirst.mockResolvedValueOnce({ ...baseTicket, id: "t-1" });
       // Throw a non-Error value (plain string)
       mockJira.createIssue.mockRejectedValueOnce("plain string error");
 
-      const result = await service.exportBulk("user-1", ["t-1"], "PROJ");
+      const result = await service.exportBulk("user-1", ["t-1"]);
 
       expect(result.failed).toBe(1);
       expect(result.results[0]).toHaveProperty("error", "Unknown error");
@@ -133,19 +141,13 @@ describe("ExportService", () => {
 
     it("should handle partial failures gracefully", async () => {
       const tickets = [
-        { id: "t-1", title: "Task 1", description: "Desc 1", priority: "HIGH", status: "APPROVED" },
-        {
-          id: "t-2",
-          title: "Task 2",
-          description: "Desc 2",
-          priority: "MEDIUM",
-          status: "APPROVED",
-        },
-        { id: "t-3", title: "Task 3", description: "Desc 3", priority: "LOW", status: "APPROVED" },
+        { ...baseTicket, id: "t-1" },
+        { ...baseTicket, id: "t-2" },
+        { ...baseTicket, id: "t-3" },
       ];
 
       for (const t of tickets) {
-        mockTickets.findOne.mockResolvedValueOnce(t);
+        mockPrisma.ticket.findFirst.mockResolvedValueOnce(t);
       }
 
       mockJira.createIssue
@@ -155,7 +157,7 @@ describe("ExportService", () => {
 
       mockPrisma.ticket.update.mockResolvedValue({});
 
-      const result = await service.exportBulk("user-1", ["t-1", "t-2", "t-3"], "PROJ");
+      const result = await service.exportBulk("user-1", ["t-1", "t-2", "t-3"]);
 
       expect(result.exported).toBe(2);
       expect(result.failed).toBe(1);

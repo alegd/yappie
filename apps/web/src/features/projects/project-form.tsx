@@ -3,8 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@/hooks/use-query";
-import { projectDetail } from "@/lib/constants/endpoints";
+import { JIRA_STATUS, projectDetail } from "@/lib/constants/endpoints";
 import { PROJECTS_PAGE } from "@/lib/constants/pages";
+import { JiraProjectSelect } from "@/features/tickets/components/jira-project-select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -19,6 +20,7 @@ const projectSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   description: z.string().max(500).optional(),
   context: z.string().max(5000).optional(),
+  jiraProjectKey: z.string().optional(),
 });
 
 type ProjectFormData = z.infer<typeof projectSchema>;
@@ -44,14 +46,18 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
 
   const saving = creating || updating;
 
+  const { data: jiraStatus } = useQuery<{ connected: boolean }>(JIRA_STATUS);
+
   const {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
-    defaultValues: { name: "", description: "", context: "" },
+    defaultValues: { name: "", description: "", context: "", jiraProjectKey: "" },
   });
 
   useEffect(() => {
@@ -60,6 +66,7 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
         name: project.name,
         description: project.description ?? "",
         context: project.context ?? "",
+        jiraProjectKey: project.jiraProjectKey ?? "",
       });
     }
   }, [project, reset]);
@@ -69,6 +76,7 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
       name: data.name.trim(),
       description: data.description?.trim() || undefined,
       context: data.context?.trim() || undefined,
+      jiraProjectKey: data.jiraProjectKey?.trim() || undefined,
     };
 
     if (isEditing) {
@@ -135,6 +143,21 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
             more specific you are, the better the generated tickets will be.
           </p>
         </div>
+
+        {jiraStatus?.connected && (
+          <div>
+            <label className="block mb-1.5 font-medium text-foreground/75 text-sm">
+              Jira Project
+            </label>
+            <JiraProjectSelect
+              value={watch("jiraProjectKey") || ""}
+              onChange={(value) => setValue("jiraProjectKey", value)}
+            />
+            <p className="mt-1 text-foreground/50 text-sm">
+              Tickets from this project will export to this Jira project.
+            </p>
+          </div>
+        )}
 
         <div className="flex gap-3">
           <Button type="submit" disabled={saving}>

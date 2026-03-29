@@ -53,7 +53,8 @@ model Project {
   id          String   @id @default(cuid())
   name        String
   description String?
-  context     String?  @db.Text
+  context         String?  @db.Text
+  jiraProjectKey  String?  @map("jira_project_key")
   userId      String   @map("user_id")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")

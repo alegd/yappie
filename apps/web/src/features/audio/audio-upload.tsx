@@ -9,11 +9,12 @@ import { useRef, useState } from "react";
 import { AudioRecording } from "./types";
 
 interface AudioUploadProps {
-  projectId?: string;
+  projectId: string;
+  disabled?: boolean;
   onUploaded: (recording: AudioRecording) => void;
 }
 
-export function AudioUpload({ projectId, onUploaded }: AudioUploadProps) {
+export function AudioUpload({ projectId, disabled = false, onUploaded }: AudioUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [recording, setRecording] = useState(false);
   const [error, setError] = useState("");
@@ -32,7 +33,7 @@ export function AudioUpload({ projectId, onUploaded }: AudioUploadProps) {
     setError("");
     setUploading(true);
     try {
-      const url = projectId ? `${AUDIO_UPLOAD}?projectId=${projectId}` : AUDIO_UPLOAD;
+      const url = `${AUDIO_UPLOAD}?projectId=${projectId}`;
 
       const result = await apiFetcher(url, {
         data: { file: { name: "file", value: [file] } },
@@ -81,7 +82,10 @@ export function AudioUpload({ projectId, onUploaded }: AudioUploadProps) {
   return (
     <div>
       <div className="flex gap-3">
-        <Button onClick={() => fileInputRef.current?.click()} disabled={uploading || recording}>
+        <Button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled || uploading || recording}
+        >
           {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
           {uploading ? "Uploading..." : "Upload audio"}
         </Button>
@@ -89,7 +93,7 @@ export function AudioUpload({ projectId, onUploaded }: AudioUploadProps) {
         <Button
           variant={recording ? "danger" : "outlined"}
           onClick={recording ? stopRecording : startRecording}
-          disabled={uploading}
+          disabled={uploading || (!recording && disabled)}
         >
           {recording ? <Square size={16} /> : <Mic size={16} />}
           {recording ? "Stop" : "Record"}

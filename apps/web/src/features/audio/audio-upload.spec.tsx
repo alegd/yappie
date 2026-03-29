@@ -18,14 +18,14 @@ describe("AudioUpload", () => {
   });
 
   it("should render upload and record buttons", () => {
-    render(<AudioUpload onUploaded={mockOnUploaded} />);
+    render(<AudioUpload projectId="p-1" onUploaded={mockOnUploaded} />);
 
     expect(screen.getByText("Upload audio")).toBeInTheDocument();
     expect(screen.getByText("Record")).toBeInTheDocument();
   });
 
   it("should show 'Upload audio' text on upload button", () => {
-    render(<AudioUpload onUploaded={mockOnUploaded} />);
+    render(<AudioUpload projectId="p-1" onUploaded={mockOnUploaded} />);
 
     const uploadButton = screen.getByText("Upload audio").closest("button");
     expect(uploadButton).toBeInTheDocument();
@@ -33,7 +33,7 @@ describe("AudioUpload", () => {
   });
 
   it("should show 'Record' text on record button", () => {
-    render(<AudioUpload onUploaded={mockOnUploaded} />);
+    render(<AudioUpload projectId="p-1" onUploaded={mockOnUploaded} />);
 
     const recordButton = screen.getByText("Record").closest("button");
     expect(recordButton).toBeInTheDocument();
@@ -41,7 +41,7 @@ describe("AudioUpload", () => {
   });
 
   it("should not have buttons disabled initially", () => {
-    render(<AudioUpload onUploaded={mockOnUploaded} />);
+    render(<AudioUpload projectId="p-1" onUploaded={mockOnUploaded} />);
 
     const uploadButton = screen.getByText("Upload audio").closest("button");
     const recordButton = screen.getByText("Record").closest("button");
@@ -50,31 +50,17 @@ describe("AudioUpload", () => {
     expect(recordButton).not.toBeDisabled();
   });
 
-  it("should call apiFetcher when file is selected", async () => {
-    const mockResult = { id: "a-1", fileName: "test.mp3" };
-    mockApiFetcher.mockResolvedValue(mockResult);
+  it("should disable buttons when disabled prop is true", () => {
+    render(<AudioUpload projectId="p-1" disabled onUploaded={mockOnUploaded} />);
 
-    const { container } = render(<AudioUpload onUploaded={mockOnUploaded} />);
+    const uploadButton = screen.getByText("Upload audio").closest("button");
+    const recordButton = screen.getByText("Record").closest("button");
 
-    const file = new File(["audio"], "test.mp3", { type: "audio/mpeg" });
-    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
-
-    fireEvent.change(input, { target: { files: [file] } });
-
-    await waitFor(() => {
-      expect(mockApiFetcher).toHaveBeenCalledWith("/v1/audio/upload", {
-        data: { file: { name: "file", value: [file] } },
-        method: "POST",
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-    });
-
-    await waitFor(() => {
-      expect(mockOnUploaded).toHaveBeenCalledWith(mockResult);
-    });
+    expect(uploadButton).toBeDisabled();
+    expect(recordButton).toBeDisabled();
   });
 
-  it("should call apiFetcher with projectId when provided", async () => {
+  it("should call apiFetcher with projectId in URL", async () => {
     const mockResult = { id: "a-1", fileName: "test.mp3" };
     mockApiFetcher.mockResolvedValue(mockResult);
 
@@ -92,10 +78,14 @@ describe("AudioUpload", () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
     });
+
+    await waitFor(() => {
+      expect(mockOnUploaded).toHaveBeenCalledWith(mockResult);
+    });
   });
 
   it("should not call upload when no file selected", async () => {
-    const { container } = render(<AudioUpload onUploaded={mockOnUploaded} />);
+    const { container } = render(<AudioUpload projectId="p-1" onUploaded={mockOnUploaded} />);
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
 
     fireEvent.change(input, { target: { files: [] } });
@@ -125,7 +115,7 @@ describe("AudioUpload", () => {
     vi.stubGlobal("MediaRecorder", MockMediaRecorder);
 
     const user = (await import("@testing-library/user-event")).default.setup();
-    render(<AudioUpload onUploaded={mockOnUploaded} />);
+    render(<AudioUpload projectId="p-1" onUploaded={mockOnUploaded} />);
 
     const recordButton = screen.getByText("Record").closest("button")!;
     await user.click(recordButton);
@@ -148,7 +138,7 @@ describe("AudioUpload", () => {
     });
 
     const user = (await import("@testing-library/user-event")).default.setup();
-    render(<AudioUpload onUploaded={mockOnUploaded} />);
+    render(<AudioUpload projectId="p-1" onUploaded={mockOnUploaded} />);
 
     const recordButton = screen.getByText("Record").closest("button")!;
     await user.click(recordButton);
@@ -161,7 +151,7 @@ describe("AudioUpload", () => {
   it("should show error message when upload fails", async () => {
     mockApiFetcher.mockRejectedValue(new Error("Upload failed"));
 
-    const { container } = render(<AudioUpload onUploaded={mockOnUploaded} />);
+    const { container } = render(<AudioUpload projectId="p-1" onUploaded={mockOnUploaded} />);
 
     const file = new File(["audio"], "test.mp3", { type: "audio/mpeg" });
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
@@ -175,7 +165,7 @@ describe("AudioUpload", () => {
 
   it("should trigger file input when upload button is clicked", async () => {
     const user = (await import("@testing-library/user-event")).default.setup();
-    const { container } = render(<AudioUpload onUploaded={mockOnUploaded} />);
+    const { container } = render(<AudioUpload projectId="p-1" onUploaded={mockOnUploaded} />);
 
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
     const clickSpy = vi.spyOn(input, "click");
@@ -218,7 +208,7 @@ describe("AudioUpload", () => {
     vi.stubGlobal("MediaRecorder", MockMediaRecorder);
 
     const user = (await import("@testing-library/user-event")).default.setup();
-    render(<AudioUpload onUploaded={mockOnUploaded} />);
+    render(<AudioUpload projectId="p-1" onUploaded={mockOnUploaded} />);
 
     // Start recording
     await user.click(screen.getByText("Record").closest("button")!);
@@ -229,7 +219,7 @@ describe("AudioUpload", () => {
 
     await waitFor(() => {
       expect(mockApiFetcher).toHaveBeenCalledWith(
-        "/v1/audio/upload",
+        "/v1/audio/upload?projectId=p-1",
         expect.objectContaining({
           method: "POST",
           headers: { "Content-Type": "multipart/form-data" },

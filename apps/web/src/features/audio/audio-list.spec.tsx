@@ -41,6 +41,12 @@ vi.mock("./audio-upload", () => ({
   AudioUpload: () => <div data-testid="audio-upload" />,
 }));
 
+vi.mock("./onboarding-checklist", () => ({
+  OnboardingChecklist: ({ hasProjects }: { hasProjects: boolean }) => (
+    <div data-testid="onboarding-checklist" data-has-projects={hasProjects} />
+  ),
+}));
+
 vi.mock("next/link", () => ({
   default: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
@@ -80,6 +86,25 @@ const mockProjectData = {
   limit: 50,
 };
 
+const mockJiraConnected = { connected: true, siteName: "mysite", connectedAt: "2026-03-21" };
+const mockJiraDisconnected = { connected: false, siteName: null, connectedAt: null };
+
+const mockLocalStorage = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: vi.fn((key: string) => store[key] ?? null),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value;
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: vi.fn(() => {
+      store = {};
+    }),
+  };
+})();
+
 const queryResult = (data: unknown, isLoading = false, error?: Error) => ({
   data,
   error,
@@ -87,15 +112,32 @@ const queryResult = (data: unknown, isLoading = false, error?: Error) => ({
   mutate: vi.fn(),
 });
 
+// useQuery is called in this order: audioKey, PROJECTS_LIST, JIRA_STATUS
+function mockQueries(
+  audioData: unknown,
+  projectData: unknown,
+  jiraData: unknown,
+  isLoading = false,
+) {
+  mockUseQuery
+    .mockReturnValueOnce(queryResult(audioData, isLoading))
+    .mockReturnValueOnce(queryResult(projectData))
+    .mockReturnValueOnce(queryResult(jiraData));
+}
+
 describe("AudioList", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLocalStorage.clear();
+    Object.defineProperty(globalThis, "localStorage", {
+      value: mockLocalStorage,
+      writable: true,
+      configurable: true,
+    });
   });
 
   it("should show loading state", () => {
-    mockUseQuery
-      .mockReturnValueOnce(queryResult(undefined, true))
-      .mockReturnValueOnce(queryResult(undefined));
+    mockQueries(undefined, undefined, undefined, true);
 
     render(<AudioList />);
 
@@ -103,9 +145,7 @@ describe("AudioList", () => {
   });
 
   it("should display audio list after loading", () => {
-    mockUseQuery
-      .mockReturnValueOnce(queryResult(mockAudioData))
-      .mockReturnValueOnce(queryResult(mockProjectData));
+    mockQueries(mockAudioData, mockProjectData, mockJiraConnected);
 
     render(<AudioList />);
 
@@ -113,21 +153,28 @@ describe("AudioList", () => {
     expect(screen.getByText("planning.mp3")).toBeInTheDocument();
   });
 
-  it("should show empty state when no audios", () => {
+  it("should show empty state when no audios but has projects", () => {
     const emptyData = { data: [], total: 0, page: 1, limit: 50 };
-    mockUseQuery
-      .mockReturnValueOnce(queryResult(emptyData))
-      .mockReturnValueOnce(queryResult(mockProjectData));
+    mockQueries(emptyData, mockProjectData, mockJiraConnected);
 
     render(<AudioList />);
 
     expect(screen.getByText("No audio recordings yet.")).toBeInTheDocument();
   });
 
+  it("should show onboarding checklist when no projects", () => {
+    const emptyData = { data: [], total: 0, page: 1, limit: 50 };
+    const emptyProjects = { data: [], total: 0, page: 1, limit: 50 };
+    mockQueries(emptyData, emptyProjects, mockJiraDisconnected);
+
+    render(<AudioList />);
+
+    expect(screen.getByTestId("onboarding-checklist")).toBeInTheDocument();
+    expect(screen.queryByTestId("audio-upload")).not.toBeInTheDocument();
+  });
+
   it("should render audio items as links to detail page", () => {
-    mockUseQuery
-      .mockReturnValueOnce(queryResult(mockAudioData))
-      .mockReturnValueOnce(queryResult(mockProjectData));
+    mockQueries(mockAudioData, mockProjectData, mockJiraConnected);
 
     render(<AudioList />);
 
@@ -137,9 +184,7 @@ describe("AudioList", () => {
   });
 
   it("should show project filter dropdown", () => {
-    mockUseQuery
-      .mockReturnValueOnce(queryResult(mockAudioData))
-      .mockReturnValueOnce(queryResult(mockProjectData));
+    mockQueries(mockAudioData, mockProjectData, mockJiraConnected);
 
     render(<AudioList />);
 
@@ -150,9 +195,7 @@ describe("AudioList", () => {
   });
 
   it("should render AudioUpload component", () => {
-    mockUseQuery
-      .mockReturnValueOnce(queryResult(mockAudioData))
-      .mockReturnValueOnce(queryResult(mockProjectData));
+    mockQueries(mockAudioData, mockProjectData, mockJiraConnected);
 
     render(<AudioList />);
 
@@ -160,9 +203,7 @@ describe("AudioList", () => {
   });
 
   it("should display formatted file sizes", () => {
-    mockUseQuery
-      .mockReturnValueOnce(queryResult(mockAudioData))
-      .mockReturnValueOnce(queryResult(mockProjectData));
+    mockQueries(mockAudioData, mockProjectData, mockJiraConnected);
 
     render(<AudioList />);
 
@@ -171,9 +212,7 @@ describe("AudioList", () => {
   });
 
   it("should display status badges", () => {
-    mockUseQuery
-      .mockReturnValueOnce(queryResult(mockAudioData))
-      .mockReturnValueOnce(queryResult(mockProjectData));
+    mockQueries(mockAudioData, mockProjectData, mockJiraConnected);
 
     render(<AudioList />);
 
@@ -184,19 +223,13 @@ describe("AudioList", () => {
   it("should filter by project when selected", async () => {
     const user = (await import("@testing-library/user-event")).default.setup();
 
-    // Initial render
-    mockUseQuery
-      .mockReturnValueOnce(queryResult(mockAudioData))
-      .mockReturnValueOnce(queryResult(mockProjectData));
-
+    mockQueries(mockAudioData, mockProjectData, mockJiraConnected);
     render(<AudioList />);
 
     const select = screen.getByLabelText("Filter by project");
 
     // Re-mock for re-render after selection
-    mockUseQuery
-      .mockReturnValueOnce(queryResult(mockAudioData))
-      .mockReturnValueOnce(queryResult(mockProjectData));
+    mockQueries(mockAudioData, mockProjectData, mockJiraConnected);
 
     await user.selectOptions(select, "p-1");
 
@@ -220,12 +253,44 @@ describe("AudioList", () => {
       limit: 50,
     };
 
-    mockUseQuery
-      .mockReturnValueOnce(queryResult(smallFileData))
-      .mockReturnValueOnce(queryResult({ data: [] }));
+    mockQueries(smallFileData, mockProjectData, mockJiraConnected);
 
     render(<AudioList />);
 
     expect(screen.getByText(/512 B/)).toBeInTheDocument();
+  });
+
+  it("should show Jira banner when projects exist but Jira not connected", () => {
+    mockQueries(mockAudioData, mockProjectData, mockJiraDisconnected);
+
+    render(<AudioList />);
+
+    expect(screen.getByText(/Connect Jira to export your tickets/)).toBeInTheDocument();
+    expect(screen.getByText("Go to Settings")).toBeInTheDocument();
+  });
+
+  it("should not show Jira banner when Jira is connected", () => {
+    mockQueries(mockAudioData, mockProjectData, mockJiraConnected);
+
+    render(<AudioList />);
+
+    expect(screen.queryByText(/Connect Jira to export your tickets/)).not.toBeInTheDocument();
+  });
+
+  it("should dismiss Jira banner and persist in localStorage", async () => {
+    const user = (await import("@testing-library/user-event")).default.setup();
+
+    mockQueries(mockAudioData, mockProjectData, mockJiraDisconnected);
+    render(<AudioList />);
+
+    expect(screen.getByText(/Connect Jira to export your tickets/)).toBeInTheDocument();
+
+    const dismissButton = screen.getByLabelText("Dismiss Jira banner");
+
+    mockQueries(mockAudioData, mockProjectData, mockJiraDisconnected);
+    await user.click(dismissButton);
+
+    expect(screen.queryByText(/Connect Jira to export your tickets/)).not.toBeInTheDocument();
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith("yappie:jira-banner-dismissed", "true");
   });
 });

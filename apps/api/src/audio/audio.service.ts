@@ -32,7 +32,14 @@ export class AudioService {
     private readonly quotasService: QuotasService,
   ) {}
 
-  async upload(file: Express.Multer.File, userId: string, projectId?: string) {
+  async upload(file: Express.Multer.File, userId: string, projectId: string) {
+    const project = await this.prisma.project.findFirst({
+      where: { id: projectId, userId },
+    });
+    if (!project) {
+      throw new BadRequestException("Project not found");
+    }
+
     const canUpload = await this.quotasService.canUpload(userId);
     if (!canUpload) throw new QuotaExceededException();
 

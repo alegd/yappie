@@ -27,7 +27,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "@/components/ui/toast/Toast";
-import { JiraProjectSelect } from "./components/jira-project-select";
 import { Ticket } from "./types";
 
 const priorityVariants: Record<string, "default" | "warning" | "orange" | "danger"> = {
@@ -62,7 +61,6 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
   const [acting, setActing] = useState(false);
-  const [jiraProjectKey, setJiraProjectKey] = useState("");
 
   const isJiraConnected = jiraStatus?.connected ?? false;
 
@@ -118,7 +116,7 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
   const handleExport = async () => {
     setActing(true);
     try {
-      await apiFetcher(ticketExport(ticketId, jiraProjectKey), { method: POST });
+      await apiFetcher(ticketExport(ticketId), { method: POST });
       invalidateQuery(ticketDetail(ticketId));
       invalidateQuery(TICKETS_LIST);
     } catch (err) {
@@ -193,18 +191,15 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
             </Button>
           )}
           {ticket.status === "APPROVED" && isJiraConnected && (
-            <>
-              <JiraProjectSelect value={jiraProjectKey} onChange={setJiraProjectKey} />
-              <Button
-                size="sm"
-                onClick={handleExport}
-                disabled={acting || !jiraProjectKey}
-                className="bg-info hover:bg-info/80"
-              >
-                {acting ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-                Export
-              </Button>
-            </>
+            <Button
+              size="sm"
+              onClick={handleExport}
+              disabled={acting}
+              className="bg-info hover:bg-info/80"
+            >
+              {acting ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+              Export
+            </Button>
           )}
         </div>
       </div>
