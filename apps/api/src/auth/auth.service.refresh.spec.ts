@@ -175,14 +175,14 @@ describe("AuthService - Refresh Tokens", () => {
       );
     });
 
-    it("should revoke a specific session", async () => {
-      mockPrisma.refreshToken.update.mockResolvedValue({});
+    it("should revoke a specific session owned by the user", async () => {
+      mockPrisma.refreshToken.updateMany.mockResolvedValue({ count: 1 });
 
       await authService.revokeSession("rt-1", "user-1");
 
-      expect(mockPrisma.refreshToken.update).toHaveBeenCalledWith(
+      expect(mockPrisma.refreshToken.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { id: "rt-1" },
+          where: { id: "rt-1", userId: "user-1" },
           data: expect.objectContaining({ revokedAt: expect.any(Date) }),
         }),
       );

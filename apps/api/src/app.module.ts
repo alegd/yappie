@@ -41,7 +41,7 @@ import { EmailModule } from "./email/email.module.js";
     EmailModule,
     BullModule.forRoot({
       connection: (() => {
-        const url = new URL(process.env.REDIS_URL || "redis://localhost:6379");
+        const url = new URL(process.env.REDIS_URL!);
         return {
           host: url.hostname,
           port: parseInt(url.port || "6379", 10),

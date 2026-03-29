@@ -12,6 +12,8 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { TemplatesService } from "./templates.service.js";
+import { CreateTemplateDto } from "./dto/create-template.dto.js";
+import { UpdateTemplateDto } from "./dto/update-template.dto.js";
 
 @ApiBearerAuth()
 @Controller("templates")
@@ -19,10 +21,7 @@ export class TemplatesController {
   constructor(private readonly templatesService: TemplatesService) {}
 
   @Post()
-  create(
-    @Req() req: { user: { sub: string } },
-    @Body() dto: { name: string; content: string; isDefault?: boolean },
-  ) {
+  create(@Req() req: { user: { sub: string } }, @Body() dto: CreateTemplateDto) {
     return this.templatesService.create(req.user.sub, dto);
   }
 
@@ -45,7 +44,7 @@ export class TemplatesController {
   update(
     @Param("id") id: string,
     @Req() req: { user: { sub: string } },
-    @Body() dto: { name?: string; content?: string; isDefault?: boolean },
+    @Body() dto: UpdateTemplateDto,
   ) {
     return this.templatesService.update(id, req.user.sub, dto);
   }

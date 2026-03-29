@@ -13,6 +13,7 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { TicketsService } from "./tickets.service.js";
+import { UpdateTicketDto } from "./dto/update-ticket.dto.js";
 
 @ApiBearerAuth()
 @Controller("tickets")
@@ -47,7 +48,7 @@ export class TicketsController {
   update(
     @Req() req: { user: { sub: string } },
     @Param("id") id: string,
-    @Body() data: { title?: string; description?: string },
+    @Body() data: UpdateTicketDto,
   ) {
     return this.ticketsService.update(id, req.user.sub, data);
   }

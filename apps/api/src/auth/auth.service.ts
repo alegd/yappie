@@ -163,9 +163,9 @@ export class AuthService {
     });
   }
 
-  async revokeSession(sessionId: string, _userId: string) {
-    await this.prisma.refreshToken.update({
-      where: { id: sessionId },
+  async revokeSession(sessionId: string, userId: string) {
+    await this.prisma.refreshToken.updateMany({
+      where: { id: sessionId, userId },
       data: { revokedAt: new Date() },
     });
   }
