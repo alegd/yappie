@@ -35,21 +35,21 @@ services:
 
   api:
     build:
-      context: ../..
+      context: .
       dockerfile: apps/api/Dockerfile.dev
     container_name: yappie-api
     restart: unless-stopped
     ports:
       - "${PORT}:${PORT}"
     env_file:
-      - .env
+      - apps/api/.env
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
       REDIS_URL: redis://redis:6379
     volumes:
-      - ./src:/app/apps/api/src
-      - ../../packages/shared/src:/app/packages/shared/src
+      - ./apps/api/src:/app/apps/api/src
+      - ./packages/shared/src:/app/packages/shared/src
     depends_on:
       postgres:
         condition: service_healthy
