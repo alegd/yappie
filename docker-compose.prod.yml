@@ -61,7 +61,6 @@ services:
       # Storage
       UPLOAD_PATH: /app/uploads
       # Frontend URLs
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       # Encryption
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { validateEnv, buildDatabaseUrl } from "./env.config.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { buildDatabaseUrl, validateEnv } from "./env.config.js";
 
 describe("validateEnv", () => {
   const validEnv: Record<string, string> = {
@@ -19,7 +19,6 @@ describe("validateEnv", () => {
     AI_DECOMPOSITION_MODEL: "gpt-4o-mini",
     AI_GENERATION_MODEL: "gpt-4o-mini",
     UPLOAD_PATH: "./uploads",
-    NEXT_PUBLIC_API_URL: "http://localhost:3001",
     FRONTEND_URL: "http://localhost:3000",
     ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
     RESEND_API_KEY: "re_test_key",
