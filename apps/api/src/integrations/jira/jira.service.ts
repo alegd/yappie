@@ -22,13 +22,14 @@ export class JiraService {
     private readonly cache: CacheService,
   ) {}
 
-  getAuthUrl(userId: string): string {
+  getAuthUrl(userId: string, returnPath?: string): string {
     const clientId = this.config.get("JIRA_CLIENT_ID");
     const callbackUrl = encodeURIComponent(this.config.get("JIRA_CALLBACK_URL") || "");
     const scopes = encodeURIComponent(
       "read:jira-work write:jira-work read:jira-user offline_access",
     );
-    const state = encodeURIComponent(userId);
+    const statePayload = returnPath ? `${userId}:${returnPath}` : userId;
+    const state = encodeURIComponent(statePayload);
 
     return `https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=${clientId}&scope=${scopes}&redirect_uri=${callbackUrl}&response_type=code&prompt=consent&state=${state}`;
   }
