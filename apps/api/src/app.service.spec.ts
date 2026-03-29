@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AppService } from "./app.service.js";
 
 function createMockPrisma() {
   return {
-    $queryRawUnsafe: vi.fn().mockResolvedValue([{ "?column?": 1 }]),
+    $queryRaw: vi.fn().mockResolvedValue([{ "?column?": 1 }]),
   };
 }
 
@@ -26,6 +26,10 @@ describe("AppService", () => {
     service = new AppService(mockPrisma as never, mockRedis as never);
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("should return ok when all services are up", async () => {
     const result = await service.getHealth();
 
@@ -37,7 +41,7 @@ describe("AppService", () => {
   });
 
   it("should return degraded when database is down", async () => {
-    mockPrisma.$queryRawUnsafe.mockRejectedValue(new Error("Connection refused"));
+    mockPrisma.$queryRaw.mockRejectedValue(new Error("Connection refused"));
 
     const result = await service.getHealth();
 
@@ -57,7 +61,7 @@ describe("AppService", () => {
   });
 
   it("should return degraded when both are down", async () => {
-    mockPrisma.$queryRawUnsafe.mockRejectedValue(new Error("DB down"));
+    mockPrisma.$queryRaw.mockRejectedValue(new Error("DB down"));
     mockRedis.ping.mockRejectedValue(new Error("Redis down"));
 
     const result = await service.getHealth();

@@ -33,7 +33,7 @@ export class AppService {
 
   private async checkDatabase(): Promise<"up" | "down"> {
     try {
-      await this.prisma.$queryRawUnsafe("SELECT 1");
+      await this.prisma.$queryRaw`SELECT 1`;
       return "up";
     } catch {
       return "down";
