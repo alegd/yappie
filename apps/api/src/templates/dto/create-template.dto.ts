@@ -4,12 +4,12 @@ export class CreateTemplateDto {
   @IsString()
   @MinLength(1)
   @MaxLength(100)
-  name: string;
+  name!: string;
 
   @IsString()
   @MinLength(1)
   @MaxLength(10000)
-  content: string;
+  content!: string;
 
   @IsOptional()
   @IsBoolean()

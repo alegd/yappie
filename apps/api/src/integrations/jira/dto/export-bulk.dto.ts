@@ -5,9 +5,9 @@ export class ExportBulkDto {
   @IsString({ each: true })
   @ArrayMinSize(1)
   @ArrayMaxSize(50)
-  ticketIds: string[];
+  ticketIds!: string[];
 
   @IsString()
   @MinLength(1)
-  projectKey: string;
+  projectKey!: string;
 }
