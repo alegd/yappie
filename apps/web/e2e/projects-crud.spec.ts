@@ -9,7 +9,7 @@ test.describe("Projects CRUD", () => {
   });
 
   test("should create, edit, and delete a project", async ({ page }) => {
-    await loginViaUi(page, user.email, user.password);
+    await loginViaUi(page, user.email);
 
     // Navigate to projects
     await page.getByRole("link", { name: /projects/i }).click();

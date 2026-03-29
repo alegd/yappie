@@ -22,7 +22,7 @@ test.describe("Tickets Actions", () => {
   });
 
   test("should upload audio and see it processed", async ({ page }) => {
-    await loginViaUi(page, user.email, user.password);
+    await loginViaUi(page, user.email);
 
     // 1. Upload audio
     await page.getByRole("link", { name: /audios/i }).click();
@@ -43,7 +43,7 @@ test.describe("Tickets Actions", () => {
   });
 
   test("should navigate to tickets page", async ({ page }) => {
-    await loginViaUi(page, user.email, user.password);
+    await loginViaUi(page, user.email);
 
     await page.getByRole("link", { name: /tickets/i }).click();
     await page.waitForURL(/tickets/);
