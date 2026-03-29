@@ -108,7 +108,7 @@ export class AudioProcessor extends WorkerHost {
 
       this.logger.log(`[${audioId}] Completed. ${ticketCount} tickets generated.`);
       await this.audioService.updateStatus(audioId, "COMPLETED");
-      this.audioGateway.emitCompleted(userId, audioId, tickets.length);
+      this.audioGateway.emitCompleted(userId, audioId, ticketCount);
       try {
         await this.quotasService.trackConsumption(userId, audioId);
       } catch (error) {
