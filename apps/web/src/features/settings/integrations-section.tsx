@@ -8,6 +8,7 @@ import { JIRA_AUTH, JIRA_DISCONNECT, JIRA_STATUS } from "@/lib/constants/endpoin
 import { DELETE } from "@/lib/constants/http";
 import { CheckCircle2, Unlink } from "lucide-react";
 import { useState } from "react";
+import { toast } from "@/components/ui/toast/Toast";
 
 interface JiraStatus {
   connected: boolean;
@@ -23,8 +24,8 @@ export function IntegrationsSection() {
     try {
       const data = await apiFetcher(JIRA_AUTH);
       window.location.href = data.url;
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     }
   };
 
@@ -35,8 +36,8 @@ export function IntegrationsSection() {
     try {
       await apiFetcher(JIRA_DISCONNECT, { method: DELETE });
       invalidateQuery(JIRA_STATUS);
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setDisconnecting(false);
     }

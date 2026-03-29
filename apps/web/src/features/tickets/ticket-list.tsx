@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "@/components/ui/toast/Toast";
 import { ActionsMenu } from "./components/actions-menu";
 import { JiraProjectSelect } from "./components/jira-project-select";
 import { Ticket, TicketListResponse } from "./types";
@@ -74,8 +75,8 @@ export function TicketList() {
     try {
       await apiFetcher(ticketApprove(id), { method: POST });
       invalidateQuery(TICKETS_LIST);
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setActing(null);
     }
@@ -87,8 +88,8 @@ export function TicketList() {
     try {
       await apiFetcher(ticketExport(id, jiraProjectKey), { method: POST });
       invalidateQuery(TICKETS_LIST);
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setActing(null);
     }
@@ -102,8 +103,8 @@ export function TicketList() {
       }
       invalidateQuery(TICKETS_LIST);
       setRowSelection({});
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setBulkActing(null);
     }
@@ -115,8 +116,8 @@ export function TicketList() {
     try {
       await apiFetcher(ticketDetail(id), { method: DELETE });
       invalidateQuery(TICKETS_LIST);
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setActing(null);
     }
@@ -131,8 +132,8 @@ export function TicketList() {
       }
       invalidateQuery(TICKETS_LIST);
       setRowSelection({});
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setBulkActing(null);
     }
@@ -151,8 +152,8 @@ export function TicketList() {
       });
       invalidateQuery(TICKETS_LIST);
       setRowSelection({});
-    } catch {
-      // handle error
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setBulkActing(null);
     }
