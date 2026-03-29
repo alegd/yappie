@@ -188,6 +188,14 @@ describe("AuthService - Refresh Tokens", () => {
       );
     });
 
+    it("should throw NotFoundException if session not found or not owned", async () => {
+      mockPrisma.refreshToken.updateMany.mockResolvedValue({ count: 0 });
+
+      await expect(authService.revokeSession("rt-999", "user-1")).rejects.toThrow(
+        "Session not found",
+      );
+    });
+
     it("should revoke all sessions for a user", async () => {
       mockPrisma.refreshToken.updateMany.mockResolvedValue({ count: 3 });
 

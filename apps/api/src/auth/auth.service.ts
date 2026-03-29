@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { OtpService } from "./otp.service.js";
@@ -164,10 +169,14 @@ export class AuthService {
   }
 
   async revokeSession(sessionId: string, userId: string) {
-    await this.prisma.refreshToken.updateMany({
+    const { count } = await this.prisma.refreshToken.updateMany({
       where: { id: sessionId, userId },
       data: { revokedAt: new Date() },
     });
+
+    if (count === 0) {
+      throw new NotFoundException("Session not found");
+    }
   }
 
   async revokeAllSessions(userId: string) {
