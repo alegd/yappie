@@ -7,7 +7,7 @@ DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT:-5432}
 export DATABASE_URL
 
 echo "[entrypoint] Running database migrations..."
-npx --no-install prisma migrate deploy --schema ./prisma/schema.prisma
+npx --no-install prisma migrate deploy --schema ./prisma/schema.prisma --datasource-url "$DATABASE_URL"
 
 echo "[entrypoint] Starting API..."
 exec node dist/main
