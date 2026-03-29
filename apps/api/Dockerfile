@@ -54,6 +54,9 @@ COPY --from=build /app/apps/api/prisma ./prisma
 COPY apps/api/docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
 
+# Ensure yappie user can write to node_modules (prisma migrate needs it)
+RUN chown -R yappie:yappie /app
+
 EXPOSE 3001
 
 USER yappie

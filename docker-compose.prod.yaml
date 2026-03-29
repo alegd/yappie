@@ -36,7 +36,7 @@ services:
     container_name: yappie-prod-api
     restart: unless-stopped
     ports:
-      - "${PORT:-3001}:3001"
+      - "${PORT}:3001"
     environment:
       # Server
       NODE_ENV: production
@@ -51,24 +51,24 @@ services:
       REDIS_URL: redis://redis:6379
       # JWT
       JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION: ${JWT_EXPIRATION:-15m}
-      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-7d}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
       # OpenAI
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-      AI_TRANSCRIPTION_MODEL: ${AI_TRANSCRIPTION_MODEL:-whisper-1}
-      AI_DECOMPOSITION_MODEL: ${AI_DECOMPOSITION_MODEL:-gpt-4o}
-      AI_GENERATION_MODEL: ${AI_GENERATION_MODEL:-gpt-4o}
+      AI_TRANSCRIPTION_MODEL: ${AI_TRANSCRIPTION_MODEL}
+      AI_DECOMPOSITION_MODEL: ${AI_DECOMPOSITION_MODEL}
+      AI_GENERATION_MODEL: ${AI_GENERATION_MODEL}
       # Storage
       UPLOAD_PATH: /app/uploads
       # Frontend URLs
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      FRONTEND_URL: ${FRONTEND_URL}
       # Encryption
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       # Quotas
-      QUOTA_FREE_MINUTES: ${QUOTA_FREE_MINUTES:-60}
-      QUOTA_PRO_MINUTES: ${QUOTA_PRO_MINUTES:-600}
+      QUOTA_FREE_MINUTES: ${QUOTA_FREE_MINUTES}
+      QUOTA_PRO_MINUTES: ${QUOTA_PRO_MINUTES}
       # Sentry (optional)
-      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_DSN: ${SENTRY_DSN}
     volumes:
       - uploads_data:/app/uploads
     depends_on:
