@@ -5,12 +5,16 @@ import { PrismaService } from "../prisma/prisma.service.js";
 export class ProjectsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(userId: string, data: { name: string; description?: string; context?: string }) {
+  async create(
+    userId: string,
+    data: { name: string; description?: string; context?: string; jiraProjectKey?: string },
+  ) {
     return this.prisma.project.create({
       data: {
         name: data.name,
         description: data.description,
         context: data.context,
+        jiraProjectKey: data.jiraProjectKey,
         userId,
       },
     });
@@ -49,7 +53,7 @@ export class ProjectsService {
   async update(
     id: string,
     userId: string,
-    data: { name?: string; description?: string; context?: string },
+    data: { name?: string; description?: string; context?: string; jiraProjectKey?: string },
   ) {
     await this.findOne(id, userId);
 

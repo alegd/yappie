@@ -87,8 +87,12 @@ export function OnboardingChecklist({
               </div>
             </div>
             {!hasProjects && (
-              <Link href={NEW_PROJECT_PAGE}>
-                <Button aria-label="Create project">Create project</Button>
+              <Link
+                href={NEW_PROJECT_PAGE}
+                className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover px-4 py-2 rounded-lg font-medium text-white text-sm transition"
+                aria-label="Create project"
+              >
+                Create project
               </Link>
             )}
           </div>

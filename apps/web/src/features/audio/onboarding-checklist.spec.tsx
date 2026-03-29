@@ -66,7 +66,7 @@ describe("OnboardingChecklist", () => {
     it("should show Create project link when no projects", () => {
       render(<OnboardingChecklist jiraConnected={false} hasProjects={false} />);
 
-      expect(screen.getByRole("button", { name: /create project/i })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /create project/i })).toBeInTheDocument();
     });
 
     it("should show checked state when has projects", () => {

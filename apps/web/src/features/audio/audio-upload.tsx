@@ -93,7 +93,7 @@ export function AudioUpload({ projectId, disabled = false, onUploaded }: AudioUp
         <Button
           variant={recording ? "danger" : "outlined"}
           onClick={recording ? stopRecording : startRecording}
-          disabled={disabled || uploading}
+          disabled={uploading || (!recording && disabled)}
         >
           {recording ? <Square size={16} /> : <Mic size={16} />}
           {recording ? "Stop" : "Record"}

@@ -101,7 +101,7 @@ export function AudioList() {
         </div>
         <OnboardingChecklist
           jiraConnected={jiraConnected}
-          jiraSiteName={jiraStatus?.siteName ?? undefined}
+          jiraSiteName={jiraStatus?.siteName}
           hasProjects={false}
         />
       </div>
@@ -138,11 +138,11 @@ export function AudioList() {
             placeholder="All projects"
             ariaLabel="Filter by project"
           />
-          <AudioUpload
-            projectId={selectedProjectId}
-            disabled={!selectedProjectId}
-            onUploaded={handleUploaded}
-          />
+          {selectedProjectId ? (
+            <AudioUpload projectId={selectedProjectId} onUploaded={handleUploaded} />
+          ) : (
+            <AudioUpload projectId="" disabled onUploaded={handleUploaded} />
+          )}
         </div>
       </div>
 
@@ -159,9 +159,8 @@ export function AudioList() {
           {audios.map((audio) => {
             const status = statusConfig[audio.status];
             return (
-              <Card>
+              <Card key={audio.id}>
                 <Link
-                  key={audio.id}
                   href={audioDetailPage(audio.id)}
                   className="flex items-center gap-4 p-4 hover:border-border-hover transition"
                 >
