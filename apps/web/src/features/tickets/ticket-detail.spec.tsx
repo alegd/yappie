@@ -30,20 +30,6 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("./components/jira-project-select", () => ({
-  JiraProjectSelect: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-    <select
-      data-testid="jira-project-select"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      aria-label="Jira project"
-    >
-      <option value="">Select project</option>
-      <option value="YAP">YAP</option>
-    </select>
-  ),
-}));
-
 import { Ticket } from "./types";
 
 const mockRouterPush = vi.fn();
@@ -249,31 +235,19 @@ describe("TicketDetail", () => {
     expect(mockApiFetcher).not.toHaveBeenCalled();
   });
 
-  it("should call export API with selected Jira project", async () => {
+  it("should call export API when Export button is clicked", async () => {
     const user = userEvent.setup();
     setupMocks({ ...mockTicket, status: "APPROVED" });
     mockApiFetcher.mockResolvedValue({});
     render(<TicketDetail ticketId="t-1" />);
 
-    const select = screen.getByTestId("jira-project-select");
-    await user.selectOptions(select, "YAP");
-
     await user.click(screen.getByRole("button", { name: /export/i }));
 
     await waitFor(() => {
-      expect(mockApiFetcher).toHaveBeenCalledWith(
-        "/v1/integrations/jira/export/t-1?projectKey=YAP",
-        { method: "POST" },
-      );
+      expect(mockApiFetcher).toHaveBeenCalledWith("/v1/integrations/jira/export/t-1", {
+        method: "POST",
+      });
     });
-  });
-
-  it("should disable Export button when no Jira project selected", () => {
-    setupMocks({ ...mockTicket, status: "APPROVED" });
-    render(<TicketDetail ticketId="t-1" />);
-
-    const exportButton = screen.getByRole("button", { name: /export/i });
-    expect(exportButton).toBeDisabled();
   });
 
   it("should not show Export button when Jira is disconnected", () => {

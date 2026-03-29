@@ -36,20 +36,6 @@ vi.mock("./components/actions-menu", () => ({
   ),
 }));
 
-vi.mock("./components/jira-project-select", () => ({
-  JiraProjectSelect: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-    <select
-      data-testid="jira-project-select"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      aria-label="Jira project"
-    >
-      <option value="">Select project</option>
-      <option value="YAP">YAP</option>
-    </select>
-  ),
-}));
-
 vi.mock("next/link", () => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   default: ({ children, href, ...props }: any) => (
@@ -257,20 +243,6 @@ describe("TicketList", () => {
     expect(checkboxes.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("should show Jira project select when connected", () => {
-    setupWithTickets();
-    render(<TicketList />);
-
-    expect(screen.getByTestId("jira-project-select")).toBeInTheDocument();
-  });
-
-  it("should not show Jira project select when disconnected", () => {
-    setupWithTickets(jiraDisconnected);
-    render(<TicketList />);
-
-    expect(screen.queryByTestId("jira-project-select")).not.toBeInTheDocument();
-  });
-
   it("should show bulk actions when tickets are selected", () => {
     setupWithTickets();
     render(<TicketList />);
@@ -283,13 +255,9 @@ describe("TicketList", () => {
     expect(screen.getByText("Approve 1")).toBeInTheDocument();
   });
 
-  it("should show bulk export when APPROVED ticket selected and Jira project chosen", async () => {
-    const user = userEvent.setup();
+  it("should show bulk export when APPROVED ticket selected and Jira is connected", async () => {
     setupWithTickets();
     render(<TicketList />);
-
-    const select = screen.getByTestId("jira-project-select");
-    await user.selectOptions(select, "YAP");
 
     act(() => {
       latestOnRowSelectionChange?.({ "t-2": true });
@@ -321,9 +289,6 @@ describe("TicketList", () => {
     mockApiFetcher.mockResolvedValue({});
     render(<TicketList />);
 
-    const select = screen.getByTestId("jira-project-select");
-    await user.selectOptions(select, "YAP");
-
     act(() => {
       latestOnRowSelectionChange?.({ "t-2": true });
     });
@@ -332,7 +297,7 @@ describe("TicketList", () => {
 
     await waitFor(() => {
       expect(mockApiFetcher).toHaveBeenCalledWith("/v1/integrations/jira/export-bulk", {
-        data: { ticketIds: ["t-2"], projectKey: "YAP" },
+        data: { ticketIds: ["t-2"] },
         method: "POST",
       });
     });
@@ -449,17 +414,16 @@ describe("TicketList", () => {
     resolveApprove();
   });
 
-  it("should not call bulk export when no jira project key is set", () => {
-    setupWithTickets();
+  it("should not show bulk export when Jira is disconnected", () => {
+    setupWithTickets(jiraDisconnected);
     mockApiFetcher.mockResolvedValue({});
     render(<TicketList />);
 
-    // Select APPROVED ticket but don't set a project key
     act(() => {
       latestOnRowSelectionChange?.({ "t-2": true });
     });
 
-    // Export button should not be visible without a project key
+    // Export button should not be visible when Jira is disconnected
     expect(screen.queryByText("Export 1")).not.toBeInTheDocument();
   });
 
@@ -535,7 +499,6 @@ describe("TicketList", () => {
   });
 
   it("should show Export button spinner while bulk exporting", async () => {
-    const user = userEvent.setup();
     setupWithTickets();
 
     let resolveExport!: (value?: unknown) => void;
@@ -546,9 +509,6 @@ describe("TicketList", () => {
     );
 
     render(<TicketList />);
-
-    const select = screen.getByTestId("jira-project-select");
-    await user.selectOptions(select, "YAP");
 
     act(() => {
       latestOnRowSelectionChange?.({ "t-2": true });

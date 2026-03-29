@@ -18,8 +18,7 @@ export const audioByProject = (projectId: string) =>
 export const TICKETS_LIST = `${API_V1}/tickets?limit=50`;
 export const ticketDetail = (id: string) => `${API_V1}/tickets/${id}`;
 export const ticketApprove = (id: string) => `${API_V1}/tickets/${id}/approve`;
-export const ticketExport = (id: string, projectKey: string) =>
-  `${API_V1}/integrations/jira/export/${id}?projectKey=${projectKey}`;
+export const ticketExport = (id: string) => `${API_V1}/integrations/jira/export/${id}`;
 export const TICKETS_EXPORT_BULK = `${API_V1}/integrations/jira/export-bulk`;
 
 // ─── Projects ────────────────────────────────────────────
