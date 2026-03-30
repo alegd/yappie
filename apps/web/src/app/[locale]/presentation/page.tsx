@@ -1034,7 +1034,7 @@ const slides = [
             licencia comercial. Mismo modelo que n8n, GitLab y Cal.com.
           </p>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div
             style={{
               padding: 14,
@@ -1066,28 +1066,10 @@ const slides = [
               Pro
             </p>
             <p style={{ fontSize: 22, fontWeight: 700, color: COLORS.text, margin: "0 0 6px" }}>
-              $14<span style={{ fontSize: 12, color: COLORS.muted }}>/mes</span>
+              $4.99<span style={{ fontSize: 12, color: COLORS.muted }}>/mes</span>
             </p>
             <p style={{ fontSize: 13, color: COLORS.muted, margin: 0, lineHeight: 1.4 }}>
-              200 min/mes, templates
-            </p>
-          </div>
-          <div
-            style={{
-              padding: 14,
-              background: COLORS.surface,
-              borderRadius: 10,
-              textAlign: "center",
-            }}
-          >
-            <p style={{ fontSize: 13, fontWeight: 600, color: COLORS.text, margin: "0 0 4px" }}>
-              Team
-            </p>
-            <p style={{ fontSize: 22, fontWeight: 700, color: COLORS.text, margin: "0 0 6px" }}>
-              $9<span style={{ fontSize: 12, color: COLORS.muted }}>/usr/mes</span>
-            </p>
-            <p style={{ fontSize: 13, color: COLORS.muted, margin: 0, lineHeight: 1.4 }}>
-              200 min/usr, analytics
+              100 min/mes, templates
             </p>
           </div>
         </div>
