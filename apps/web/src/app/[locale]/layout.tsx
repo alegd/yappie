@@ -1,6 +1,7 @@
 import "./globals.css";
 
 import { ThemeWrapper } from "@/components/theme-wrapper";
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, Sora } from "next/font/google";
 
@@ -65,6 +66,7 @@ export default async function RootLayout({
         className={`${dmSans.variable} ${sora.variable} bg-background text-foreground font-body antialiased`}
       >
         <ThemeWrapper>{children}</ThemeWrapper>
+        <Analytics />
       </body>
     </html>
   );
