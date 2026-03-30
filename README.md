@@ -9,7 +9,7 @@ Record your thoughts after a meeting, standup, or brainstorm. Yappie uses AI to 
 [![CI](https://github.com/alegd/yappie/actions/workflows/ci.yml/badge.svg)](https://github.com/alegd/yappie/actions/workflows/ci.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 
-**[Live Demo](https://yappie.gueden.com)** | **[API](https://api.yappie.gueden.com/health)** | **[Slides](docs/slides.pdf)**
+**[Live Demo](https://yappie.gueden.com)** | **[API](https://api.yappie.gueden.com/health)** | **[Slides](https://yappie.gueden.com/presentation)**
 
 ![Yappie Landing](docs/images/landing.png)
 
