@@ -11,9 +11,9 @@ Record your thoughts after a meeting, standup, or brainstorm. Yappie uses AI to 
 
 **[Live Demo](https://yappie.gueden.com)** | **[API](https://api.yappie.gueden.com/health)** | **[Slides](docs/slides.pdf)**
 
-<!-- TODO: Replace with actual screenshot of the dashboard -->
+![Yappie Landing](docs/images/landing.png)
 
-![Yappie Dashboard](docs/images/dashboard.png)
+![Yappie Onboarding](docs/images/dashboard-onboarding.png)
 
 </div>
 
