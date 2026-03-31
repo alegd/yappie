@@ -16,7 +16,7 @@ function createMockPrisma() {
 
 function createMockConfigService() {
   const config: Record<string, number> = {
-    QUOTA_FREE_MINUTES: 30,
+    QUOTA_FREE_MINUTES: 20,
     QUOTA_PRO_MINUTES: 300,
   };
   return {
@@ -69,9 +69,9 @@ describe("QuotasService", () => {
         data: { userId: "user-1", plan: "FREE" },
       });
       expect(result.plan).toBe("FREE");
-      expect(result.limitMinutes).toBe(30);
+      expect(result.limitMinutes).toBe(20);
       expect(result.usedMinutes).toBe(0);
-      expect(result.remainingMinutes).toBe(30);
+      expect(result.remainingMinutes).toBe(20);
     });
 
     it("should return correct quota for FREE user with usage", async () => {
@@ -92,9 +92,9 @@ describe("QuotasService", () => {
       const result = await service.getQuota("user-1");
 
       expect(result.plan).toBe("FREE");
-      expect(result.limitMinutes).toBe(30);
+      expect(result.limitMinutes).toBe(20);
       expect(result.usedMinutes).toBe(10);
-      expect(result.remainingMinutes).toBe(20);
+      expect(result.remainingMinutes).toBe(10);
       expect(result.cycleStartDate).toEqual(startDate);
     });
 
@@ -191,7 +191,7 @@ describe("QuotasService", () => {
       const result = await service.getQuota("user-1");
 
       expect(result.usedMinutes).toBe(11);
-      expect(result.remainingMinutes).toBe(19);
+      expect(result.remainingMinutes).toBe(9);
     });
 
     it("should return 0 remaining when limit is reached", async () => {
@@ -348,7 +348,7 @@ describe("QuotasService", () => {
         audioId: "audio-1",
         durationSeconds: 120,
         durationMinutes: 2,
-        usagePercentage: 33,
+        usagePercentage: 50,
         plan: "FREE",
       });
     });
