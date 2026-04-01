@@ -17,13 +17,14 @@ RUN pnpm install --shamefully-hoist \
     && pnpm --filter @yappie/api exec nest build \
     && cp -r /app/apps/api/node_modules/.prisma /app/node_modules/.prisma
 
-# Non-root user
-RUN addgroup -S yappie && adduser -S yappie -G yappie \
-    && chown -R yappie:yappie /app
-
 # Entrypoint
 COPY apps/api/docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
+
+# Non-root user with uploads directory
+RUN addgroup -S yappie && adduser -S yappie -G yappie \
+    && mkdir -p /app/uploads \
+    && chown -R yappie:yappie /app
 
 WORKDIR /app/apps/api
 
