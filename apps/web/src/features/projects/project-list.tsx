@@ -9,6 +9,7 @@ import { NEW_PROJECT_PAGE, editProjectPage } from "@/lib/constants/pages";
 import { Brain, FolderOpen, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "@/components/ui/toast/Toast";
 import { ProjectListResponse } from "./types";
 
@@ -16,17 +17,21 @@ export function ProjectList() {
   const router = useRouter();
 
   const { data: projectData, isLoading } = useQuery<ProjectListResponse>(PROJECTS_LIST);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const projects = projectData?.data ?? [];
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this project?")) return;
 
+    setDeletingId(id);
     try {
       await apiFetcher(projectDetail(id), { method: DELETE });
       invalidateQuery(PROJECTS_LIST);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -88,10 +93,15 @@ export function ProjectList() {
                 <Button
                   variant="ghost"
                   onClick={() => handleDelete(project.id)}
+                  disabled={deletingId === project.id}
                   className="hover:text-red-400"
                   aria-label={`Delete ${project.name}`}
                 >
-                  <Trash2 size={16} />
+                  {deletingId === project.id ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Trash2 size={16} />
+                  )}
                 </Button>
               </div>
             </div>
