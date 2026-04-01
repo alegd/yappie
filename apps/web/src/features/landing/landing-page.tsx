@@ -81,6 +81,15 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* Demo */}
+      <section className="mx-auto px-6 max-w-4xl">
+        <div className="rounded-xl border border-border overflow-hidden shadow-2xl">
+          <video autoPlay muted loop playsInline className="w-full">
+            <source src="/demo.mp4" type="video/mp4" />
+          </video>
+        </div>
+      </section>
+
       {/* Features */}
       <section className="mx-auto px-6 py-20 max-w-6xl">
         <h2 className="mb-12 font-bold text-3xl text-center">From audio to action in 3 steps</h2>
