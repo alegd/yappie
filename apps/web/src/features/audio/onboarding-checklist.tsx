@@ -6,8 +6,9 @@ import { toast } from "@/components/ui/toast/Toast";
 import { apiFetcher } from "@/lib/api-fetcher";
 import { JIRA_AUTH } from "@/lib/constants/endpoints";
 import { NEW_PROJECT_PAGE } from "@/lib/constants/pages";
-import { CheckCircle2, Circle } from "lucide-react";
+import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 interface OnboardingChecklistProps {
   jiraConnected: boolean;
@@ -20,12 +21,16 @@ export function OnboardingChecklist({
   jiraSiteName,
   hasProjects,
 }: OnboardingChecklistProps) {
+  const [connecting, setConnecting] = useState(false);
+
   const handleConnectJira = async () => {
+    setConnecting(true);
     try {
       const data = await apiFetcher(`${JIRA_AUTH}?returnPath=/dashboard/audios`);
       window.location.href = data.url;
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
+      setConnecting(false);
     }
   };
 
@@ -58,8 +63,9 @@ export function OnboardingChecklist({
               </div>
             </div>
             {!jiraConnected && (
-              <Button onClick={handleConnectJira} aria-label="Connect Jira">
-                Connect Jira
+              <Button onClick={handleConnectJira} disabled={connecting} aria-label="Connect Jira">
+                {connecting ? <Loader2 size={16} className="animate-spin" /> : null}
+                {connecting ? "Connecting..." : "Connect Jira"}
               </Button>
             )}
           </div>
@@ -89,7 +95,7 @@ export function OnboardingChecklist({
             {!hasProjects && (
               <Link
                 href={NEW_PROJECT_PAGE}
-                className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover px-4 py-2 rounded-lg font-medium text-white text-sm transition"
+                className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover px-4 py-2 rounded-lg font-medium text-white transition"
                 aria-label="Create project"
               >
                 Create project

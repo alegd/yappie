@@ -6,7 +6,7 @@ import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { apiFetcher } from "@/lib/api-fetcher";
 import { JIRA_AUTH, JIRA_DISCONNECT, JIRA_STATUS } from "@/lib/constants/endpoints";
 import { DELETE } from "@/lib/constants/http";
-import { CheckCircle2, Unlink } from "lucide-react";
+import { CheckCircle2, Loader2, Unlink } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/components/ui/toast/Toast";
 
@@ -18,14 +18,17 @@ interface JiraStatus {
 
 export function IntegrationsSection() {
   const { data: jiraStatus } = useQuery<JiraStatus>(JIRA_STATUS);
+  const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
 
   const handleConnectJira = async () => {
+    setConnecting(true);
     try {
       const data = await apiFetcher(JIRA_AUTH);
       window.location.href = data.url;
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
+      setConnecting(false);
     }
   };
 
@@ -75,8 +78,13 @@ export function IntegrationsSection() {
               <Unlink size={18} />
             </Button>
           ) : (
-            <Button onClick={handleConnectJira} className="bg-info hover:bg-info/80">
-              Connect Jira
+            <Button
+              onClick={handleConnectJira}
+              disabled={connecting}
+              className="bg-info hover:bg-info/80"
+            >
+              {connecting ? <Loader2 size={16} className="animate-spin" /> : null}
+              {connecting ? "Connecting..." : "Connect Jira"}
             </Button>
           )}
         </div>

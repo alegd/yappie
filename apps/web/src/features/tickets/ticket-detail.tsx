@@ -61,6 +61,7 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
   const [acting, setActing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const isJiraConnected = jiraStatus?.connected ?? false;
 
@@ -104,12 +105,14 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this ticket?")) return;
+    setDeleting(true);
     try {
       await apiFetcher(ticketDetail(ticketId), { method: DELETE });
       invalidateQuery(TICKETS_LIST);
       router.push(TICKETS_PAGE);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
+      setDeleting(false);
     }
   };
 
@@ -173,10 +176,11 @@ export function TicketDetail({ ticketId }: TicketDetailProps) {
             variant="outlined"
             size="sm"
             onClick={handleDelete}
+            disabled={deleting}
             className="hover:text-red-400"
           >
-            <Trash2 size={14} />
-            Delete
+            {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+            {deleting ? "Deleting..." : "Delete"}
           </Button>
           {!editing && ticket.status === "DRAFT" && (
             <Button variant="outlined" size="sm" onClick={startEditing}>

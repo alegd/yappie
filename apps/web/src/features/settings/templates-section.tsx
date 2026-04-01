@@ -6,7 +6,7 @@ import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { apiFetcher } from "@/lib/api-fetcher";
 import { TEMPLATES_LIST, templateDetail } from "@/lib/constants/endpoints";
 import { DELETE } from "@/lib/constants/http";
-import { FileText, Pencil, Plus, Star, Trash2 } from "lucide-react";
+import { FileText, Loader2, Pencil, Plus, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/components/ui/toast/Toast";
 import { TemplateForm } from "./template-form";
@@ -22,6 +22,7 @@ export function TemplatesSection() {
   const { data: templates = [] } = useQuery<Template[]>(TEMPLATES_LIST);
   const [showForm, setShowForm] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<Template | undefined>();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleNewTemplate = () => {
     setEditingTemplate(undefined);
@@ -36,11 +37,14 @@ export function TemplatesSection() {
   const handleDeleteTemplate = async (id: string) => {
     if (!confirm("Are you sure you want to delete this template?")) return;
 
+    setDeletingId(id);
     try {
       await apiFetcher(templateDetail(id), { method: DELETE });
       invalidateQuery(TEMPLATES_LIST);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -98,10 +102,15 @@ export function TemplatesSection() {
                 <Button
                   variant="outlined"
                   onClick={() => handleDeleteTemplate(template.id)}
+                  disabled={deletingId === template.id}
                   className="hover:text-red-400"
                   aria-label={`Delete ${template.name}`}
                 >
-                  <Trash2 size={18} />
+                  {deletingId === template.id ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <Trash2 size={18} />
+                  )}
                 </Button>
               </div>
             ))}
