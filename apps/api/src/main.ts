@@ -15,7 +15,7 @@ import { validateEnv } from "./config/env.config.js";
 async function bootstrap() {
   validateEnv();
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   // Security headers (CSP, HSTS, X-Frame-Options, etc.)
   app.use(helmet());

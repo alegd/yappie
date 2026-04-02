@@ -25,6 +25,11 @@ describe("validateEnv", () => {
     EMAIL_FROM: "Yappie <noreply@test.com>",
     QUOTA_FREE_MINUTES: "20",
     QUOTA_PRO_MINUTES: "300",
+    STRIPE_SECRET_KEY: "sk_test_abc",
+    STRIPE_WEBHOOK_SECRET: "whsec_test_abc",
+    STRIPE_PRO_PRICE_ID: "price_test_abc",
+    STRIPE_SUCCESS_URL: "http://localhost:3000/dashboard?upgraded=true",
+    STRIPE_CANCEL_URL: "http://localhost:3000/dashboard",
   };
 
   beforeEach(() => {
