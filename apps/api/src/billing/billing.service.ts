@@ -66,4 +66,86 @@ export class BillingService {
 
     return session.url;
   }
+
+  async handleWebhookEvent(event: Stripe.Event): Promise<void> {
+    switch (event.type) {
+      case "checkout.session.completed":
+        await this.handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
+        break;
+
+      case "customer.subscription.updated":
+        await this.handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+        break;
+
+      case "customer.subscription.deleted":
+        await this.handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  private async handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+    const userId = session.metadata!.userId;
+    const stripeSubscriptionId = session.subscription as string;
+
+    const stripeSub = await this.stripe.subscriptions.retrieve(stripeSubscriptionId);
+
+    await this.prisma.$transaction(async (tx) => {
+      const subscription = await tx.subscription.findFirst({
+        where: { userId, endDate: null },
+      });
+
+      if (!subscription) return;
+
+      await tx.subscription.update({
+        where: { id: subscription.id },
+        data: {
+          plan: "PRO",
+          stripeSubscriptionId,
+          stripePriceId: this.configService.get<string>("STRIPE_PRO_PRICE_ID"),
+          startDate: new Date(stripeSub.current_period_start * 1000),
+        },
+      });
+    });
+  }
+
+  private async handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+    const sub = await this.prisma.subscription.findFirst({
+      where: { stripeSubscriptionId: subscription.id },
+    });
+
+    if (!sub) return;
+
+    await this.prisma.subscription.update({
+      where: { id: sub.id },
+      data: { cancelAtPeriodEnd: subscription.cancel_at_period_end },
+    });
+  }
+
+  private async handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+    const sub = await this.prisma.subscription.findFirst({
+      where: { stripeSubscriptionId: subscription.id },
+    });
+
+    if (!sub) return;
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.subscription.update({
+        where: { id: sub.id },
+        data: {
+          plan: "FREE",
+          endDate: new Date(),
+          stripeSubscriptionId: null,
+          stripePriceId: null,
+          cancelAtPeriodEnd: false,
+        },
+      });
+
+      await tx.subscription.create({
+        data: { userId: sub.userId, plan: "FREE" },
+      });
+    });
+  }
 }
