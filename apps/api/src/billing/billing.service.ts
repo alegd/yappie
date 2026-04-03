@@ -122,7 +122,7 @@ export class BillingService {
           plan: "PRO",
           stripeSubscriptionId,
           stripePriceId: this.configService.get<string>("STRIPE_PRO_PRICE_ID"),
-          startDate: new Date(stripeSub.current_period_start * 1000),
+          startDate: new Date(stripeSub.start_date * 1000),
         },
       });
     });

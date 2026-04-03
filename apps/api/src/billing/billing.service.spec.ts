@@ -166,8 +166,7 @@ describe("BillingService", () => {
 
       mockStripe.subscriptions.retrieve.mockResolvedValue({
         id: "sub_stripe_123",
-        current_period_start: 1700000000,
-        current_period_end: 1702592000,
+        start_date: 1700000000,
       });
 
       mockPrisma.subscription.findFirst.mockResolvedValue({
@@ -189,7 +188,7 @@ describe("BillingService", () => {
           plan: "PRO",
           stripeSubscriptionId: "sub_stripe_123",
           stripePriceId: "price_test_abc",
-          startDate: new Date(1700000000 * 1000),
+          startDate: new Date(1700000000000),
         },
       });
     });
