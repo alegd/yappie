@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { BadRequestException } from "@nestjs/common";
 import { BillingService } from "./billing.service.js";
 
 function createMockStripe() {
@@ -94,6 +95,60 @@ describe("BillingService", () => {
         where: { id: "user-1" },
         data: { stripeCustomerId: "cus_new" },
       });
+    });
+  });
+
+  describe("createCheckoutSession", () => {
+    it("should create a Stripe Checkout session and return URL", async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: "user-1",
+        email: "test@test.com",
+        stripeCustomerId: "cus_existing",
+      });
+      mockStripe.checkout.sessions.create.mockResolvedValue({
+        url: "https://checkout.stripe.com/session123",
+      });
+
+      const result = await service.createCheckoutSession("user-1", "test@test.com");
+
+      expect(result).toBe("https://checkout.stripe.com/session123");
+      expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith({
+        customer: "cus_existing",
+        mode: "subscription",
+        line_items: [{ price: "price_test_abc", quantity: 1 }],
+        success_url: "http://localhost:3000/dashboard?upgraded=true",
+        cancel_url: "http://localhost:3000/dashboard",
+        metadata: { userId: "user-1" },
+      });
+    });
+  });
+
+  describe("createPortalSession", () => {
+    it("should create a Customer Portal session and return URL", async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: "user-1",
+        stripeCustomerId: "cus_existing",
+      });
+      mockStripe.billingPortal.sessions.create.mockResolvedValue({
+        url: "https://billing.stripe.com/portal123",
+      });
+
+      const result = await service.createPortalSession("user-1");
+
+      expect(result).toBe("https://billing.stripe.com/portal123");
+      expect(mockStripe.billingPortal.sessions.create).toHaveBeenCalledWith({
+        customer: "cus_existing",
+        return_url: "http://localhost:3000/dashboard",
+      });
+    });
+
+    it("should throw when user has no Stripe customer", async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: "user-1",
+        stripeCustomerId: null,
+      });
+
+      await expect(service.createPortalSession("user-1")).rejects.toThrow(BadRequestException);
     });
   });
 });
