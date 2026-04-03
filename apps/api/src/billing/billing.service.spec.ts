@@ -258,4 +258,36 @@ describe("BillingService", () => {
       expect(mockPrisma.subscription.update).not.toHaveBeenCalled();
     });
   });
+
+  describe("getBillingStatus", () => {
+    it("should return billing status for user with active subscription", async () => {
+      mockPrisma.subscription.findFirst.mockResolvedValue({
+        id: "sub-1",
+        plan: "PRO",
+        stripeSubscriptionId: "sub_stripe_123",
+        cancelAtPeriodEnd: false,
+        endDate: null,
+      });
+
+      const result = await service.getBillingStatus("user-1");
+
+      expect(result).toEqual({
+        plan: "PRO",
+        stripeSubscriptionId: "sub_stripe_123",
+        cancelAtPeriodEnd: false,
+      });
+    });
+
+    it("should return FREE status when no subscription exists", async () => {
+      mockPrisma.subscription.findFirst.mockResolvedValue(null);
+
+      const result = await service.getBillingStatus("user-1");
+
+      expect(result).toEqual({
+        plan: "FREE",
+        stripeSubscriptionId: null,
+        cancelAtPeriodEnd: false,
+      });
+    });
+  });
 });

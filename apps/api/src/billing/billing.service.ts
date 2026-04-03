@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import type Stripe from "stripe";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { STRIPE_CLIENT } from "./billing.constants.js";
+import type { BillingStatus } from "./dto/billing-status.dto.js";
 
 @Injectable()
 export class BillingService {
@@ -65,6 +66,22 @@ export class BillingService {
     });
 
     return session.url;
+  }
+
+  async getBillingStatus(userId: string): Promise<BillingStatus> {
+    const subscription = await this.prisma.subscription.findFirst({
+      where: { userId, endDate: null },
+    });
+
+    if (!subscription) {
+      return { plan: "FREE", stripeSubscriptionId: null, cancelAtPeriodEnd: false };
+    }
+
+    return {
+      plan: subscription.plan,
+      stripeSubscriptionId: subscription.stripeSubscriptionId ?? null,
+      cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+    };
   }
 
   async handleWebhookEvent(event: Stripe.Event): Promise<void> {
