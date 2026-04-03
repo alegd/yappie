@@ -150,7 +150,12 @@ export function LandingPage() {
       <footer className="px-6 py-8 border-border border-t">
         <div className="flex justify-between items-center mx-auto max-w-6xl text-muted-foreground text-sm">
           <span>Yappie</span>
-          <span>AGPL-3.0</span>
+          <div className="flex gap-4">
+            <Link href="/privacy" className="hover:text-foreground transition">
+              Privacy Policy
+            </Link>
+            <span>AGPL-3.0</span>
+          </div>
         </div>
       </footer>
     </main>
