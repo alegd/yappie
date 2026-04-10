@@ -36,12 +36,12 @@ describe("PublicNavbar", () => {
       expect(logo.closest("a")).toHaveAttribute("href", "/");
     });
 
-    it("should show Get Started link pointing to /auth", async () => {
+    it("should show Start for free link pointing to /auth", async () => {
       render(await PublicNavbar());
 
-      const getStartedLink = screen.getByText("Get Started");
-      expect(getStartedLink).toBeInTheDocument();
-      expect(getStartedLink.closest("a")).toHaveAttribute("href", "/auth");
+      const ctaLink = screen.getByText("Start for free");
+      expect(ctaLink).toBeInTheDocument();
+      expect(ctaLink.closest("a")).toHaveAttribute("href", "/auth");
     });
 
     it("should not show dashboard link", async () => {
@@ -68,7 +68,7 @@ describe("PublicNavbar", () => {
       render(await PublicNavbar());
 
       expect(screen.queryByText("Log in")).not.toBeInTheDocument();
-      expect(screen.queryByText("Get Started")).not.toBeInTheDocument();
+      expect(screen.queryByText("Start for free")).not.toBeInTheDocument();
     });
   });
 });
