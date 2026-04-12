@@ -16,6 +16,8 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  stripeCustomerId String? @unique @map("stripe_customer_id")
+
   refreshTokens   RefreshToken[]
   projects        Project[]
   audioRecordings AudioRecording[]
@@ -205,6 +207,15 @@ model UsageEvent {
   @@map("usage_events")
 }
 
+// ─── Webhook idempotency ───────────────────────────────
+
+model ProcessedWebhookEvent {
+  stripeEventId String   @id @map("stripe_event_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("processed_webhook_events")
+}
+
 // ─── Subscriptions ─────────────────────────────────────
 
 model Subscription {
@@ -212,6 +223,11 @@ model Subscription {
   plan      Plan      @default(FREE)
   startDate DateTime  @default(now()) @map("start_date")
   endDate   DateTime? @map("end_date")
+
+  stripeSubscriptionId String?  @unique @map("stripe_subscription_id")
+  stripePriceId        String?  @map("stripe_price_id")
+  cancelAtPeriodEnd    Boolean  @default(false) @map("cancel_at_period_end")
+
   userId    String    @map("user_id")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
