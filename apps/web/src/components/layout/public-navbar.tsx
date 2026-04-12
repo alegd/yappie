@@ -14,12 +14,12 @@ export async function PublicNavbar() {
         </Link>
         <div className="flex items-center gap-6">
           <div className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-            <a href="#how-it-works" className="transition hover:text-foreground">
+            <Link href="/#how-it-works" className="transition hover:text-foreground">
               How it works
-            </a>
-            <a href="#pricing" className="transition hover:text-foreground">
+            </Link>
+            <Link href="/#pricing" className="transition hover:text-foreground">
               Pricing
-            </a>
+            </Link>
             <a
               href="https://github.com/alegd/yappie"
               target="_blank"

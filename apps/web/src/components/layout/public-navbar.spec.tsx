@@ -49,6 +49,20 @@ describe("PublicNavbar", () => {
 
       expect(screen.queryByText("Go to Dashboard")).not.toBeInTheDocument();
     });
+
+    it("should link How it works to the landing section (works from any page)", async () => {
+      render(await PublicNavbar());
+
+      const link = screen.getByText("How it works");
+      expect(link.closest("a")).toHaveAttribute("href", "/#how-it-works");
+    });
+
+    it("should link Pricing to the landing section (works from any page)", async () => {
+      render(await PublicNavbar());
+
+      const link = screen.getByText("Pricing");
+      expect(link.closest("a")).toHaveAttribute("href", "/#pricing");
+    });
   });
 
   describe("when authenticated", () => {
