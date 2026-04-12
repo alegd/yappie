@@ -137,7 +137,7 @@ describe("LandingPage", () => {
     expect(screen.getByRole("heading", { name: "Free", level: 3 })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Pro", level: 3 })).toBeInTheDocument();
     expect(screen.getByText("$0")).toBeInTheDocument();
-    expect(screen.getByText("$4.99")).toBeInTheDocument();
+    expect(screen.getByText("€4.99")).toBeInTheDocument();
   });
 
   it("should render RECOMMENDED badge on the Pro plan", () => {
