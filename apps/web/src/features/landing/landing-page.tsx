@@ -104,18 +104,18 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
           {HERO_WAVE_HEIGHTS.map((height, i) => (
             <div
               key={i}
-              className="w-1 rounded-[2px] bg-accent"
+              className="w-1 rounded-[2px] bg-primary"
               style={{ height: `${height}px` }}
             />
           ))}
         </div>
-        <div className="relative mb-6 inline-block rounded-full border border-border bg-accent-surface px-3 py-1 text-xs font-semibold uppercase tracking-wider text-accent">
+        <div className="relative mb-6 inline-block rounded-full border border-border bg-accent-surface px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
           Open Source &middot; Powered by AI
         </div>
         <h1 className="relative font-extrabold tracking-[-0.02em] text-[36px] leading-[1.1] md:text-[56px]">
           Talk. Yappie writes
           <br />
-          <span className="text-accent">the ticket.</span>
+          <span className="text-primary">the ticket.</span>
         </h1>
         <p className="relative mx-auto mt-6 max-w-[520px] text-lg leading-relaxed text-foreground">
           Record a voice note after a meeting, standup, or brainstorm. Yappie uses AI to extract
@@ -159,14 +159,14 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
               className="relative rounded-xl border border-border bg-surface/50 p-6 transition hover:border-border-hover"
             >
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-accent-surface">
-                <step.icon size={28} className="text-accent" />
+                <step.icon size={28} className="text-primary" />
               </div>
               <h3 className="mb-2 text-lg font-semibold">{step.title}</h3>
               <p className="leading-relaxed text-foreground/75">{step.description}</p>
               <span
                 data-testid="step-number"
                 aria-hidden="true"
-                className="pointer-events-none absolute top-5 right-5 text-4xl font-extrabold text-accent opacity-[0.08]"
+                className="pointer-events-none absolute top-5 right-5 text-4xl font-extrabold text-primary opacity-[0.08]"
               >
                 {i + 1}
               </span>
@@ -182,7 +182,7 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
             <h2 className="mb-4 text-3xl font-bold">
               Your AI knows
               <br />
-              <span className="text-accent">your project</span>
+              <span className="text-primary">your project</span>
             </h2>
             <p className="mb-6 text-foreground/75 leading-relaxed">
               Describe your project once — team members, tech stack, conventions, priorities — and
@@ -204,17 +204,17 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
                 <p>Assignee: —</p>
               </div>
             </div>
-            <div className="relative rounded-xl border border-accent/30 bg-surface/50 p-5">
-              <span className="absolute -top-2 right-4 rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-semibold text-white">
+            <div className="relative rounded-xl border border-primary/30 bg-surface/50 p-5">
+              <span className="absolute -top-2 right-4 rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-semibold text-white">
                 AI-enhanced
               </span>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-accent">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-primary">
                 With project context
               </p>
               <div className="font-mono text-sm leading-relaxed">
                 <p className="text-foreground">[Bug] Login: form broken in Safari</p>
-                <p className="text-accent">Priority: critical &middot; Labels: bug, auth</p>
-                <p className="text-accent">Assignee: Ana (frontend)</p>
+                <p className="text-primary">Priority: critical &middot; Labels: bug, auth</p>
+                <p className="text-primary">Assignee: Ana (frontend)</p>
               </div>
             </div>
           </div>
@@ -241,7 +241,7 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
       {/* Pricing */}
       <AnimatedSection id="pricing" className="mx-auto max-w-[700px] px-6 py-20">
         <h2 className="mb-12 text-center text-3xl font-bold">
-          Simple <span className="text-accent">pricing</span>
+          Simple <span className="text-primary">pricing</span>
         </h2>
         <div className="grid gap-5 md:grid-cols-2">
           <div className="flex flex-col rounded-2xl border border-border bg-surface/50 p-8">
@@ -274,11 +274,11 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
               Start for free <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="relative flex flex-col rounded-2xl border-2 border-accent/40 bg-surface/50 p-8">
-            <span className="absolute -top-2.5 right-5 rounded-full bg-accent px-3 py-0.5 text-[10px] font-semibold text-white">
+          <div className="relative flex flex-col rounded-2xl border-2 border-primary/40 bg-surface/50 p-8">
+            <span className="absolute -top-2.5 right-5 rounded-full bg-primary px-3 py-0.5 text-[10px] font-semibold text-white">
               RECOMMENDED
             </span>
-            <h3 className="text-base font-semibold text-accent">Pro</h3>
+            <h3 className="text-base font-semibold text-primary">Pro</h3>
             <p className="mt-1 text-4xl font-extrabold">
               $4.99<span className="text-sm font-normal text-muted-foreground">/month</span>
             </p>
@@ -292,9 +292,9 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
                 <li key={f} className="flex items-center gap-2">
                   <span
                     data-testid="pricing-check"
-                    className="flex h-4 w-4 items-center justify-center rounded bg-accent/20"
+                    className="flex h-4 w-4 items-center justify-center rounded bg-primary/20"
                   >
-                    <Check size={10} className="stroke-[3] text-accent" />
+                    <Check size={10} className="stroke-[3] text-primary" />
                   </span>
                   {f}
                 </li>
@@ -302,7 +302,7 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
             </ul>
             <Link
               href={upgradeHref}
-              className="mt-6 flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-accent/90"
+              className="mt-6 flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover"
             >
               Upgrade to Pro <ArrowRight size={14} />
             </Link>
@@ -316,14 +316,14 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
 
       {/* CTA */}
       <AnimatedSection className="mx-auto max-w-3xl px-6 pb-20">
-        <div className="rounded-[20px] border border-accent/20 bg-gradient-to-br from-accent/[0.15] to-accent/[0.05] p-12 text-center">
+        <div className="rounded-[20px] border border-primary/20 bg-gradient-to-br from-primary/[0.15] to-primary/[0.05] p-12 text-center">
           <h2 className="mb-3 text-3xl font-bold">Ready to stop typing tickets?</h2>
           <p className="mb-6 text-foreground/75">
             Record your first audio. See the tickets. Decide if it&apos;s worth it.
           </p>
           <Link
             href={AUTH_PAGE}
-            className="inline-flex items-center gap-2 rounded-lg bg-accent px-8 py-3 text-sm font-semibold text-white transition hover:bg-accent/90"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-3 text-sm font-semibold text-white transition hover:bg-primary-hover"
           >
             Start for free <ArrowRight size={16} />
           </Link>
