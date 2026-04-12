@@ -124,9 +124,9 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
         <div className="mt-8 flex items-center justify-center gap-4">
           <Link
             href={AUTH_PAGE}
-            className="flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-base font-semibold text-white transition hover:bg-primary-hover"
+            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-medium text-white transition hover:bg-primary-hover"
           >
-            Start for free <ArrowRight size={18} />
+            Start for free <ArrowRight size={16} />
           </Link>
           <a
             href="#how-it-works"
@@ -247,7 +247,7 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
           <div className="flex flex-col rounded-2xl border border-border bg-surface/50 p-8">
             <h3 className="text-base font-semibold">Free</h3>
             <p className="mt-1 text-4xl font-extrabold">
-              $0<span className="text-sm font-normal text-muted-foreground">/month</span>
+              €0<span className="text-sm font-normal text-muted-foreground">/month</span>
             </p>
             <ul className="mt-6 flex-1 space-y-2.5 text-sm text-muted-foreground">
               {[
@@ -302,9 +302,9 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
             </ul>
             <Link
               href={upgradeHref}
-              className="mt-6 flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover"
+              className="mt-6 flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 font-medium text-white transition hover:bg-primary-hover"
             >
-              Upgrade to Pro <ArrowRight size={14} />
+              Upgrade to Pro <ArrowRight size={16} />
             </Link>
           </div>
         </div>
@@ -323,7 +323,7 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
           </p>
           <Link
             href={AUTH_PAGE}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-3 text-sm font-semibold text-white transition hover:bg-primary-hover"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-medium text-white transition hover:bg-primary-hover"
           >
             Start for free <ArrowRight size={16} />
           </Link>
