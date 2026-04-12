@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ConflictException, UnauthorizedException } from "@nestjs/common";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthService } from "./auth.service.js";
 
 function createMockPrisma() {
@@ -109,6 +109,27 @@ describe("AuthService", () => {
         user: { id: "user-1", email: "john@example.com", name: "John Doe" },
       });
       expect(result).toHaveProperty("refreshToken");
+    });
+
+    it("should store userAgent and ipAddress on the refresh token when context is provided", async () => {
+      const existingUser = { id: "user-1", email: "john@example.com", name: "John Doe" };
+      mockOtp.verify.mockResolvedValue(true);
+      mockPrisma.user.findUnique.mockResolvedValue(existingUser);
+      mockPrisma.refreshToken.create.mockResolvedValue({ id: "rt-1", token: "refresh" });
+
+      await authService.verifyOtp("john@example.com", "1234", {
+        userAgent: "Mozilla/5.0 (TestBrowser)",
+        ipAddress: "203.0.113.42",
+      });
+
+      expect(mockPrisma.refreshToken.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            userAgent: "Mozilla/5.0 (TestBrowser)",
+            ipAddress: "203.0.113.42",
+          }),
+        }),
+      );
     });
 
     it("should return verified: true with isNewUser: true for new user", async () => {

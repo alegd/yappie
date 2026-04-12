@@ -1,26 +1,12 @@
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { Queue } from "bullmq";
-import { PrismaService } from "../prisma/prisma.service.js";
-import { STORAGE_ADAPTER, StorageAdapter } from "../storage/storage.interface.js";
 import { AnalyticsService } from "../analytics/analytics.service.js";
-import { QuotasService } from "../quotas/quotas.service.js";
+import { PrismaService } from "../prisma/prisma.service.js";
 import { QuotaExceededException } from "../quotas/quota-exceeded.exception.js";
-
-const ALLOWED_MIMETYPES = [
-  "audio/mpeg",
-  "audio/mp3",
-  "audio/wav",
-  "audio/x-wav",
-  "audio/ogg",
-  "audio/webm",
-  "audio/mp4",
-  "audio/m4a",
-  "audio/x-m4a",
-  "audio/flac",
-];
-
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+import { QuotasService } from "../quotas/quotas.service.js";
+import { STORAGE_ADAPTER, StorageAdapter } from "../storage/storage.interface.js";
+import { ALLOWED_MIMETYPES, MAX_FILE_SIZE } from "./audio.constants.js";
 
 @Injectable()
 export class AudioService {

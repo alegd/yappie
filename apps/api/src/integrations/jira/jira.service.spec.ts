@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { UnauthorizedException, BadRequestException } from "@nestjs/common";
+import { BadRequestException, UnauthorizedException } from "@nestjs/common";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { JiraService } from "./jira.service.js";
 
 function createMockPrisma() {
@@ -150,6 +150,34 @@ describe("JiraService", () => {
   });
 
   describe("refreshAccessToken", () => {
+    it("should not leak internal Jira error bodies to the caller", async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 401,
+        text: () =>
+          Promise.resolve(
+            JSON.stringify({
+              error: "invalid_client",
+              error_description: "Client authentication failed: <internal trace>",
+            }),
+          ),
+      });
+
+      const errorPromise = service.exchangeCode("bad-code", "user-1");
+      await expect(errorPromise).rejects.not.toThrow(/invalid_client/);
+      await expect(errorPromise).rejects.not.toThrow(/internal trace/);
+      await expect(errorPromise).rejects.toThrow(BadRequestException);
+    });
+
+    it("should reject malformed token responses from Jira", async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ access_token: "only-this-field" }),
+      });
+
+      await expect(service.exchangeCode("code", "user-1")).rejects.toThrow(/jira/i);
+    });
+
     it("should throw UnauthorizedException if integration has no refreshToken", async () => {
       mockPrisma.integration.findUnique.mockResolvedValue({
         id: "int-1",
