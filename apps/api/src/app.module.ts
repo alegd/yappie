@@ -58,7 +58,7 @@ import { UsersModule } from "./users/users.module.js";
     UsersModule,
     TemplatesModule,
     QuotasModule,
-    BillingModule,
+    ...(process.env.STRIPE_SECRET_KEY ? [BillingModule] : []),
   ],
   controllers: [AppController],
   providers: [

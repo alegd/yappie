@@ -33,6 +33,10 @@ function createMockPrisma() {
       update: vi.fn(),
       create: vi.fn(),
     },
+    processedWebhookEvent: {
+      create: vi.fn(),
+      delete: vi.fn(),
+    },
     $transaction: vi.fn((fn: (tx: unknown) => Promise<unknown>) => fn(mockPrisma)),
   };
 }
@@ -57,6 +61,7 @@ beforeEach(() => {
       return config[key];
     }),
   };
+  mockPrisma.processedWebhookEvent.create.mockResolvedValue({ stripeEventId: "evt_default" });
   service = new BillingService(mockStripe as never, mockPrisma as never, mockConfig as never);
 });
 
@@ -121,6 +126,19 @@ describe("BillingService", () => {
         metadata: { userId: "user-1" },
       });
     });
+
+    it("should throw when Stripe does not return a session URL", async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: "user-1",
+        email: "test@test.com",
+        stripeCustomerId: "cus_existing",
+      });
+      mockStripe.checkout.sessions.create.mockResolvedValue({ url: null });
+
+      await expect(service.createCheckoutSession("user-1", "test@test.com")).rejects.toThrow(
+        /checkout session url/i,
+      );
+    });
   });
 
   describe("createPortalSession", () => {
@@ -155,6 +173,7 @@ describe("BillingService", () => {
   describe("handleWebhookEvent", () => {
     it("should upgrade subscription on checkout.session.completed", async () => {
       const event = {
+        id: "evt_checkout_1",
         type: "checkout.session.completed",
         data: {
           object: {
@@ -193,8 +212,41 @@ describe("BillingService", () => {
       });
     });
 
+    it("should create a PRO subscription when no active subscription exists on checkout.completed", async () => {
+      const event = {
+        id: "evt_checkout_new",
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            metadata: { userId: "user-new" },
+            subscription: "sub_stripe_new",
+          },
+        },
+      };
+
+      mockStripe.subscriptions.retrieve.mockResolvedValue({
+        id: "sub_stripe_new",
+        start_date: 1700000000,
+      });
+      mockPrisma.subscription.findFirst.mockResolvedValue(null);
+
+      await service.handleWebhookEvent(event as never);
+
+      expect(mockPrisma.subscription.create).toHaveBeenCalledWith({
+        data: {
+          userId: "user-new",
+          plan: "PRO",
+          stripeSubscriptionId: "sub_stripe_new",
+          stripePriceId: "price_test_abc",
+          startDate: new Date(1700000000000),
+        },
+      });
+      expect(mockPrisma.subscription.update).not.toHaveBeenCalled();
+    });
+
     it("should sync cancelAtPeriodEnd on subscription.updated", async () => {
       const event = {
+        id: "evt_upd_1",
         type: "customer.subscription.updated",
         data: {
           object: {
@@ -222,6 +274,7 @@ describe("BillingService", () => {
 
     it("should downgrade to FREE on subscription.deleted", async () => {
       const event = {
+        id: "evt_del_1",
         type: "customer.subscription.deleted",
         data: {
           object: { id: "sub_stripe_123" },
@@ -250,11 +303,82 @@ describe("BillingService", () => {
     });
 
     it("should ignore unknown event types", async () => {
-      const event = { type: "unknown.event", data: { object: {} } };
+      const event = { id: "evt_unknown", type: "unknown.event", data: { object: {} } };
 
       await service.handleWebhookEvent(event as never);
 
       expect(mockPrisma.subscription.update).not.toHaveBeenCalled();
+    });
+
+    describe("idempotency", () => {
+      it("should record the event ID before processing", async () => {
+        const event = {
+          id: "evt_123",
+          type: "customer.subscription.updated",
+          data: { object: { id: "sub_stripe_123", cancel_at_period_end: false } },
+        };
+
+        mockPrisma.subscription.findFirst.mockResolvedValue({
+          id: "sub-1",
+          stripeSubscriptionId: "sub_stripe_123",
+        });
+
+        await service.handleWebhookEvent(event as never);
+
+        expect(mockPrisma.processedWebhookEvent.create).toHaveBeenCalledWith({
+          data: { stripeEventId: "evt_123" },
+        });
+      });
+
+      it("should skip processing when event was already processed", async () => {
+        const event = {
+          id: "evt_duplicate",
+          type: "customer.subscription.updated",
+          data: { object: { id: "sub_stripe_123", cancel_at_period_end: true } },
+        };
+
+        const uniqueConstraintError = Object.assign(new Error("Unique constraint"), {
+          code: "P2002",
+        });
+        mockPrisma.processedWebhookEvent.create.mockRejectedValue(uniqueConstraintError);
+
+        await service.handleWebhookEvent(event as never);
+
+        expect(mockPrisma.subscription.findFirst).not.toHaveBeenCalled();
+        expect(mockPrisma.subscription.update).not.toHaveBeenCalled();
+      });
+
+      it("should delete the event marker and rethrow when processing fails", async () => {
+        const event = {
+          id: "evt_fails",
+          type: "customer.subscription.updated",
+          data: { object: { id: "sub_stripe_fail", cancel_at_period_end: true } },
+        };
+
+        mockPrisma.subscription.findFirst.mockResolvedValue({
+          id: "sub-1",
+          stripeSubscriptionId: "sub_stripe_fail",
+        });
+        mockPrisma.subscription.update.mockRejectedValue(new Error("DB error"));
+
+        await expect(service.handleWebhookEvent(event as never)).rejects.toThrow("DB error");
+
+        expect(mockPrisma.processedWebhookEvent.delete).toHaveBeenCalledWith({
+          where: { stripeEventId: "evt_fails" },
+        });
+      });
+
+      it("should rethrow non-P2002 errors from the marker create", async () => {
+        const event = {
+          id: "evt_unknown_err",
+          type: "customer.subscription.updated",
+          data: { object: {} },
+        };
+
+        mockPrisma.processedWebhookEvent.create.mockRejectedValue(new Error("Connection lost"));
+
+        await expect(service.handleWebhookEvent(event as never)).rejects.toThrow("Connection lost");
+      });
     });
   });
 

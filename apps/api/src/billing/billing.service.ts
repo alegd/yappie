@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type Stripe from "stripe";
 import { PrismaService } from "../prisma/prisma.service.js";
@@ -50,7 +55,11 @@ export class BillingService {
       metadata: { userId },
     });
 
-    return session.url!;
+    if (!session.url) {
+      throw new InternalServerErrorException("Stripe did not return a checkout session URL");
+    }
+
+    return session.url;
   }
 
   async createPortalSession(userId: string): Promise<string> {
@@ -71,6 +80,7 @@ export class BillingService {
   async getBillingStatus(userId: string): Promise<BillingStatus> {
     const subscription = await this.prisma.subscription.findFirst({
       where: { userId, endDate: null },
+      orderBy: { startDate: "desc" },
     });
 
     if (!subscription) {
@@ -85,45 +95,64 @@ export class BillingService {
   }
 
   async handleWebhookEvent(event: Stripe.Event): Promise<void> {
-    switch (event.type) {
-      case "checkout.session.completed":
-        await this.handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
-        break;
+    try {
+      await this.prisma.processedWebhookEvent.create({
+        data: { stripeEventId: event.id },
+      });
+    } catch (err) {
+      if ((err as { code?: string }).code === "P2002") return;
+      throw err;
+    }
 
-      case "customer.subscription.updated":
-        await this.handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
-        break;
+    try {
+      switch (event.type) {
+        case "checkout.session.completed":
+          await this.handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
+          break;
 
-      case "customer.subscription.deleted":
-        await this.handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
-        break;
+        case "customer.subscription.updated":
+          await this.handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+          break;
 
-      default:
-        break;
+        case "customer.subscription.deleted":
+          await this.handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+          break;
+
+        default:
+          break;
+      }
+    } catch (err) {
+      await this.prisma.processedWebhookEvent.delete({
+        where: { stripeEventId: event.id },
+      });
+      throw err;
     }
   }
 
   private async handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     const userId = session.metadata!.userId;
     const stripeSubscriptionId = session.subscription as string;
+    const stripePriceId = this.configService.get<string>("STRIPE_PRO_PRICE_ID");
 
     const stripeSub = await this.stripe.subscriptions.retrieve(stripeSubscriptionId);
+    const startDate = new Date(stripeSub.start_date * 1000);
 
     await this.prisma.$transaction(async (tx) => {
       const subscription = await tx.subscription.findFirst({
         where: { userId, endDate: null },
+        orderBy: { startDate: "desc" },
       });
 
-      if (!subscription) return;
+      if (subscription) {
+        await tx.subscription.update({
+          where: { id: subscription.id },
+          data: { plan: "PRO", stripeSubscriptionId, stripePriceId, startDate },
+        });
+        return;
+      }
 
-      await tx.subscription.update({
-        where: { id: subscription.id },
-        data: {
-          plan: "PRO",
-          stripeSubscriptionId,
-          stripePriceId: this.configService.get<string>("STRIPE_PRO_PRICE_ID"),
-          startDate: new Date(stripeSub.start_date * 1000),
-        },
+      await tx.subscription.create({
+        data: { userId, plan: "PRO", stripeSubscriptionId, stripePriceId, startDate },
       });
     });
   }

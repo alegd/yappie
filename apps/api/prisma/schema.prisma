@@ -207,6 +207,15 @@ model UsageEvent {
   @@map("usage_events")
 }
 
+// ─── Webhook idempotency ───────────────────────────────
+
+model ProcessedWebhookEvent {
+  stripeEventId String   @id @map("stripe_event_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("processed_webhook_events")
+}
+
 // ─── Subscriptions ─────────────────────────────────────
 
 model Subscription {
