@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const CONTACT_EMAIL = "ale.gueden@gmail.com";
 const ENTITY_NAME = "Alejandro Guedén";
-const EFFECTIVE_DATE = "April 3, 2026";
+const EFFECTIVE_DATE = "April 12, 2026";
 
 export function PrivacyPolicy() {
   return (
@@ -30,9 +30,10 @@ export function PrivacyPolicy() {
 
         <h3>Audio Recordings</h3>
         <p>
-          You upload or record audio files through Yappie. Audio files are processed by our AI
-          pipeline and <strong>automatically deleted</strong> from our servers once processing is
-          complete. We do not retain your audio files after transcription.
+          You upload or record audio files through Yappie. We store your audio files so you can
+          review or re-process them. <strong>You can delete any audio at any time</strong> from your
+          dashboard. Once you delete an audio, both the file and its metadata are removed from our
+          systems and we do not retain a backup copy.
         </p>
 
         <h3>Generated Content</h3>
@@ -133,11 +134,14 @@ export function PrivacyPolicy() {
         <h2>4. Data Retention</h2>
         <ul>
           <li>
-            <strong>Audio files:</strong> Deleted automatically after processing.
+            <strong>Audio files:</strong> Retained until you delete them from your dashboard or
+            delete your account. We do not retain backups after deletion.
           </li>
           <li>
-            <strong>Transcriptions &amp; tickets:</strong> Retained until you delete them or your
-            account.
+            <strong>Transcriptions &amp; tickets:</strong> Retained until you delete the underlying
+            audio, delete them individually, or delete your account. Tickets already exported to
+            Jira continue to live in your Atlassian workspace — deletion in Yappie does not remove
+            them from Jira.
           </li>
           <li>
             <strong>Account data:</strong> Retained while your account is active. Deleted upon

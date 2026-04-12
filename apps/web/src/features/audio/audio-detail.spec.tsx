@@ -1,14 +1,43 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { AudioDetail } from "./audio-detail";
 
-const { mockUseQuery } = vi.hoisted(() => ({
+const {
+  mockUseQuery,
+  mockApiFetcher,
+  mockRouterPush,
+  mockInvalidateQuery,
+  mockToastSuccess,
+  mockToastError,
+} = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
+  mockApiFetcher: vi.fn(),
+  mockRouterPush: vi.fn(),
+  mockInvalidateQuery: vi.fn(),
+  mockToastSuccess: vi.fn(),
+  mockToastError: vi.fn(),
 }));
 
 vi.mock("@/hooks/use-query", () => ({
   useQuery: mockUseQuery,
-  invalidateQuery: vi.fn(),
+  invalidateQuery: mockInvalidateQuery,
+}));
+
+vi.mock("@/lib/api-fetcher", () => ({
+  apiFetcher: mockApiFetcher,
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mockRouterPush }),
+}));
+
+vi.mock("@/components/ui/toast/Toast", () => ({
+  toast: {
+    success: mockToastSuccess,
+    error: mockToastError,
+    info: vi.fn(),
+  },
 }));
 
 const mockAudio = {
@@ -78,5 +107,55 @@ describe("AudioDetail", () => {
     mockUseQuery.mockReturnValue(queryResult(undefined, false, new Error("Not found")));
     render(<AudioDetail audioId="audio-1" />);
     expect(screen.getByText(/not found/i)).toBeInTheDocument();
+  });
+
+  describe("delete", () => {
+    it("should render a Delete button when audio loads", () => {
+      mockUseQuery.mockReturnValue(queryResult(mockAudio));
+      render(<AudioDetail audioId="audio-1" />);
+      expect(screen.getByRole("button", { name: /delete/i })).toBeInTheDocument();
+    });
+
+    it("should call the delete endpoint and redirect to audios list on confirm", async () => {
+      const user = userEvent.setup();
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+      mockApiFetcher.mockResolvedValue(undefined);
+      mockUseQuery.mockReturnValue(queryResult(mockAudio));
+
+      render(<AudioDetail audioId="audio-1" />);
+      await user.click(screen.getByRole("button", { name: /delete/i }));
+
+      await waitFor(() => {
+        expect(mockApiFetcher).toHaveBeenCalledWith("/v1/audio/audio-1", { method: "DELETE" });
+        expect(mockRouterPush).toHaveBeenCalledWith("/dashboard/audios");
+      });
+    });
+
+    it("should not delete when confirm is cancelled", async () => {
+      const user = userEvent.setup();
+      vi.spyOn(window, "confirm").mockReturnValue(false);
+      mockUseQuery.mockReturnValue(queryResult(mockAudio));
+
+      render(<AudioDetail audioId="audio-1" />);
+      await user.click(screen.getByRole("button", { name: /delete/i }));
+
+      expect(mockApiFetcher).not.toHaveBeenCalled();
+      expect(mockRouterPush).not.toHaveBeenCalled();
+    });
+
+    it("should show a toast error when the delete call fails", async () => {
+      const user = userEvent.setup();
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+      mockApiFetcher.mockRejectedValue(new Error("Server error"));
+      mockUseQuery.mockReturnValue(queryResult(mockAudio));
+
+      render(<AudioDetail audioId="audio-1" />);
+      await user.click(screen.getByRole("button", { name: /delete/i }));
+
+      await waitFor(() => {
+        expect(mockToastError).toHaveBeenCalledWith("Server error");
+      });
+      expect(mockRouterPush).not.toHaveBeenCalled();
+    });
   });
 });

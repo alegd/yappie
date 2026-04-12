@@ -11,6 +11,7 @@ function createMockPrisma() {
       findMany: vi.fn(),
       update: vi.fn(),
       count: vi.fn(),
+      delete: vi.fn(),
     },
     project: {
       findFirst: vi.fn(),
@@ -261,6 +262,58 @@ describe("AudioService", () => {
       mockPrisma.audioRecording.findUnique.mockResolvedValue(null);
 
       await expect(service.findOne("non-existent", userId)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe("delete", () => {
+    it("should delete the storage file and the DB row when the user owns the recording", async () => {
+      mockPrisma.audioRecording.findUnique.mockResolvedValue({
+        id: "audio-1",
+        userId,
+        filePath: "user-1/123-recording.mp3",
+      });
+
+      await service.delete("audio-1", userId);
+
+      expect(mockStorage.delete).toHaveBeenCalledWith("user-1/123-recording.mp3");
+      expect(mockPrisma.audioRecording.delete).toHaveBeenCalledWith({
+        where: { id: "audio-1" },
+      });
+    });
+
+    it("should throw NotFoundException when the recording does not exist", async () => {
+      mockPrisma.audioRecording.findUnique.mockResolvedValue(null);
+
+      await expect(service.delete("non-existent", userId)).rejects.toThrow(NotFoundException);
+      expect(mockStorage.delete).not.toHaveBeenCalled();
+      expect(mockPrisma.audioRecording.delete).not.toHaveBeenCalled();
+    });
+
+    it("should throw NotFoundException when the recording belongs to another user", async () => {
+      mockPrisma.audioRecording.findUnique.mockResolvedValue({
+        id: "audio-1",
+        userId: "someone-else",
+        filePath: "someone-else/123-recording.mp3",
+      });
+
+      await expect(service.delete("audio-1", userId)).rejects.toThrow(NotFoundException);
+      expect(mockStorage.delete).not.toHaveBeenCalled();
+      expect(mockPrisma.audioRecording.delete).not.toHaveBeenCalled();
+    });
+
+    it("should still delete the DB row if storage deletion fails", async () => {
+      mockPrisma.audioRecording.findUnique.mockResolvedValue({
+        id: "audio-1",
+        userId,
+        filePath: "user-1/missing.mp3",
+      });
+      mockStorage.delete.mockRejectedValue(new Error("File not found on disk"));
+
+      await service.delete("audio-1", userId);
+
+      expect(mockPrisma.audioRecording.delete).toHaveBeenCalledWith({
+        where: { id: "audio-1" },
+      });
     });
   });
 });

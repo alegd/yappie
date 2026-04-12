@@ -2,11 +2,20 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card/Card";
+import { toast } from "@/components/ui/toast/Toast";
 import { invalidateQuery, useQuery } from "@/hooks/use-query";
-import { AUDIO_LIST, audioByProject, JIRA_STATUS, PROJECTS_LIST } from "@/lib/constants/endpoints";
+import { apiFetcher } from "@/lib/api-fetcher";
+import {
+  AUDIO_LIST,
+  audioByProject,
+  audioDetail,
+  JIRA_STATUS,
+  PROJECTS_LIST,
+} from "@/lib/constants/endpoints";
+import { DELETE } from "@/lib/constants/http";
 import { audioDetailPage } from "@/lib/constants/pages";
 import { AppSelect } from "@/components/ui/app-select";
-import { AlertCircle, CheckCircle2, Clock, FileAudio, Loader2, X } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, FileAudio, Loader2, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { ProjectListResponse } from "../projects/types";
@@ -85,6 +94,17 @@ export function AudioList() {
     }
   };
 
+  const handleDelete = async (audioId: string) => {
+    if (!confirm("Delete this audio? This action cannot be undone.")) return;
+
+    try {
+      await apiFetcher(audioDetail(audioId), { method: DELETE });
+      invalidateQuery(audioKey);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
+    }
+  };
+
   if (isLoadingAudios) {
     return (
       <div className="flex justify-center items-center py-20">
@@ -160,21 +180,31 @@ export function AudioList() {
             const status = statusConfig[audio.status];
             return (
               <Card key={audio.id}>
-                <Link
-                  href={audioDetailPage(audio.id)}
-                  className="flex items-center gap-4 p-4 hover:border-border-hover transition"
-                >
-                  <FileAudio size={20} className="text-muted-foreground shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{audio.fileName}</p>
-                    <p className="mt-0.5 text-muted-foreground text-xs">
-                      {formatSize(audio.fileSize)} · {formatDate(audio.createdAt)}
-                    </p>
-                  </div>
-                  <Badge variant={status.variant} className="flex items-center gap-1.5 uppercase">
-                    {status.label}
-                  </Badge>
-                </Link>
+                <div className="flex items-center gap-4 p-4 hover:border-border-hover transition">
+                  <Link
+                    href={audioDetailPage(audio.id)}
+                    className="flex flex-1 items-center gap-4 min-w-0"
+                  >
+                    <FileAudio size={20} className="text-muted-foreground shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{audio.fileName}</p>
+                      <p className="mt-0.5 text-muted-foreground text-xs">
+                        {formatSize(audio.fileSize)} · {formatDate(audio.createdAt)}
+                      </p>
+                    </div>
+                    <Badge variant={status.variant} className="flex items-center gap-1.5 uppercase">
+                      {status.label}
+                    </Badge>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(audio.id)}
+                    className="text-muted-foreground hover:text-destructive transition"
+                    aria-label="Delete audio"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </Card>
             );
           })}

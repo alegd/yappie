@@ -2,7 +2,10 @@ import { ApiBearerAuth, ApiConsumes, ApiBody } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
 import {
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Query,
@@ -60,5 +63,12 @@ export class AudioController {
   @Get(":id")
   findOne(@Param("id") id: string, @Req() req: { user: { sub: string } }) {
     return this.audioService.findOne(id, req.user.sub);
+  }
+
+  @Delete(":id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Throttle({ short: { ttl: 60000, limit: 20 } })
+  async remove(@Param("id") id: string, @Req() req: { user: { sub: string } }) {
+    await this.audioService.delete(id, req.user.sub);
   }
 }

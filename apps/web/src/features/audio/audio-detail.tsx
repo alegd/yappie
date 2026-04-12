@@ -1,11 +1,17 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { useQuery } from "@/hooks/use-query";
-import { audioDetail } from "@/lib/constants/endpoints";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast/Toast";
+import { invalidateQuery, useQuery } from "@/hooks/use-query";
+import { apiFetcher } from "@/lib/api-fetcher";
+import { AUDIO_LIST, audioDetail } from "@/lib/constants/endpoints";
+import { DELETE } from "@/lib/constants/http";
 import { AUDIOS_PAGE } from "@/lib/constants/pages";
-import { AlertCircle, ArrowLeft, FileText, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, FileText, Loader2, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { AudioRecording } from "./types";
 
 const statusConfig = {
@@ -35,11 +41,27 @@ interface AudioDetailProps {
 }
 
 export function AudioDetail({ audioId }: AudioDetailProps) {
+  const router = useRouter();
+  const [deleting, setDeleting] = useState(false);
   const {
     data: audio,
     error: fetchError,
     isLoading,
   } = useQuery<AudioRecording>(audioDetail(audioId));
+
+  const handleDelete = async () => {
+    if (!confirm("Delete this audio? This action cannot be undone.")) return;
+
+    setDeleting(true);
+    try {
+      await apiFetcher(audioDetail(audioId), { method: DELETE });
+      invalidateQuery(AUDIO_LIST);
+      router.push(AUDIOS_PAGE);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
+      setDeleting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -83,6 +105,16 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
         <Badge variant={status.variant} className="flex items-center gap-1.5 px-2.5 py-1 ">
           {status.label}
         </Badge>
+        <Button
+          variant="outlined"
+          onClick={handleDelete}
+          disabled={deleting}
+          className="hover:text-destructive"
+          aria-label="Delete audio"
+        >
+          {deleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+          {deleting ? "Deleting..." : "Delete"}
+        </Button>
       </div>
 
       {/* Transcription */}
