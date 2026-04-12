@@ -19,17 +19,25 @@ describe("LandingPage", () => {
     vi.clearAllMocks();
   });
 
-  it("should render hero title", () => {
+  it("should render hero with new headline", () => {
     render(<LandingPage />);
 
-    expect(screen.getByText("Turn voice notes into")).toBeInTheDocument();
-    expect(screen.getByText("Jira tickets")).toBeInTheDocument();
+    expect(screen.getByText("Talk. Yappie writes")).toBeInTheDocument();
+    expect(screen.getByText("the ticket.")).toBeInTheDocument();
   });
 
-  it("should render 'Powered by AI' badge", () => {
+  it("should render combined badge", () => {
     render(<LandingPage />);
 
-    expect(screen.getByText("Powered by AI")).toBeInTheDocument();
+    expect(screen.getByText(/Open Source/)).toBeInTheDocument();
+    expect(screen.getByText(/Powered by AI/)).toBeInTheDocument();
+  });
+
+  it("should render trust badges below CTAs", () => {
+    render(<LandingPage />);
+
+    expect(screen.getAllByText(/No credit card/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/20 min.month free/).length).toBeGreaterThanOrEqual(1);
   });
 
   it("should render CTA links pointing to /auth", () => {
@@ -39,36 +47,87 @@ describe("LandingPage", () => {
       .getAllByRole("link")
       .filter((link) => link.getAttribute("href") === "/auth");
 
-    expect(ctaLinks).toHaveLength(2);
-    expect(screen.getByText("Start for free")).toBeInTheDocument();
-    expect(screen.getByText("Get started for free")).toBeInTheDocument();
+    // Hero "Start for free", Free plan CTA, final CTA
+    expect(ctaLinks.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("should render all three feature cards", () => {
+  it("should point Upgrade to Pro to /auth by default", () => {
     render(<LandingPage />);
 
-    expect(screen.getByRole("heading", { name: "Record or Upload", level: 3 })).toBeInTheDocument();
+    const upgradeLink = screen.getByRole("link", { name: /upgrade to pro/i });
+    expect(upgradeLink).toHaveAttribute("href", "/auth");
+  });
+
+  it("should point Upgrade to Pro to the provided upgradeHref when set", () => {
+    render(<LandingPage upgradeHref="/dashboard/settings#billing" />);
+
+    const upgradeLink = screen.getByRole("link", { name: /upgrade to pro/i });
+    expect(upgradeLink).toHaveAttribute("href", "/dashboard/settings#billing");
+  });
+
+  it("should render 3-step how-it-works section", () => {
+    render(<LandingPage />);
+
     expect(
-      screen.getByRole("heading", { name: "AI Decomposes Tasks", level: 3 }),
+      screen.getByRole("heading", { name: "From audio to action in 3 steps" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Export to Jira", level: 3 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Record or upload", level: 3 })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "AI extracts and structures", level: 3 }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Review and export", level: 3 }),
+    ).toBeInTheDocument();
   });
 
-  it("should render how-it-works section with 4 steps", () => {
+  it("should render project context differentiator section", () => {
     render(<LandingPage />);
 
-    expect(screen.getByRole("heading", { name: "How it works" })).toBeInTheDocument();
-    expect(screen.getAllByText("Record or upload")).toHaveLength(1);
-    expect(screen.getByText("AI extracts tasks")).toBeInTheDocument();
-    expect(screen.getByText("Review and edit")).toBeInTheDocument();
-    // "Export to Jira" appears in both features (h3) and steps (p)
-    expect(screen.getAllByText("Export to Jira")).toHaveLength(2);
+    expect(screen.getByRole("heading", { name: "Your AI knows your project" })).toBeInTheDocument();
+    expect(screen.getByText("Without context")).toBeInTheDocument();
+    expect(screen.getByText("With project context")).toBeInTheDocument();
+    expect(screen.getByText("[Bug] Login problem in Safari")).toBeInTheDocument();
+    expect(screen.getByText("[Bug] Login: form broken in Safari")).toBeInTheDocument();
   });
 
-  it("should render footer with project name and license", () => {
+  it("should render features grid with 6 features", () => {
+    render(<LandingPage />);
+
+    expect(screen.getByRole("heading", { name: "Built for real teams" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Passwordless auth", level: 3 }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Real-time progress", level: 3 }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Jira OAuth 2.0", level: 3 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Open source", level: 3 })).toBeInTheDocument();
+  });
+
+  it("should render pricing section with Free and Pro plans", () => {
+    render(<LandingPage />);
+
+    expect(screen.getByRole("heading", { name: "Simple pricing" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Free", level: 3 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Pro", level: 3 })).toBeInTheDocument();
+    expect(screen.getByText("$0")).toBeInTheDocument();
+    expect(screen.getByText("$4.99")).toBeInTheDocument();
+  });
+
+  it("should render final CTA section", () => {
+    render(<LandingPage />);
+
+    expect(
+      screen.getByRole("heading", { name: "Ready to stop typing tickets?" }),
+    ).toBeInTheDocument();
+  });
+
+  it("should render footer with GitHub, Privacy, and license", () => {
     render(<LandingPage />);
 
     expect(screen.getByText("Yappie")).toBeInTheDocument();
+    expect(screen.getByText("GitHub")).toBeInTheDocument();
+    expect(screen.getByText("Privacy")).toBeInTheDocument();
     expect(screen.getByText("AGPL-3.0")).toBeInTheDocument();
   });
 

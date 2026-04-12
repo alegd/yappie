@@ -38,6 +38,11 @@ export const analyticsOverview = (from: string, to: string) =>
 // ─── Quotas ─────────────────────────────────────────────
 export const QUOTAS = `${API_V1}/quotas`;
 
+// ─── Billing ────────────────────────────────────────────
+export const BILLING_STATUS = `${API_V1}/billing/status`;
+export const BILLING_CHECKOUT_SESSION = `${API_V1}/billing/checkout-session`;
+export const BILLING_PORTAL_SESSION = `${API_V1}/billing/portal-session`;
+
 // ─── Integrations — Jira ─────────────────────────────────
 export const JIRA_STATUS = `${API_V1}/integrations/jira/status`;
 export const JIRA_AUTH = `${API_V1}/integrations/jira/auth`;
