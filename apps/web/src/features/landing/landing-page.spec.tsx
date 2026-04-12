@@ -47,8 +47,22 @@ describe("LandingPage", () => {
       .getAllByRole("link")
       .filter((link) => link.getAttribute("href") === "/auth");
 
-    // Hero "Start for free", Free plan CTA, Pro plan CTA, final CTA
+    // Hero "Start for free", Free plan CTA, final CTA
     expect(ctaLinks.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("should point Upgrade to Pro to /auth by default", () => {
+    render(<LandingPage />);
+
+    const upgradeLink = screen.getByRole("link", { name: /upgrade to pro/i });
+    expect(upgradeLink).toHaveAttribute("href", "/auth");
+  });
+
+  it("should point Upgrade to Pro to the provided upgradeHref when set", () => {
+    render(<LandingPage upgradeHref="/dashboard/settings#billing" />);
+
+    const upgradeLink = screen.getByRole("link", { name: /upgrade to pro/i });
+    expect(upgradeLink).toHaveAttribute("href", "/dashboard/settings#billing");
   });
 
   it("should render 3-step how-it-works section", () => {

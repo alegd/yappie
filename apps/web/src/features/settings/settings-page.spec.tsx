@@ -14,6 +14,10 @@ vi.mock("./integrations-section", () => ({
   IntegrationsSection: () => <div data-testid="integrations-section" />,
 }));
 
+vi.mock("./billing-section", () => ({
+  BillingSection: () => <div data-testid="billing-section" />,
+}));
+
 vi.mock("./templates-section", () => ({
   TemplatesSection: () => <div data-testid="templates-section" />,
 }));
@@ -34,5 +38,6 @@ describe("SettingsPage", () => {
     expect(screen.getByTestId("appearance-section")).toBeInTheDocument();
     expect(screen.getByTestId("integrations-section")).toBeInTheDocument();
     expect(screen.getByTestId("templates-section")).toBeInTheDocument();
+    expect(screen.getByTestId("billing-section")).toBeInTheDocument();
   });
 });

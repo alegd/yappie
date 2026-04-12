@@ -68,7 +68,11 @@ const features = [
   },
 ];
 
-export function LandingPage() {
+interface LandingPageProps {
+  upgradeHref?: string;
+}
+
+export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) {
   return (
     <main className="min-h-screen">
       <PublicNavbar />
@@ -222,7 +226,7 @@ export function LandingPage() {
               <li>Everything in Free</li>
             </ul>
             <Link
-              href={AUTH_PAGE}
+              href={upgradeHref}
               className="mt-8 flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 font-semibold text-white transition hover:bg-accent/90"
             >
               Upgrade to Pro <ArrowRight size={16} />
