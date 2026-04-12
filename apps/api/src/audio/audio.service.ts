@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { PrismaService } from "../prisma/prisma.service.js";
@@ -24,6 +24,8 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 @Injectable()
 export class AudioService {
+  private readonly logger = new Logger(AudioService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     @Inject(STORAGE_ADAPTER) private readonly storage: StorageAdapter,
@@ -140,5 +142,21 @@ export class AudioService {
     }
 
     return recording;
+  }
+
+  async delete(id: string, userId: string) {
+    const recording = await this.prisma.audioRecording.findUnique({ where: { id } });
+
+    if (!recording || recording.userId !== userId) {
+      throw new NotFoundException("Audio recording not found");
+    }
+
+    try {
+      await this.storage.delete(recording.filePath);
+    } catch (err) {
+      this.logger.warn(`Failed to delete storage file for audio ${id}: ${(err as Error).message}`);
+    }
+
+    await this.prisma.audioRecording.delete({ where: { id } });
   }
 }

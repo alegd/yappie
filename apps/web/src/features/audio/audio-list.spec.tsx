@@ -2,14 +2,28 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { AudioList } from "./audio-list";
 
-const { mockUseQuery, mockInvalidateQuery } = vi.hoisted(() => ({
+const { mockUseQuery, mockInvalidateQuery, mockApiFetcher, mockToastError } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
   mockInvalidateQuery: vi.fn(),
+  mockApiFetcher: vi.fn(),
+  mockToastError: vi.fn(),
 }));
 
 vi.mock("@/hooks/use-query", () => ({
   useQuery: mockUseQuery,
   invalidateQuery: mockInvalidateQuery,
+}));
+
+vi.mock("@/lib/api-fetcher", () => ({
+  apiFetcher: mockApiFetcher,
+}));
+
+vi.mock("@/components/ui/toast/Toast", () => ({
+  toast: {
+    success: vi.fn(),
+    error: mockToastError,
+    info: vi.fn(),
+  },
 }));
 
 vi.mock("@/components/ui/app-select", () => ({
@@ -275,6 +289,59 @@ describe("AudioList", () => {
     render(<AudioList />);
 
     expect(screen.queryByText(/Connect Jira to export your tickets/)).not.toBeInTheDocument();
+  });
+
+  describe("delete", () => {
+    it("should render a delete button per audio row", () => {
+      mockQueries(mockAudioData, mockProjectData, mockJiraConnected);
+
+      render(<AudioList />);
+
+      const deleteButtons = screen.getAllByLabelText(/delete audio/i);
+      expect(deleteButtons.length).toBe(2);
+    });
+
+    it("should call the delete endpoint and invalidate the list on confirm", async () => {
+      const user = (await import("@testing-library/user-event")).default.setup();
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+      mockApiFetcher.mockResolvedValue(undefined);
+      mockQueries(mockAudioData, mockProjectData, mockJiraConnected);
+
+      render(<AudioList />);
+
+      await user.click(screen.getAllByLabelText(/delete audio/i)[0]);
+
+      expect(mockApiFetcher).toHaveBeenCalledWith("/v1/audio/a-1", { method: "DELETE" });
+      expect(mockInvalidateQuery).toHaveBeenCalled();
+    });
+
+    it("should not delete when confirm is cancelled", async () => {
+      const user = (await import("@testing-library/user-event")).default.setup();
+      vi.spyOn(window, "confirm").mockReturnValue(false);
+      mockQueries(mockAudioData, mockProjectData, mockJiraConnected);
+
+      render(<AudioList />);
+
+      await user.click(screen.getAllByLabelText(/delete audio/i)[0]);
+
+      expect(mockApiFetcher).not.toHaveBeenCalled();
+      expect(mockInvalidateQuery).not.toHaveBeenCalled();
+    });
+
+    it("should show a toast error when delete fails", async () => {
+      const user = (await import("@testing-library/user-event")).default.setup();
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+      mockApiFetcher.mockRejectedValue(new Error("Server error"));
+      mockQueries(mockAudioData, mockProjectData, mockJiraConnected);
+
+      render(<AudioList />);
+
+      await user.click(screen.getAllByLabelText(/delete audio/i)[0]);
+
+      await new Promise((r) => setTimeout(r, 0));
+
+      expect(mockToastError).toHaveBeenCalledWith("Server error");
+    });
   });
 
   it("should dismiss Jira banner and persist in localStorage", async () => {
