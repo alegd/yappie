@@ -150,8 +150,8 @@ describe("LandingPage", () => {
     const { container } = render(<LandingPage />);
 
     const checks = container.querySelectorAll('[data-testid="pricing-check"]');
-    // 4 features × 2 plans
-    expect(checks.length).toBe(8);
+    // 4 features on Free, 3 on Pro
+    expect(checks.length).toBe(7);
   });
 
   it("should render final CTA section", () => {

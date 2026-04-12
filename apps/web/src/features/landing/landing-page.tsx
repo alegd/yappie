@@ -252,7 +252,7 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
             <ul className="mt-6 flex-1 space-y-2.5 text-sm text-muted-foreground">
               {[
                 "20 minutes of audio per month",
-                "1 project",
+                "Unlimited projects",
                 "Full AI pipeline",
                 "Export to Jira",
               ].map((f) => (
@@ -283,22 +283,19 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
               €4.99<span className="text-sm font-normal text-muted-foreground">/month</span>
             </p>
             <ul className="mt-6 flex-1 space-y-2.5 text-sm text-muted-foreground">
-              {[
-                "100 minutes of audio per month",
-                "Unlimited projects",
-                "Priority processing",
-                "Everything in Free",
-              ].map((f) => (
-                <li key={f} className="flex items-center gap-2">
-                  <span
-                    data-testid="pricing-check"
-                    className="flex h-4 w-4 items-center justify-center rounded bg-primary/20"
-                  >
-                    <Check size={10} className="stroke-[3] text-primary" />
-                  </span>
-                  {f}
-                </li>
-              ))}
+              {["100 minutes of audio per month", "Priority processing", "Everything in Free"].map(
+                (f) => (
+                  <li key={f} className="flex items-center gap-2">
+                    <span
+                      data-testid="pricing-check"
+                      className="flex h-4 w-4 items-center justify-center rounded bg-primary/20"
+                    >
+                      <Check size={10} className="stroke-[3] text-primary" />
+                    </span>
+                    {f}
+                  </li>
+                ),
+              )}
             </ul>
             <Link
               href={upgradeHref}
