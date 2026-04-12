@@ -7,12 +7,24 @@ import { apiFetcher } from "@/lib/api-fetcher";
 import { BILLING_CHECKOUT_SESSION, BILLING_PORTAL_SESSION } from "@/lib/constants/endpoints";
 import { POST } from "@/lib/constants/http";
 import { Loader2, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useBillingStatus } from "./hooks/use-billing-status";
 
 export function BillingSection() {
-  const { status } = useBillingStatus();
+  const { status, mutate } = useBillingStatus();
   const [submitting, setSubmitting] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (searchParams.get("upgraded") !== "true") return;
+
+    toast.success("Welcome to Pro! Your subscription is active.");
+    mutate();
+    router.replace(pathname);
+  }, [searchParams, mutate, router, pathname]);
 
   const isPro = status?.plan === "PRO";
   const willCancel = isPro && status?.cancelAtPeriodEnd;

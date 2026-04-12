@@ -3,10 +3,20 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BillingSection } from "./billing-section";
 
-const { mockApiFetcher, mockUseBillingStatus, mockToastError } = vi.hoisted(() => ({
+const {
+  mockApiFetcher,
+  mockUseBillingStatus,
+  mockToastError,
+  mockToastSuccess,
+  mockRouterReplace,
+  mockSearchParamsGet,
+} = vi.hoisted(() => ({
   mockApiFetcher: vi.fn(),
   mockUseBillingStatus: vi.fn(),
   mockToastError: vi.fn(),
+  mockToastSuccess: vi.fn(),
+  mockRouterReplace: vi.fn(),
+  mockSearchParamsGet: vi.fn(),
 }));
 
 vi.mock("@/lib/api-fetcher", () => ({
@@ -20,9 +30,15 @@ vi.mock("./hooks/use-billing-status", () => ({
 vi.mock("@/components/ui/toast/Toast", () => ({
   toast: {
     error: mockToastError,
-    success: vi.fn(),
+    success: mockToastSuccess,
     info: vi.fn(),
   },
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: mockRouterReplace }),
+  useSearchParams: () => ({ get: mockSearchParamsGet }),
+  usePathname: () => "/dashboard/settings",
 }));
 
 function mockLocation() {
@@ -34,6 +50,7 @@ function mockLocation() {
 describe("BillingSection", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSearchParamsGet.mockReturnValue(null);
   });
 
   it("should render the Billing heading", () => {
@@ -176,6 +193,69 @@ describe("BillingSection", () => {
       render(<BillingSection />);
 
       expect(screen.getByRole("heading", { name: "Billing" })).toBeInTheDocument();
+    });
+  });
+
+  describe("post-checkout feedback (?upgraded=true)", () => {
+    it("should show a success toast when upgraded=true is in the URL", async () => {
+      mockSearchParamsGet.mockImplementation((key: string) => (key === "upgraded" ? "true" : null));
+      const mutate = vi.fn();
+      mockUseBillingStatus.mockReturnValue({
+        status: { plan: "PRO", stripeSubscriptionId: "sub_1", cancelAtPeriodEnd: false },
+        isLoading: false,
+        mutate,
+      });
+
+      render(<BillingSection />);
+
+      await waitFor(() => {
+        expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringMatching(/pro/i));
+      });
+    });
+
+    it("should revalidate billing status when upgraded=true", async () => {
+      mockSearchParamsGet.mockImplementation((key: string) => (key === "upgraded" ? "true" : null));
+      const mutate = vi.fn();
+      mockUseBillingStatus.mockReturnValue({
+        status: { plan: "FREE", stripeSubscriptionId: null, cancelAtPeriodEnd: false },
+        isLoading: false,
+        mutate,
+      });
+
+      render(<BillingSection />);
+
+      await waitFor(() => {
+        expect(mutate).toHaveBeenCalled();
+      });
+    });
+
+    it("should remove the upgraded param from the URL", async () => {
+      mockSearchParamsGet.mockImplementation((key: string) => (key === "upgraded" ? "true" : null));
+      mockUseBillingStatus.mockReturnValue({
+        status: { plan: "PRO", stripeSubscriptionId: "sub_1", cancelAtPeriodEnd: false },
+        isLoading: false,
+        mutate: vi.fn(),
+      });
+
+      render(<BillingSection />);
+
+      await waitFor(() => {
+        expect(mockRouterReplace).toHaveBeenCalledWith("/dashboard/settings");
+      });
+    });
+
+    it("should not show toast when upgraded param is missing", () => {
+      mockSearchParamsGet.mockReturnValue(null);
+      mockUseBillingStatus.mockReturnValue({
+        status: { plan: "FREE", stripeSubscriptionId: null, cancelAtPeriodEnd: false },
+        isLoading: false,
+        mutate: vi.fn(),
+      });
+
+      render(<BillingSection />);
+
+      expect(mockToastSuccess).not.toHaveBeenCalled();
+      expect(mockRouterReplace).not.toHaveBeenCalled();
     });
   });
 });

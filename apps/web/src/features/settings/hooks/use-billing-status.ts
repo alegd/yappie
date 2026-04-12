@@ -8,11 +8,12 @@ export interface BillingStatus {
 }
 
 export function useBillingStatus() {
-  const { data, isLoading, error } = useQuery<BillingStatus>(BILLING_STATUS);
+  const { data, isLoading, error, mutate } = useQuery<BillingStatus>(BILLING_STATUS);
 
   return {
     status: data,
     isLoading,
     error,
+    mutate,
   };
 }

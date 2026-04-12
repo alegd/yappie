@@ -51,4 +51,18 @@ describe("useBillingStatus", () => {
 
     expect(result.error).toBe(err);
   });
+
+  it("should expose mutate for revalidation", () => {
+    const mutate = vi.fn();
+    mockUseQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: undefined,
+      mutate,
+    });
+
+    const result = useBillingStatus();
+
+    expect(result.mutate).toBe(mutate);
+  });
 });
