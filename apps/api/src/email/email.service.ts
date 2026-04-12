@@ -1,8 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { Resend } from "resend";
 
 @Injectable()
 export class EmailService {
+  private readonly logger = new Logger(EmailService.name);
   private readonly resend: Resend;
 
   private readonly from: string;
@@ -13,7 +14,7 @@ export class EmailService {
   }
 
   async sendOtp(email: string, code: string): Promise<void> {
-    await this.resend.emails.send({
+    const { error } = await this.resend.emails.send({
       from: this.from,
       to: email,
       subject: `Your Yappie code: ${code}`,
@@ -29,5 +30,10 @@ export class EmailService {
         </div>
       `,
     });
+
+    if (error) {
+      this.logger.error(`Failed to send OTP email: ${error.message}`);
+      throw new Error(error.message);
+    }
   }
 }

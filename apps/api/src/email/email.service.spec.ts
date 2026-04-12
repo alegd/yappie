@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EmailService } from "./email.service.js";
 
 const mockSend = vi.fn();
@@ -34,5 +34,20 @@ describe("EmailService", () => {
 
     const call = mockSend.mock.calls[0][0];
     expect(call.from).toContain("Yappie");
+  });
+
+  it("should throw when Resend returns an error in the response", async () => {
+    mockSend.mockResolvedValue({
+      data: null,
+      error: { message: "Invalid API key", name: "validation_error" },
+    });
+
+    await expect(service.sendOtp("user@example.com", "1234")).rejects.toThrow(/invalid api key/i);
+  });
+
+  it("should throw when the Resend call itself rejects", async () => {
+    mockSend.mockRejectedValue(new Error("Network down"));
+
+    await expect(service.sendOtp("user@example.com", "1234")).rejects.toThrow("Network down");
   });
 });

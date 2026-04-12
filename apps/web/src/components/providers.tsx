@@ -11,7 +11,13 @@ import { Toaster } from "sonner";
 
 dayjs.extend(localizedFormat);
 
-const timeZone = "Europe/Vienna";
+function resolveTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch {
+    return "UTC";
+  }
+}
 
 export function Providers({
   children,
@@ -22,6 +28,8 @@ export function Providers({
   locale: string;
   messages: Record<string, unknown>;
 }) {
+  const timeZone = resolveTimeZone();
+
   return (
     <SessionProvider>
       <SwrConfig>

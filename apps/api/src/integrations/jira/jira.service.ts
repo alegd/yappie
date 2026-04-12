@@ -1,8 +1,15 @@
-import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import type { ZodType } from "zod";
 import { CacheService } from "../../common/cache.service.js";
 import { CryptoService } from "../../crypto/crypto.service.js";
 import { PrismaService } from "../../prisma/prisma.service.js";
+import {
+  JiraAccessibleResourcesSchema,
+  JiraIssueSchema,
+  JiraProjectsSchema,
+  JiraTokenResponseSchema,
+} from "./jira.schemas.js";
 
 const PROJECTS_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
@@ -13,8 +20,19 @@ interface CreateIssueInput {
   issueType: string;
 }
 
+class JiraApiError extends Error {
+  constructor(
+    readonly status: number,
+    readonly detail: string,
+  ) {
+    super(`Jira request failed (${status})`);
+  }
+}
+
 @Injectable()
 export class JiraService {
+  private readonly logger = new Logger(JiraService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
@@ -35,17 +53,31 @@ export class JiraService {
   }
 
   async exchangeCode(code: string, userId: string) {
-    const tokenData = await this.postJson("https://auth.atlassian.com/oauth/token", {
-      grant_type: "authorization_code",
-      client_id: this.config.get("JIRA_CLIENT_ID"),
-      client_secret: this.config.get("JIRA_CLIENT_SECRET"),
-      code,
-      redirect_uri: this.config.get("JIRA_CALLBACK_URL"),
-    });
+    const tokenData = await this.callJira(
+      () =>
+        this.postJson(
+          "https://auth.atlassian.com/oauth/token",
+          {
+            grant_type: "authorization_code",
+            client_id: this.config.get("JIRA_CLIENT_ID"),
+            client_secret: this.config.get("JIRA_CLIENT_SECRET"),
+            code,
+            redirect_uri: this.config.get("JIRA_CALLBACK_URL"),
+          },
+          undefined,
+          JiraTokenResponseSchema,
+        ),
+      "Failed to authenticate with Jira",
+    );
 
-    const resources = await this.getJson(
-      "https://api.atlassian.com/oauth/token/accessible-resources",
-      tokenData.access_token,
+    const resources = await this.callJira(
+      () =>
+        this.getJson(
+          "https://api.atlassian.com/oauth/token/accessible-resources",
+          tokenData.access_token,
+          JiraAccessibleResourcesSchema,
+        ),
+      "Failed to fetch Jira sites",
     );
 
     const site = resources[0];
@@ -85,12 +117,21 @@ export class JiraService {
 
     const decryptedRefresh = this.crypto.decrypt(integration.refreshToken);
 
-    const tokenData = await this.postJson("https://auth.atlassian.com/oauth/token", {
-      grant_type: "refresh_token",
-      client_id: this.config.get("JIRA_CLIENT_ID"),
-      client_secret: this.config.get("JIRA_CLIENT_SECRET"),
-      refresh_token: decryptedRefresh,
-    });
+    const tokenData = await this.callJira(
+      () =>
+        this.postJson(
+          "https://auth.atlassian.com/oauth/token",
+          {
+            grant_type: "refresh_token",
+            client_id: this.config.get("JIRA_CLIENT_ID"),
+            client_secret: this.config.get("JIRA_CLIENT_SECRET"),
+            refresh_token: decryptedRefresh,
+          },
+          undefined,
+          JiraTokenResponseSchema,
+        ),
+      "Failed to refresh Jira token",
+    );
 
     const encryptedAccess = this.crypto.encrypt(tokenData.access_token);
     const encryptedRefresh = this.crypto.encrypt(tokenData.refresh_token);
@@ -119,9 +160,14 @@ export class JiraService {
 
     const integration = await this.getIntegration(userId);
 
-    const projects = await this.getJson(
-      `https://api.atlassian.com/ex/jira/${integration.cloudId}/rest/api/3/project`,
-      integration.accessToken,
+    const projects = await this.callJira(
+      () =>
+        this.getJson(
+          `https://api.atlassian.com/ex/jira/${integration.cloudId}/rest/api/3/project`,
+          integration.accessToken,
+          JiraProjectsSchema,
+        ),
+      "Failed to fetch Jira projects",
     );
 
     this.cache.set(cacheKey, projects, PROJECTS_CACHE_TTL);
@@ -131,30 +177,44 @@ export class JiraService {
   async createIssue(userId: string, input: CreateIssueInput) {
     const integration = await this.getIntegration(userId);
 
-    try {
-      return await this.postJson(
-        `https://api.atlassian.com/ex/jira/${integration.cloudId}/rest/api/3/issue`,
-        {
-          fields: {
-            project: { key: input.projectKey },
-            summary: input.summary,
-            description: {
-              type: "doc",
-              version: 1,
-              content: [
-                {
-                  type: "paragraph",
-                  content: [{ type: "text", text: input.description }],
-                },
-              ],
+    return this.callJira(
+      () =>
+        this.postJson(
+          `https://api.atlassian.com/ex/jira/${integration.cloudId}/rest/api/3/issue`,
+          {
+            fields: {
+              project: { key: input.projectKey },
+              summary: input.summary,
+              description: {
+                type: "doc",
+                version: 1,
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: input.description }],
+                  },
+                ],
+              },
+              issuetype: { name: input.issueType },
             },
-            issuetype: { name: input.issueType },
           },
-        },
-        integration.accessToken,
-      );
-    } catch {
-      throw new BadRequestException("Failed to create Jira issue");
+          integration.accessToken,
+          JiraIssueSchema,
+        ),
+      "Failed to create Jira issue",
+    );
+  }
+
+  private async callJira<T>(fn: () => Promise<T>, userMessage: string): Promise<T> {
+    try {
+      return await fn();
+    } catch (err) {
+      if (err instanceof JiraApiError) {
+        this.logger.warn(`Jira API error (${err.status}): ${err.detail}`);
+      } else {
+        this.logger.warn(`Jira call failed: ${(err as Error).message}`);
+      }
+      throw new BadRequestException(userMessage);
     }
   }
 
@@ -196,8 +256,12 @@ export class JiraService {
     return { ...integration, accessToken: this.crypto.decrypt(integration.accessToken) };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async postJson(url: string, body: unknown, token?: string): Promise<any> {
+  private async postJson<T>(
+    url: string,
+    body: unknown,
+    token: string | undefined,
+    schema: ZodType<T>,
+  ): Promise<T> {
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (token) headers.Authorization = `Bearer ${token}`;
 
@@ -208,24 +272,33 @@ export class JiraService {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`HTTP ${response.status}: ${error}`);
+      const detail = await response.text();
+      throw new JiraApiError(response.status, detail);
     }
 
-    return response.json();
+    const data = await response.json();
+    const parsed = schema.safeParse(data);
+    if (!parsed.success) {
+      throw new Error(`Unexpected Jira response shape: ${parsed.error.message}`);
+    }
+    return parsed.data;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async getJson(url: string, token: string): Promise<any> {
+  private async getJson<T>(url: string, token: string, schema: ZodType<T>): Promise<T> {
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`HTTP ${response.status}: ${error}`);
+      const detail = await response.text();
+      throw new JiraApiError(response.status, detail);
     }
 
-    return response.json();
+    const data = await response.json();
+    const parsed = schema.safeParse(data);
+    if (!parsed.success) {
+      throw new Error(`Unexpected Jira response shape: ${parsed.error.message}`);
+    }
+    return parsed.data;
   }
 }

@@ -1,5 +1,3 @@
-import { ApiBearerAuth, ApiConsumes, ApiBody } from "@nestjs/swagger";
-import { Throttle } from "@nestjs/throttler";
 import {
   Controller,
   Delete,
@@ -14,6 +12,9 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { ApiBearerAuth, ApiBody, ApiConsumes } from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
+import { MAX_FILE_SIZE } from "./audio.constants.js";
 import { AudioService } from "./audio.service.js";
 import { UploadQueryDto } from "./dto/upload-query.dto.js";
 
@@ -24,7 +25,7 @@ export class AudioController {
 
   @Post("upload")
   @Throttle({ short: { ttl: 60000, limit: 10 } })
-  @UseInterceptors(FileInterceptor("file"))
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: MAX_FILE_SIZE } }))
   @ApiConsumes("multipart/form-data")
   @ApiBody({
     schema: {

@@ -5,10 +5,15 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import { randomBytes } from "crypto";
+import { EmailService } from "../email/email.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { OtpService } from "./otp.service.js";
-import { EmailService } from "../email/email.service.js";
-import { randomBytes } from "crypto";
+
+export interface SessionContext {
+  userAgent?: string;
+  ipAddress?: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -25,7 +30,7 @@ export class AuthService {
     return { sent: true };
   }
 
-  async verifyOtp(email: string, code: string) {
+  async verifyOtp(email: string, code: string, context?: SessionContext) {
     const isValid = await this.otpService.verify(email, code);
 
     if (!isValid) {
@@ -38,7 +43,7 @@ export class AuthService {
 
     if (user) {
       await this.otpService.delete(email);
-      const tokens = await this.generateTokens(user);
+      const tokens = await this.generateTokens(user, context);
       return { ...tokens, isNewUser: false };
     }
 
@@ -46,7 +51,7 @@ export class AuthService {
     return { verified: true, isNewUser: true };
   }
 
-  async completeRegister(email: string, code: string, name: string) {
+  async completeRegister(email: string, code: string, name: string, context?: SessionContext) {
     const isVerified = await this.otpService.isVerified(email, code);
 
     if (!isVerified) {
@@ -67,7 +72,7 @@ export class AuthService {
 
     await this.otpService.delete(email);
 
-    return this.generateTokens(user);
+    return this.generateTokens(user, context);
   }
 
   // Grace period for recently-revoked tokens. Next.js dispatches concurrent
@@ -78,7 +83,7 @@ export class AuthService {
   // Auth0, Firebase, and Supabase for token rotation with concurrent clients.
   private readonly REFRESH_GRACE_MS = 30_000;
 
-  async refresh(token: string) {
+  async refresh(token: string, context?: SessionContext) {
     const refreshToken = await this.prisma.refreshToken.findUnique({
       where: { token },
       include: { user: true },
@@ -135,7 +140,7 @@ export class AuthService {
       data: { revokedAt: new Date() },
     });
 
-    return this.generateTokens(refreshToken.user);
+    return this.generateTokens(refreshToken.user, context);
   }
 
   async logout(token: string) {
@@ -189,7 +194,10 @@ export class AuthService {
     });
   }
 
-  private async generateTokens(user: { id: string; email: string; name: string }) {
+  private async generateTokens(
+    user: { id: string; email: string; name: string },
+    context?: SessionContext,
+  ) {
     const payload = { sub: user.id, email: user.email };
 
     const accessToken = await this.jwtService.signAsync(payload);
@@ -199,6 +207,8 @@ export class AuthService {
       data: {
         token: refreshTokenValue,
         userId: user.id,
+        userAgent: context?.userAgent,
+        ipAddress: context?.ipAddress,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       },
     });

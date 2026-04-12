@@ -1,22 +1,30 @@
-import { ApiBearerAuth } from "@nestjs/swagger";
 import {
   Body,
   Controller,
-  Post,
-  Get,
   Delete,
-  Param,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Post,
   Req,
 } from "@nestjs/common";
+import { ApiBearerAuth } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
-import { AuthService } from "./auth.service.js";
-import { RequestOtpDto } from "./dto/request-otp.dto.js";
-import { VerifyOtpDto } from "./dto/verify-otp.dto.js";
+import type { Request } from "express";
+import { AuthService, SessionContext } from "./auth.service.js";
+import { Public } from "./decorators/public.decorator.js";
 import { CompleteRegisterDto } from "./dto/complete-register.dto.js";
 import { RefreshDto } from "./dto/refresh.dto.js";
-import { Public } from "./decorators/public.decorator.js";
+import { RequestOtpDto } from "./dto/request-otp.dto.js";
+import { VerifyOtpDto } from "./dto/verify-otp.dto.js";
+
+function sessionContextOf(req: Request): SessionContext {
+  return {
+    userAgent: req.headers["user-agent"],
+    ipAddress: req.ip,
+  };
+}
 
 @ApiBearerAuth()
 @Controller("auth")
@@ -34,22 +42,22 @@ export class AuthController {
   @Throttle({ short: { ttl: 60000, limit: 10 } })
   @Post("verify-otp")
   @HttpCode(HttpStatus.OK)
-  verifyOtp(@Body() dto: VerifyOtpDto) {
-    return this.authService.verifyOtp(dto.email, dto.code);
+  verifyOtp(@Body() dto: VerifyOtpDto, @Req() req: Request) {
+    return this.authService.verifyOtp(dto.email, dto.code, sessionContextOf(req));
   }
 
   @Public()
   @Throttle({ short: { ttl: 60000, limit: 5 } })
   @Post("complete-register")
-  completeRegister(@Body() dto: CompleteRegisterDto) {
-    return this.authService.completeRegister(dto.email, dto.code, dto.name);
+  completeRegister(@Body() dto: CompleteRegisterDto, @Req() req: Request) {
+    return this.authService.completeRegister(dto.email, dto.code, dto.name, sessionContextOf(req));
   }
 
   @Public()
   @Post("refresh")
   @HttpCode(HttpStatus.OK)
-  refresh(@Body() dto: RefreshDto) {
-    return this.authService.refresh(dto.refreshToken);
+  refresh(@Body() dto: RefreshDto, @Req() req: Request) {
+    return this.authService.refresh(dto.refreshToken, sessionContextOf(req));
   }
 
   @Post("logout")
