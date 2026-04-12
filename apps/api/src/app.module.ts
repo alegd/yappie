@@ -5,6 +5,7 @@ import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { SentryModule } from "@sentry/nestjs/setup";
 import { AnalyticsModule } from "./analytics/analytics.module.js";
+import { BillingModule } from "./billing/billing.module.js";
 import { AppController } from "./app.controller.js";
 import { AppService } from "./app.service.js";
 import { AudioModule } from "./audio/audio.module.js";
@@ -57,6 +58,7 @@ import { UsersModule } from "./users/users.module.js";
     UsersModule,
     TemplatesModule,
     QuotasModule,
+    ...(process.env.STRIPE_SECRET_KEY ? [BillingModule] : []),
   ],
   controllers: [AppController],
   providers: [

@@ -50,6 +50,13 @@ const envSchema = z.object({
   // Quotas
   QUOTA_FREE_MINUTES: z.coerce.number(),
   QUOTA_PRO_MINUTES: z.coerce.number(),
+
+  // Stripe (optional — billing is a post-MVP feature)
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_PRO_PRICE_ID: z.string().optional(),
+  STRIPE_SUCCESS_URL: z.string().optional(),
+  STRIPE_CANCEL_URL: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
