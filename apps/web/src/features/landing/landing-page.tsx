@@ -130,7 +130,7 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
           </Link>
           <a
             href="#how-it-works"
-            className="rounded-lg border border-border-hover px-6 py-3 font-medium text-foreground transition hover:border-border-hover"
+            className="rounded-lg border border-border px-4 py-2 font-medium text-foreground transition hover:border-border-hover"
           >
             See how it works
           </a>
@@ -138,15 +138,6 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
         <p className="mt-4 text-sm text-muted-foreground">
           No credit card &middot; 20 min/month free &middot; Open source (AGPL-3.0)
         </p>
-      </section>
-
-      {/* Demo */}
-      <section className="mx-auto max-w-[900px] px-6 pb-20">
-        <div className="overflow-hidden rounded-2xl border border-border shadow-2xl">
-          <video autoPlay muted loop playsInline className="w-full">
-            <source src="/demo.mp4" type="video/mp4" />
-          </video>
-        </div>
       </section>
 
       {/* How it works — 3 steps */}
