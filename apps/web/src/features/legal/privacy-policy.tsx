@@ -2,8 +2,8 @@ import { PublicNavbar } from "@/components/layout/public-navbar";
 import Link from "next/link";
 
 const CONTACT_EMAIL = "ale.gueden@gmail.com";
-const ENTITY_NAME = "Alejandro Guedén";
-const EFFECTIVE_DATE = "April 12, 2026";
+const ENTITY_NAME = "Yappie";
+const EFFECTIVE_DATE = "April 15, 2026";
 
 export function PrivacyPolicy() {
   return (
