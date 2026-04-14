@@ -1,9 +1,11 @@
 import "./globals.css";
 
 import { ThemeWrapper } from "@/components/theme-wrapper";
+import { getUmamiConfig } from "@/lib/umami";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, Sora } from "next/font/google";
+import Script from "next/script";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -59,6 +61,7 @@ export default async function RootLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const umami = getUmamiConfig();
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -67,6 +70,9 @@ export default async function RootLayout({
       >
         <ThemeWrapper>{children}</ThemeWrapper>
         <Analytics />
+        {umami && (
+          <Script src={umami.src} data-website-id={umami.websiteId} strategy="afterInteractive" />
+        )}
       </body>
     </html>
   );
