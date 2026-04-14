@@ -67,10 +67,12 @@ export function PrivacyPolicy() {
 
         <h3>Usage Data</h3>
         <p>
-          We collect anonymous usage analytics through <strong>Vercel Analytics</strong> (page
-          views, navigation patterns). We use <strong>Sentry</strong> for error monitoring, which
-          may capture technical metadata (browser, OS, stack traces) when errors occur. Neither
-          service tracks you across other websites.
+          We collect anonymous usage analytics through <strong>Vercel Analytics</strong> and{" "}
+          <strong>Umami</strong> (page views, navigation patterns). Umami runs on our own
+          infrastructure at <code>umami.gueden.com</code>, is cookie-less, does not collect any
+          personally identifiable information, and does not track you across other websites. We use{" "}
+          <strong>Sentry</strong> for error monitoring, which may capture technical metadata
+          (browser, OS, stack traces) when errors occur.
         </p>
 
         <h2>2. How We Use Your Data</h2>
@@ -127,6 +129,11 @@ export function PrivacyPolicy() {
               <td>Vercel Analytics</td>
               <td>Usage analytics</td>
               <td>Anonymous page view data</td>
+            </tr>
+            <tr>
+              <td>Umami (self-hosted)</td>
+              <td>Usage analytics</td>
+              <td>Anonymous page view data (no cookies, no PII)</td>
             </tr>
           </tbody>
         </table>
