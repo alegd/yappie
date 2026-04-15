@@ -238,7 +238,7 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
           <div className="flex flex-col rounded-2xl border border-border bg-surface/50 p-8">
             <h3 className="text-base font-semibold">Free</h3>
             <p className="mt-1 text-4xl font-extrabold">
-              €0<span className="text-sm font-normal text-muted-foreground">/month</span>
+              $0<span className="text-sm font-normal text-muted-foreground">/month</span>
             </p>
             <ul className="mt-6 flex-1 space-y-2.5 text-sm text-muted-foreground">
               {[
@@ -271,7 +271,7 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
             </span>
             <h3 className="text-base font-semibold text-primary">Pro</h3>
             <p className="mt-1 text-4xl font-extrabold">
-              €4.99<span className="text-sm font-normal text-muted-foreground">/month</span>
+              $4.99<span className="text-sm font-normal text-muted-foreground">/month</span>
             </p>
             <ul className="mt-6 flex-1 space-y-2.5 text-sm text-muted-foreground">
               {["100 minutes of audio per month", "Priority processing", "Everything in Free"].map(
