@@ -22,13 +22,12 @@ describe("LandingPage", () => {
     expect(screen.getByText("the ticket.")).toBeInTheDocument();
   });
 
-  it("should render decorative audio wave bars behind the hero (aria-hidden)", () => {
+  it("should render the animated hero product demo (aria-hidden)", () => {
     const { container } = render(<LandingPage />);
 
-    const waves = container.querySelector('[data-testid="hero-waves"]');
-    expect(waves).not.toBeNull();
-    expect(waves).toHaveAttribute("aria-hidden", "true");
-    expect(waves?.children.length).toBe(20);
+    const anim = container.querySelector('[data-testid="hero-animation"]');
+    expect(anim).not.toBeNull();
+    expect(anim).toHaveAttribute("aria-hidden", "true");
   });
 
   it("should render combined badge", () => {
