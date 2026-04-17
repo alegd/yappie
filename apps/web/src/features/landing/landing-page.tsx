@@ -1,37 +1,8 @@
-"use client";
-
-import { cn } from "@/lib/utils";
 import { AUTH_PAGE } from "@/lib/constants/pages";
 import { ArrowRight, Check, FileCheck, Mic, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { HTMLAttributes, PropsWithChildren } from "react";
-import { useScrollAnimation } from "./hooks/use-scroll-animation";
-
-function AnimatedSection({
-  children,
-  className,
-  ...rest
-}: PropsWithChildren<HTMLAttributes<HTMLElement>>) {
-  const { ref, isVisible } = useScrollAnimation();
-
-  return (
-    <section
-      ref={ref}
-      {...rest}
-      className={cn(
-        "transition-all duration-700",
-        isVisible ? "opacity-100 translate-y-0" : "translate-y-6 opacity-0",
-        className,
-      )}
-    >
-      {children}
-    </section>
-  );
-}
-
-const HERO_WAVE_HEIGHTS = [
-  20, 35, 50, 65, 45, 30, 55, 70, 40, 25, 60, 45, 35, 50, 65, 30, 55, 40, 70, 50,
-];
+import { AnimateOnScroll } from "./components/animate-on-scroll";
+import { HeroAnimation } from "./components/hero-animation";
 
 const steps = [
   {
@@ -96,19 +67,6 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
     <>
       {/* Hero */}
       <section className="relative mx-auto max-w-4xl px-6 pt-40 pb-16 text-center">
-        <div
-          data-testid="hero-waves"
-          aria-hidden="true"
-          className="pointer-events-none absolute top-32 left-1/2 flex h-[120px] -translate-x-1/2 items-center gap-1.5 opacity-[0.06]"
-        >
-          {HERO_WAVE_HEIGHTS.map((height, i) => (
-            <div
-              key={i}
-              className="w-1 rounded-[2px] bg-primary"
-              style={{ height: `${height}px` }}
-            />
-          ))}
-        </div>
         <div className="relative mb-6 inline-block rounded-full border border-border bg-accent-surface px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
           Open Source &middot; Powered by AI
         </div>
@@ -138,10 +96,12 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
         <p className="mt-4 text-sm text-muted-foreground">
           No credit card &middot; 20 min/month free &middot; Open source (AGPL-3.0)
         </p>
+
+        <HeroAnimation />
       </section>
 
       {/* How it works — 3 steps */}
-      <AnimatedSection id="how-it-works" className="mx-auto max-w-6xl px-6 py-20">
+      <AnimateOnScroll id="how-it-works" className="mx-auto max-w-6xl px-6 py-20">
         <h2 className="mb-12 text-center text-3xl font-bold">From audio to action in 3 steps</h2>
         <div className="grid gap-8 md:grid-cols-3">
           {steps.map((step, i) => (
@@ -164,10 +124,10 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
             </div>
           ))}
         </div>
-      </AnimatedSection>
+      </AnimateOnScroll>
 
       {/* Project context differentiator */}
-      <AnimatedSection className="mx-auto max-w-6xl px-6 py-20">
+      <AnimateOnScroll className="mx-auto max-w-6xl px-6 py-20">
         <div className="grid items-center gap-14 md:grid-cols-2">
           <div>
             <h2 className="mb-4 text-3xl font-bold">
@@ -210,10 +170,10 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
             </div>
           </div>
         </div>
-      </AnimatedSection>
+      </AnimateOnScroll>
 
       {/* Features grid */}
-      <AnimatedSection className="mx-auto max-w-6xl px-6 py-20">
+      <AnimateOnScroll className="mx-auto max-w-6xl px-6 py-20">
         <h2 className="mb-12 text-center text-3xl font-bold">Built for real teams</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {features.map((feature) => (
@@ -227,10 +187,10 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
             </div>
           ))}
         </div>
-      </AnimatedSection>
+      </AnimateOnScroll>
 
       {/* Pricing */}
-      <AnimatedSection id="pricing" className="mx-auto max-w-[700px] px-6 py-20">
+      <AnimateOnScroll id="pricing" className="mx-auto max-w-[700px] px-6 py-20">
         <h2 className="mb-12 text-center text-3xl font-bold">
           Simple <span className="text-primary">pricing</span>
         </h2>
@@ -300,10 +260,10 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
           No credit card required for Free. Cancel Pro anytime. Early adopters lock in this price
           forever.
         </p>
-      </AnimatedSection>
+      </AnimateOnScroll>
 
       {/* CTA */}
-      <AnimatedSection className="mx-auto max-w-3xl px-6 pb-20">
+      <AnimateOnScroll className="mx-auto max-w-3xl px-6 pb-20">
         <div className="rounded-[20px] border border-primary/20 bg-gradient-to-br from-primary/[0.15] to-primary/[0.05] p-12 text-center">
           <h2 className="mb-3 text-3xl font-bold">Ready to stop typing tickets?</h2>
           <p className="mb-6 text-foreground/75">
@@ -316,7 +276,7 @@ export function LandingPage({ upgradeHref = AUTH_PAGE }: LandingPageProps = {}) 
             Start for free <ArrowRight size={16} />
           </Link>
         </div>
-      </AnimatedSection>
+      </AnimateOnScroll>
 
       {/* Footer */}
       <footer className="border-t border-border px-6 py-6">
