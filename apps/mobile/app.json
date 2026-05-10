@@ -49,12 +49,6 @@
             "targetSdkVersion": 35
           }
         }
-      ],
-      [
-        "@sentry/react-native/expo",
-        {
-          "url": "https://sentry.io/"
-        }
       ]
     ],
     "experiments": {
