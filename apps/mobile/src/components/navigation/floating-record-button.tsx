@@ -2,7 +2,15 @@ import { Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter, useSegments } from "expo-router";
-import { colors, radii, spacing } from "@/constants/theme";
+import {
+  borderWidth,
+  colors,
+  componentSize,
+  iconSize,
+  opacity,
+  radii,
+  spacing,
+} from "@/constants/theme";
 
 const HIDDEN_ROUTES = ["settings", "record"];
 const PROJECT_DETAIL_SEGMENT = "projects";
@@ -37,7 +45,7 @@ export function FloatingRecordButton() {
         pressed && styles.pressed,
       ]}
     >
-      <Ionicons name="mic-outline" size={26} color={colors.text} />
+      <Ionicons name="mic-outline" size={iconSize.xl} color={colors.text} />
     </Pressable>
   );
 }
@@ -45,16 +53,16 @@ export function FloatingRecordButton() {
 const styles = StyleSheet.create({
   button: {
     position: "absolute",
-    width: 56,
-    height: 56,
+    width: componentSize.fab,
+    height: componentSize.fab,
     borderRadius: radii.pill,
-    borderWidth: 1.5,
+    borderWidth: borderWidth.medium,
     borderColor: colors.borderStrong,
     backgroundColor: colors.surface,
     alignItems: "center",
     justifyContent: "center",
   },
   pressed: {
-    opacity: 0.7,
+    opacity: opacity.pressedSubtle,
   },
 });

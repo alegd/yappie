@@ -1,6 +1,14 @@
 import { Pressable, View, Text, StyleSheet } from "react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import {
+  borderWidth,
+  colors,
+  componentSize,
+  fontSize,
+  fontWeight,
+  radii,
+  spacing,
+} from "@/constants/theme";
 
 const TAB_LABELS: Record<string, string> = {
   home: "Home",
@@ -50,10 +58,10 @@ const styles = StyleSheet.create({
   },
   pill: {
     flexDirection: "row",
-    height: 56,
+    height: componentSize.fab,
     backgroundColor: colors.surface,
     borderRadius: radii.pill,
-    borderWidth: 1,
+    borderWidth: borderWidth.thin,
     borderColor: colors.border,
     padding: spacing.xs,
     gap: spacing.xs,

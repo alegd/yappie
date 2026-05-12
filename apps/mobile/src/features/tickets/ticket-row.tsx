@@ -1,7 +1,17 @@
 import { Pressable, View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Badge, type BadgeVariant } from "@/components/ui/badge";
-import { colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import {
+  borderWidth,
+  colors,
+  componentSize,
+  fontSize,
+  fontWeight,
+  iconSize,
+  opacity,
+  radii,
+  spacing,
+} from "@/constants/theme";
 import type { Ticket, TicketPriority, TicketStatus } from "@/lib/api/types";
 
 interface TicketRowProps {
@@ -39,7 +49,7 @@ export function TicketRow({ ticket, onPress, selectable, selected }: TicketRowPr
           accessibilityState={{ checked: Boolean(selected) }}
           style={[styles.checkbox, selected && styles.checkboxSelected]}
         >
-          {selected ? <Ionicons name="checkmark" size={16} color={colors.text} /> : null}
+          {selected ? <Ionicons name="checkmark" size={iconSize.xs} color={colors.text} /> : null}
         </View>
       ) : null}
 
@@ -56,7 +66,7 @@ export function TicketRow({ ticket, onPress, selectable, selected }: TicketRowPr
         </View>
       </View>
 
-      {!selectable ? <Ionicons name="chevron-forward" size={20} color={colors.textDim} /> : null}
+      {!selectable ? <Ionicons name="chevron-forward" size={iconSize.sm} color={colors.textDim} /> : null}
     </Pressable>
   );
 }
@@ -69,18 +79,18 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     borderRadius: radii.md,
     backgroundColor: colors.surface,
-    borderWidth: 1,
+    borderWidth: borderWidth.thin,
     borderColor: colors.border,
     gap: spacing.md,
   },
   pressed: {
-    opacity: 0.7,
+    opacity: opacity.pressedSubtle,
   },
   checkbox: {
-    width: 22,
-    height: 22,
+    width: componentSize.checkbox,
+    height: componentSize.checkbox,
     borderRadius: radii.sm,
-    borderWidth: 1.5,
+    borderWidth: borderWidth.medium,
     borderColor: colors.borderStrong,
     alignItems: "center",
     justifyContent: "center",

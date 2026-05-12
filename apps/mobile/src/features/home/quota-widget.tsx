@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import { Card } from "@/components/ui/card";
-import { colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import { colors, componentSize, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
 import type { Quota } from "@/lib/api/types";
 
 interface QuotaWidgetProps {
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     fontVariant: ["tabular-nums"],
   },
   barTrack: {
-    height: 6,
+    height: componentSize.progressBarHeight,
     backgroundColor: colors.surfaceElevated,
     borderRadius: radii.pill,
     overflow: "hidden",

@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import { colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import { borderWidth, colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
 
 export type BadgeVariant =
   | "low"
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.sm,
     borderRadius: radii.sm,
-    borderWidth: 1,
+    borderWidth: borderWidth.thin,
     alignSelf: "flex-start",
   },
   label: {

@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
   },
   list: {
-    paddingBottom: spacing.xxl + spacing.xxl,
+    paddingBottom: spacing.huge,
     gap: spacing.sm,
   },
 });

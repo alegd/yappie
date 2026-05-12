@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingTop: spacing.md,
-    paddingBottom: spacing.xxl + spacing.xxl,
+    paddingBottom: spacing.huge,
     gap: spacing.sm,
   },
 });

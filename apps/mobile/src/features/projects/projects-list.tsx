@@ -6,7 +6,15 @@ import { useRouter } from "expo-router";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { ListRow } from "@/components/ui/list-row";
 import { Skeleton } from "@/components/ui/skeleton";
-import { colors, radii, spacing } from "@/constants/theme";
+import {
+  borderWidth,
+  colors,
+  componentSize,
+  iconSize,
+  opacity,
+  radii,
+  spacing,
+} from "@/constants/theme";
 import { listProjects } from "@/lib/api/projects";
 import { queryKeys } from "@/lib/query-keys";
 import { CreateProjectModal } from "./create-project-modal";
@@ -56,7 +64,7 @@ export function ProjectsList() {
           onPress={() => setModalOpen(true)}
           style={({ pressed }) => [styles.plusButton, pressed && styles.plusPressed]}
         >
-          <Ionicons name="add" size={22} color={colors.text} />
+          <Ionicons name="add" size={iconSize.md} color={colors.text} />
         </Pressable>
       </View>
 
@@ -90,20 +98,20 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   plusButton: {
-    width: 36,
-    height: 36,
+    width: componentSize.hitArea,
+    height: componentSize.hitArea,
     borderRadius: radii.pill,
-    borderWidth: 1,
+    borderWidth: borderWidth.thin,
     borderColor: colors.borderStrong,
     alignItems: "center",
     justifyContent: "center",
   },
   plusPressed: {
-    opacity: 0.6,
+    opacity: opacity.pressed,
   },
   list: {
     paddingTop: spacing.md,
-    paddingBottom: spacing.xxl + spacing.xxl,
+    paddingBottom: spacing.huge,
     gap: spacing.sm,
   },
   skeletons: {

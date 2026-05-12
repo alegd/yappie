@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { colors, spacing } from "@/constants/theme";
+import { colors, componentSize, iconSize, opacity, spacing } from "@/constants/theme";
 
 export function SettingsButton() {
   const router = useRouter();
@@ -13,20 +13,20 @@ export function SettingsButton() {
       style={({ pressed }) => [styles.button, pressed && styles.pressed]}
       hitSlop={spacing.sm}
     >
-      <Ionicons name="settings-outline" size={22} color={colors.text} />
+      <Ionicons name="settings-outline" size={iconSize.md} color={colors.text} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    width: 36,
-    height: 36,
+    width: componentSize.hitArea,
+    height: componentSize.hitArea,
     alignItems: "center",
     justifyContent: "center",
     marginRight: spacing.md,
   },
   pressed: {
-    opacity: 0.6,
+    opacity: opacity.pressed,
   },
 });

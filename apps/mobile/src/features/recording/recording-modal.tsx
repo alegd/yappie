@@ -7,7 +7,18 @@ import { useAudioRecorder, useAudioRecorderPermissions, RecordingPresets } from 
 import { Button } from "@/components/ui/button";
 import { ListRow } from "@/components/ui/list-row";
 import { Skeleton } from "@/components/ui/skeleton";
-import { colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import {
+  borderWidth,
+  colors,
+  componentSize,
+  duration,
+  fontSize,
+  fontWeight,
+  iconSize,
+  opacity,
+  radii,
+  spacing,
+} from "@/constants/theme";
 import { ApiError } from "@/lib/api-error";
 import { uploadAudio } from "@/lib/api/audios";
 import { listProjects } from "@/lib/api/projects";
@@ -87,7 +98,7 @@ export function RecordingModal() {
     setDurationSeconds(0);
     timerRef.current = setInterval(() => {
       setDurationSeconds((s) => s + 1);
-    }, 1000);
+    }, duration.recordingTick);
     setState("recording");
   };
 
@@ -147,7 +158,7 @@ export function RecordingModal() {
           onPress={handleClose}
           style={({ pressed }) => [styles.closeButton, pressed && styles.pressed]}
         >
-          <Ionicons name="close" size={24} color={colors.text} />
+          <Ionicons name="close" size={iconSize.lg} color={colors.text} />
         </Pressable>
         <Text style={styles.headerTitle}>
           {state === "selecting_project"
@@ -159,7 +170,7 @@ export function RecordingModal() {
 
       {needsPermission ? (
         <View style={styles.center}>
-          <Ionicons name="mic-off-outline" size={64} color={colors.textMuted} />
+          <Ionicons name="mic-off-outline" size={iconSize.display} color={colors.textMuted} />
           <Text style={styles.permissionTitle}>Microphone access needed</Text>
           <Text style={styles.permissionBody}>
             Yappie needs the microphone to record audio for your tickets.
@@ -209,7 +220,7 @@ export function RecordingModal() {
       {state === "idle" ? (
         <View style={styles.center}>
           <View style={styles.micCircle}>
-            <Ionicons name="mic-outline" size={64} color={colors.text} />
+            <Ionicons name="mic-outline" size={iconSize.display} color={colors.text} />
           </View>
           <Text style={styles.hint}>Tap to record</Text>
           <Pressable
@@ -269,14 +280,14 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
   },
   closeButton: {
-    width: 36,
-    height: 36,
+    width: componentSize.hitArea,
+    height: componentSize.hitArea,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: radii.pill,
   },
   pressed: {
-    opacity: 0.6,
+    opacity: opacity.pressed,
   },
   headerTitle: {
     flex: 1,
@@ -286,7 +297,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   headerSpacer: {
-    width: 36,
+    width: componentSize.hitArea,
   },
   skeletons: {
     gap: spacing.sm,
@@ -301,10 +312,10 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
   },
   micCircle: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    borderWidth: 2,
+    width: componentSize.recordingMic,
+    height: componentSize.recordingMic,
+    borderRadius: radii.pill,
+    borderWidth: borderWidth.thick,
     borderColor: colors.borderStrong,
     alignItems: "center",
     justifyContent: "center",
@@ -331,9 +342,9 @@ const styles = StyleSheet.create({
     fontVariant: ["tabular-nums"],
   },
   recordingDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: componentSize.recordingDot,
+    height: componentSize.recordingDot,
+    borderRadius: radii.pill,
     backgroundColor: colors.danger,
   },
   stopButton: {

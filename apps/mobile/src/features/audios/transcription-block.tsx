@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import { colors, fontSize, fontWeight, iconSize, opacity, radii, spacing } from "@/constants/theme";
 
 interface TranscriptionBlockProps {
   text: string | null;
@@ -27,7 +27,7 @@ export function TranscriptionBlock({ text }: TranscriptionBlockProps) {
       >
         <Ionicons
           name={expanded ? "chevron-down" : "chevron-forward"}
-          size={16}
+          size={iconSize.xs}
           color={colors.textMuted}
         />
         <Text style={styles.toggleLabel}>
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   pressed: {
-    opacity: 0.6,
+    opacity: opacity.pressed,
   },
   toggleLabel: {
     fontSize: fontSize.sm,

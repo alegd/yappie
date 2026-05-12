@@ -7,7 +7,17 @@ import { useRouter } from "expo-router";
 import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
-import { colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import {
+  borderWidth,
+  colors,
+  componentSize,
+  fontSize,
+  fontWeight,
+  iconSize,
+  opacity,
+  radii,
+  spacing,
+} from "@/constants/theme";
 import { ApiError } from "@/lib/api-error";
 import { exportTicketToJira } from "@/lib/api/jira";
 import { deleteTicket, updateTicket } from "@/lib/api/tickets";
@@ -178,7 +188,7 @@ export function TicketDetailSheet({ ticket, onClose }: TicketDetailSheetProps) {
               onPress={onClose}
               style={({ pressed }) => [styles.closeButton, pressed && styles.pressed]}
             >
-              <Ionicons name="close" size={22} color={colors.textMuted} />
+              <Ionicons name="close" size={iconSize.md} color={colors.textMuted} />
             </Pressable>
           </View>
 
@@ -281,19 +291,19 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
     color: colors.text,
-    borderBottomWidth: 1,
+    borderBottomWidth: borderWidth.thin,
     borderBottomColor: colors.border,
     paddingVertical: spacing.xs,
   },
   closeButton: {
-    width: 32,
-    height: 32,
+    width: componentSize.closeButton,
+    height: componentSize.closeButton,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: radii.pill,
   },
   pressed: {
-    opacity: 0.6,
+    opacity: opacity.pressed,
   },
   badges: {
     flexDirection: "row",
@@ -310,7 +320,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
     borderRadius: radii.pill,
-    borderWidth: 1,
+    borderWidth: borderWidth.thin,
     borderColor: colors.border,
   },
   priorityChipActive: {
@@ -347,10 +357,10 @@ const styles = StyleSheet.create({
     color: colors.text,
     backgroundColor: colors.background,
     borderRadius: radii.md,
-    borderWidth: 1,
+    borderWidth: borderWidth.thin,
     borderColor: colors.border,
     padding: spacing.md,
-    minHeight: 120,
+    minHeight: componentSize.descriptionMinHeight,
     textAlignVertical: "top",
   },
   actions: {

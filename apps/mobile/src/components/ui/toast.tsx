@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import { borderWidth, colors, duration, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
 
 export type ToastVariant = "success" | "error" | "info";
 
@@ -38,8 +38,6 @@ export const toast = {
   },
 };
 
-const DEFAULT_DURATION_MS = 3000;
-
 const variantColor: Record<ToastVariant, string> = {
   success: colors.success,
   error: colors.danger,
@@ -54,7 +52,7 @@ export function ToastContainer() {
       setEntries((prev) => [...prev, entry]);
       setTimeout(() => {
         setEntries((prev) => prev.filter((e) => e.id !== entry.id));
-      }, DEFAULT_DURATION_MS);
+      }, duration.toastDismiss);
     });
   }, []);
 
@@ -89,7 +87,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     borderRadius: radii.md,
-    borderWidth: 1,
+    borderWidth: borderWidth.thin,
   },
   message: {
     fontSize: fontSize.sm,

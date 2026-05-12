@@ -10,7 +10,7 @@ import { toast } from "@/components/ui/toast";
 import { TranscriptionBlock } from "./transcription-block";
 import { TicketRow } from "@/features/tickets/ticket-row";
 import { TicketDetailSheet } from "@/features/tickets/ticket-detail-sheet";
-import { colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import { borderWidth, colors, fontSize, fontWeight, opacity, radii, spacing } from "@/constants/theme";
 import { ApiError } from "@/lib/api-error";
 import { getAudio } from "@/lib/api/audios";
 import { exportTicketsBulk } from "@/lib/api/jira";
@@ -211,11 +211,11 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
     borderRadius: radii.pill,
-    borderWidth: 1,
+    borderWidth: borderWidth.thin,
     borderColor: colors.borderStrong,
   },
   toggleButtonPressed: {
-    opacity: 0.6,
+    opacity: opacity.pressed,
   },
   toggleLabel: {
     fontSize: fontSize.xs,
@@ -229,19 +229,19 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingTop: spacing.md,
-    paddingBottom: spacing.xxl + spacing.xxl,
+    paddingBottom: spacing.huge,
     gap: spacing.sm,
   },
   footer: {
     position: "absolute",
-    bottom: spacing.xxl + spacing.xxl,
+    bottom: spacing.huge,
     left: spacing.xl,
     right: spacing.xl,
     backgroundColor: colors.surfaceElevated,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     borderRadius: radii.md,
-    borderWidth: 1,
+    borderWidth: borderWidth.thin,
     borderColor: colors.borderStrong,
     flexDirection: "row",
     alignItems: "center",
