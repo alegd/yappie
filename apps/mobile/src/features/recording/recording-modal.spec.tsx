@@ -11,21 +11,30 @@ jest.mock("@/lib/api/projects", () => ({
   listProjects: jest.fn(),
 }));
 
-// expo-audio mocked at module level so the component can import it without
-// initializing native code. Chunks 2/3 replace these with real wiring.
+// expo-audio mocked at module level. Tests control behavior via the
+// mockRecorderHandle and mockPermissionState below.
+const mockRecorderHandle = {
+  prepareToRecordAsync: jest.fn(),
+  record: jest.fn(),
+  stop: jest.fn().mockResolvedValue(undefined),
+  uri: "file:///tmp/test.m4a",
+};
+
+let mockPermissionState: { granted: boolean; canAskAgain: boolean; status: string } = {
+  granted: true,
+  canAskAgain: true,
+  status: "granted",
+};
+const mockRequestPermission = jest.fn();
+
 jest.mock("expo-audio", () => ({
-  useAudioRecorder: () => ({
-    prepareToRecordAsync: jest.fn(),
-    record: jest.fn(),
-    stop: jest.fn().mockResolvedValue(undefined),
-    uri: "file:///tmp/test.m4a",
-    getStatus: () => ({ isRecording: false, durationMillis: 0 }),
-  }),
-  useAudioRecorderPermissions: () => [
-    { granted: true, canAskAgain: true, status: "granted" },
-    jest.fn().mockResolvedValue({ granted: true, canAskAgain: true, status: "granted" }),
-  ],
+  useAudioRecorder: () => mockRecorderHandle,
+  useAudioRecorderPermissions: () => [mockPermissionState, mockRequestPermission],
   RecordingPresets: { HIGH_QUALITY: {} },
+}));
+
+jest.mock("react-native/Libraries/Linking/Linking", () => ({
+  openSettings: jest.fn(),
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -63,6 +72,11 @@ describe("RecordingModal", () => {
     mockBack.mockReset();
     mockDismiss.mockReset();
     mockParams = {};
+    mockRecorderHandle.prepareToRecordAsync.mockReset();
+    mockRecorderHandle.record.mockReset();
+    mockRecorderHandle.stop.mockReset().mockResolvedValue(undefined);
+    mockRequestPermission.mockReset();
+    mockPermissionState = { granted: true, canAskAgain: true, status: "granted" };
   });
 
   it("shows project selector when no projectId is passed", async () => {
@@ -146,5 +160,77 @@ describe("RecordingModal", () => {
     const { findByLabelText } = renderWithClient(<RecordingModal />);
     fireEvent.press(await findByLabelText("Close recorder"));
     expect(mockDismiss).toHaveBeenCalled();
+  });
+
+  describe("permissions and recorder wiring", () => {
+    it("shows the permission denied screen when mic permission is not granted", async () => {
+      mockPermissionState = { granted: false, canAskAgain: false, status: "denied" };
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByText } = renderWithClient(<RecordingModal />);
+      expect(await findByText(/microphone access/i)).toBeTruthy();
+      expect(await findByText(/open settings/i)).toBeTruthy();
+    });
+
+    it("requests permission and transitions to idle when granted on first record press", async () => {
+      mockPermissionState = { granted: false, canAskAgain: true, status: "undetermined" };
+      mockRequestPermission.mockResolvedValueOnce({
+        granted: true,
+        canAskAgain: true,
+        status: "granted",
+      });
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText, findByText } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Grant microphone access"));
+      await waitFor(() => {
+        expect(mockRequestPermission).toHaveBeenCalled();
+      });
+      expect(await findByText(/tap to record/i)).toBeTruthy();
+    });
+
+    it("calls prepareToRecordAsync and record when Record is pressed", async () => {
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      await waitFor(() => {
+        expect(mockRecorderHandle.prepareToRecordAsync).toHaveBeenCalled();
+      });
+      await waitFor(() => {
+        expect(mockRecorderHandle.record).toHaveBeenCalled();
+      });
+    });
+
+    it("calls recorder.stop when Stop is pressed", async () => {
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText, findByText } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      fireEvent.press(await findByText("Stop"));
+      await waitFor(() => {
+        expect(mockRecorderHandle.stop).toHaveBeenCalled();
+      });
+    });
   });
 });

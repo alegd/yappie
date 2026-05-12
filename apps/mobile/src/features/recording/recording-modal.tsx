@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { View, Text, Pressable, FlatList, StyleSheet } from "react-native";
+import { Linking, View, Text, Pressable, FlatList, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAudioRecorder, useAudioRecorderPermissions, RecordingPresets } from "expo-audio";
-import { Button } from "@/components/ui/button";
 import { ListRow } from "@/components/ui/list-row";
 import { Skeleton } from "@/components/ui/skeleton";
 import { colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
@@ -56,6 +55,8 @@ export function RecordingModal() {
       const result = await requestPermission();
       if (!result.granted) return;
     }
+    await recorder.prepareToRecordAsync();
+    recorder.record();
     setDurationSeconds(0);
     timerRef.current = setInterval(() => {
       setDurationSeconds((s) => s + 1);
@@ -68,8 +69,19 @@ export function RecordingModal() {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
+    await recorder.stop();
     setState("uploading");
   };
+
+  const handleRequestPermission = async () => {
+    const result = await requestPermission();
+    if (!result.granted && !result.canAskAgain) {
+      // user must enable from settings
+      return;
+    }
+  };
+
+  const needsPermission = permission ? !permission.granted : false;
 
   const handleClose = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -95,7 +107,34 @@ export function RecordingModal() {
         <View style={styles.headerSpacer} />
       </View>
 
-      {state === "selecting_project" ? (
+      {needsPermission ? (
+        <View style={styles.center}>
+          <Ionicons name="mic-off-outline" size={64} color={colors.textMuted} />
+          <Text style={styles.permissionTitle}>Microphone access needed</Text>
+          <Text style={styles.permissionBody}>
+            Yappie needs the microphone to record audio for your tickets.
+          </Text>
+          {permission?.canAskAgain ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Grant microphone access"
+              onPress={handleRequestPermission}
+              style={({ pressed }) => [styles.recordButton, pressed && styles.pressed]}
+            >
+              <Text style={styles.recordButtonLabel}>Grant access</Text>
+            </Pressable>
+          ) : (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Open settings"
+              onPress={() => Linking.openSettings()}
+              style={({ pressed }) => [styles.recordButton, pressed && styles.pressed]}
+            >
+              <Text style={styles.recordButtonLabel}>Open Settings</Text>
+            </Pressable>
+          )}
+        </View>
+      ) : state === "selecting_project" ? (
         projectsQuery.isLoading ? (
           <View style={styles.skeletons}>
             <Skeleton width="100%" height={60} borderRadius={radii.md} />
@@ -159,8 +198,6 @@ export function RecordingModal() {
   );
 }
 
-// Reference recorder so the import is not dropped — wired in Chunk 2.
-void useAudioRecorder;
 
 const styles = StyleSheet.create({
   container: {
@@ -257,6 +294,16 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     color: colors.textMuted,
   },
+  permissionTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
+    color: colors.text,
+    textAlign: "center",
+  },
+  permissionBody: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    textAlign: "center",
+    paddingHorizontal: spacing.lg,
+  },
 });
-
-void Button; // primitive will be used in upload error UI in Chunk 3
