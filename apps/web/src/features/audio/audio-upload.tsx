@@ -8,6 +8,9 @@ import { Loader2, Mic, Square, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { AudioRecording } from "./types";
 
+const MAX_AUDIO_BYTES = 5 * 1024 * 1024;
+const MAX_AUDIO_LABEL = "5 MB";
+
 interface AudioUploadProps {
   projectId: string;
   disabled?: boolean;
@@ -31,6 +34,10 @@ export function AudioUpload({ projectId, disabled = false, onUploaded }: AudioUp
 
   const uploadFile = async (file: File) => {
     setError("");
+    if (file.size > MAX_AUDIO_BYTES) {
+      setError(`File is too large. Maximum size is ${MAX_AUDIO_LABEL}.`);
+      return;
+    }
     setUploading(true);
     try {
       const url = `${AUDIO_UPLOAD}?projectId=${projectId}`;

@@ -163,6 +163,22 @@ describe("AudioUpload", () => {
     });
   });
 
+  it("should reject files larger than 5 MB without calling the API", async () => {
+    const { container } = render(<AudioUpload projectId="p-1" onUploaded={mockOnUploaded} />);
+
+    const bigBlob = new Uint8Array(5 * 1024 * 1024 + 1);
+    const file = new File([bigBlob], "huge.mp3", { type: "audio/mpeg" });
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText(/File is too large.*5 MB/)).toBeInTheDocument();
+    });
+    expect(mockApiFetcher).not.toHaveBeenCalled();
+    expect(mockOnUploaded).not.toHaveBeenCalled();
+  });
+
   it("should trigger file input when upload button is clicked", async () => {
     const user = (await import("@testing-library/user-event")).default.setup();
     const { container } = render(<AudioUpload projectId="p-1" onUploaded={mockOnUploaded} />);

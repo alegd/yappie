@@ -9,6 +9,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 const nextConfig: NextConfig = {
   reactCompiler: true,
   transpilePackages: ["@yappie/shared"],
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "5mb",
+    },
+  },
   async headers() {
     return [
       {
