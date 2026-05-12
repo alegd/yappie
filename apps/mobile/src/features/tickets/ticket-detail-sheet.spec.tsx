@@ -1,9 +1,18 @@
 // @gorhom/bottom-sheet is mocked globally in jest-setup.js.
 import { Alert } from "react-native";
 
+const mockPush = jest.fn();
+jest.mock("expo-router", () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
+
 jest.mock("@/lib/api/tickets", () => ({
   updateTicket: jest.fn(),
   deleteTicket: jest.fn(),
+}));
+
+jest.mock("@/lib/api/jira", () => ({
+  exportTicketToJira: jest.fn(),
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -13,10 +22,15 @@ const { QueryClient, QueryClientProvider } = require("@tanstack/react-query") as
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const ticketsApi = require("@/lib/api/tickets") as typeof import("@/lib/api/tickets");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
+const jiraApi = require("@/lib/api/jira") as typeof import("@/lib/api/jira");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { ApiError } = require("@/lib/api-error") as typeof import("@/lib/api-error");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { TicketDetailSheet } = require("./ticket-detail-sheet") as typeof import("./ticket-detail-sheet");
 
 const updateTicketMock = ticketsApi.updateTicket as jest.Mock;
 const deleteTicketMock = ticketsApi.deleteTicket as jest.Mock;
+const exportToJiraMock = jiraApi.exportTicketToJira as jest.Mock;
 
 function renderWithClient(ui: React.ReactElement) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -47,6 +61,8 @@ describe("TicketDetailSheet", () => {
   beforeEach(() => {
     updateTicketMock.mockReset();
     deleteTicketMock.mockReset();
+    exportToJiraMock.mockReset();
+    mockPush.mockReset();
     jest.restoreAllMocks();
   });
 
@@ -162,6 +178,54 @@ describe("TicketDetailSheet", () => {
       expect(updateTicketMock).not.toHaveBeenCalled();
       expect(queryByDisplayValue("Renamed")).toBeNull();
       expect(getByText("Edit")).toBeTruthy();
+    });
+  });
+
+  describe("export to Jira", () => {
+    it("renders the Export action when ticket is not yet exported", () => {
+      const { getByText } = renderWithClient(
+        <TicketDetailSheet ticket={buildTicket()} onClose={() => {}} />,
+      );
+      expect(getByText("Export to Jira")).toBeTruthy();
+    });
+
+    it("hides the Export action when ticket is already exported", () => {
+      const { queryByText } = renderWithClient(
+        <TicketDetailSheet
+          ticket={buildTicket({ status: "EXPORTED", jiraIssueKey: "TV-1" })}
+          onClose={() => {}}
+        />,
+      );
+      expect(queryByText("Export to Jira")).toBeNull();
+    });
+
+    it("calls exportTicketToJira and invalidates audio cache on success", async () => {
+      exportToJiraMock.mockResolvedValueOnce({ jiraIssueKey: "TV-1", jiraIssueUrl: "https://j.io" });
+      const { getByText } = renderWithClient(
+        <TicketDetailSheet ticket={buildTicket()} onClose={() => {}} />,
+      );
+      fireEvent.press(getByText("Export to Jira"));
+      await waitFor(() => {
+        expect(exportToJiraMock).toHaveBeenCalledWith("t1");
+      });
+    });
+
+    it("shows a Connect Jira alert on 403 and routes to settings if user confirms", async () => {
+      exportToJiraMock.mockRejectedValueOnce(new ApiError(403, null, "Jira not connected"));
+      const alertSpy = jest.spyOn(Alert, "alert").mockImplementation((_t, _m, buttons) => {
+        const connect = buttons?.find((b) => b.text === "Connect");
+        connect?.onPress?.();
+      });
+      const { getByText } = renderWithClient(
+        <TicketDetailSheet ticket={buildTicket()} onClose={() => {}} />,
+      );
+      fireEvent.press(getByText("Export to Jira"));
+      await waitFor(() => {
+        expect(alertSpy).toHaveBeenCalled();
+      });
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith("/settings");
+      });
     });
   });
 });

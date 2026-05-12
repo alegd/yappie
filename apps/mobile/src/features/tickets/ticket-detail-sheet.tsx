@@ -3,9 +3,13 @@ import { Alert, View, Text, Pressable, ScrollView, TextInput, StyleSheet } from 
 import { Ionicons } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast";
 import { colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import { ApiError } from "@/lib/api-error";
+import { exportTicketToJira } from "@/lib/api/jira";
 import { deleteTicket, updateTicket } from "@/lib/api/tickets";
 import { queryKeys } from "@/lib/query-keys";
 import type { Ticket, TicketPriority, TicketStatus } from "@/lib/api/types";
@@ -35,6 +39,7 @@ const SNAP_POINTS = ["60%", "90%"];
 export function TicketDetailSheet({ ticket, onClose }: TicketDetailSheetProps) {
   const sheetRef = useRef<BottomSheet>(null);
   const queryClient = useQueryClient();
+  const router = useRouter();
   const isOpen = ticket !== null;
 
   const [isEditing, setIsEditing] = useState(false);
@@ -75,6 +80,34 @@ export function TicketDetailSheet({ ticket, onClose }: TicketDetailSheetProps) {
       setIsEditing(false);
     },
   });
+
+  const exportMutation = useMutation({
+    mutationFn: (id: string) => exportTicketToJira(id),
+    onSuccess: () => {
+      if (ticket) invalidateAudio(ticket.audioRecordingId);
+      toast.success("Exported to Jira");
+    },
+    onError: (err) => {
+      if (err instanceof ApiError && err.status === 403) {
+        Alert.alert(
+          "Connect Jira first",
+          "Connect your Jira account before exporting tickets.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Connect", onPress: () => router.push("/settings") },
+          ],
+        );
+        return;
+      }
+      const message = err instanceof Error ? err.message : "Failed to export";
+      toast.error(message);
+    },
+  });
+
+  const handleExport = () => {
+    if (!ticket) return;
+    exportMutation.mutate(ticket.id);
+  };
 
   const handleDelete = () => {
     if (!ticket) return;
@@ -210,6 +243,13 @@ export function TicketDetailSheet({ ticket, onClose }: TicketDetailSheetProps) {
                 <Pressable onPress={handleStartEdit} style={styles.secondary}>
                   <Text style={styles.secondaryLabel}>Edit</Text>
                 </Pressable>
+                {ticket.status !== "EXPORTED" ? (
+                  <Button
+                    label="Export to Jira"
+                    onPress={handleExport}
+                    loading={exportMutation.isPending}
+                  />
+                ) : null}
               </>
             )}
           </View>

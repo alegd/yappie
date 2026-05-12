@@ -1,15 +1,19 @@
 import { useState } from "react";
-import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
-import { useQuery } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
+import { Alert, View, Text, FlatList, Pressable, StyleSheet } from "react-native";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Badge, type BadgeVariant } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/toast";
 import { TranscriptionBlock } from "./transcription-block";
 import { TicketRow } from "@/features/tickets/ticket-row";
 import { TicketDetailSheet } from "@/features/tickets/ticket-detail-sheet";
 import { colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import { ApiError } from "@/lib/api-error";
 import { getAudio } from "@/lib/api/audios";
+import { exportTicketsBulk } from "@/lib/api/jira";
 import { queryKeys } from "@/lib/query-keys";
 import { formatDuration, timeAgo } from "@/lib/format";
 import type { AudioStatus } from "@/lib/api/types";
@@ -24,6 +28,8 @@ const audioStatusToVariant: Record<AudioStatus, BadgeVariant> = {
 
 export function AudioDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [openTicketId, setOpenTicketId] = useState<string | null>(null);
@@ -35,6 +41,36 @@ export function AudioDetail() {
   });
 
   const audio = audioQuery.data;
+
+  const bulkExportMutation = useMutation({
+    mutationFn: (ticketIds: string[]) => exportTicketsBulk(ticketIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.audio(id) });
+      setSelectMode(false);
+      setSelectedIds(new Set());
+      toast.success("Tickets exported to Jira");
+    },
+    onError: (err) => {
+      if (err instanceof ApiError && err.status === 403) {
+        Alert.alert(
+          "Connect Jira first",
+          "Connect your Jira account before exporting tickets.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Connect", onPress: () => router.push("/settings") },
+          ],
+        );
+        return;
+      }
+      const message = err instanceof Error ? err.message : "Failed to export";
+      toast.error(message);
+    },
+  });
+
+  const handleBulkExport = () => {
+    if (selectedIds.size === 0) return;
+    bulkExportMutation.mutate(Array.from(selectedIds));
+  };
 
   const toggleSelectMode = () => {
     setSelectMode((v) => {
@@ -120,6 +156,11 @@ export function AudioDetail() {
       {selectMode && selectedIds.size > 0 ? (
         <View style={styles.footer}>
           <Text style={styles.footerLabel}>{selectedIds.size} selected</Text>
+          <Button
+            label="Export to Jira"
+            onPress={handleBulkExport}
+            loading={bulkExportMutation.isPending}
+          />
         </View>
       ) : null}
 
@@ -202,6 +243,10 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.borderStrong,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.md,
   },
   footerLabel: {
     fontSize: fontSize.md,

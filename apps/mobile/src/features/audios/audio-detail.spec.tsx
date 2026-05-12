@@ -11,16 +11,23 @@ jest.mock("@/lib/api/audios", () => ({
   getAudio: jest.fn(),
 }));
 
+jest.mock("@/lib/api/jira", () => ({
+  exportTicketsBulk: jest.fn(),
+}));
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render, fireEvent } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
+const { render, fireEvent, waitFor } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { QueryClient, QueryClientProvider } = require("@tanstack/react-query") as typeof import("@tanstack/react-query");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const audiosApi = require("@/lib/api/audios") as typeof import("@/lib/api/audios");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
+const jiraApi = require("@/lib/api/jira") as typeof import("@/lib/api/jira");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { AudioDetail } = require("./audio-detail") as typeof import("./audio-detail");
 
 const getAudioMock = audiosApi.getAudio as jest.Mock;
+const exportBulkMock = jiraApi.exportTicketsBulk as jest.Mock;
 
 function renderWithClient(ui: React.ReactElement) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -63,6 +70,7 @@ function buildTicket(overrides: Partial<{ id: string; title: string }> = {}) {
 describe("AudioDetail", () => {
   beforeEach(() => {
     getAudioMock.mockReset();
+    exportBulkMock.mockReset();
     mockPush.mockReset();
     mockBack.mockReset();
     mockParams = { id: "a1" };
@@ -115,5 +123,31 @@ describe("AudioDetail", () => {
     getAudioMock.mockResolvedValueOnce(buildAudio({ tickets: [] }));
     const { findByText } = renderWithClient(<AudioDetail />);
     expect(await findByText(/no tickets/i)).toBeTruthy();
+  });
+
+  describe("bulk export", () => {
+    it("calls exportTicketsBulk with the selected ids and exits select mode on success", async () => {
+      getAudioMock.mockResolvedValueOnce(
+        buildAudio({
+          tickets: [
+            buildTicket({ id: "t1", title: "Ticket A" }),
+            buildTicket({ id: "t2", title: "Ticket B" }),
+          ],
+        }),
+      );
+      exportBulkMock.mockResolvedValueOnce(undefined);
+      const { findByText, getByText, queryByText } = renderWithClient(<AudioDetail />);
+      await findByText("Ticket A");
+      fireEvent.press(getByText(/select multiple/i));
+      fireEvent.press(getByText("Ticket A"));
+      fireEvent.press(getByText("Ticket B"));
+      fireEvent.press(getByText(/export to jira/i));
+      await waitFor(() => {
+        expect(exportBulkMock).toHaveBeenCalledWith(["t1", "t2"]);
+      });
+      await waitFor(() => {
+        expect(queryByText(/selected/i)).toBeNull();
+      });
+    });
   });
 });
