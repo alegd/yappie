@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import { colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import { borderWidth, colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
 
 export type BadgeVariant =
   | "low"
@@ -9,7 +9,12 @@ export type BadgeVariant =
   | "draft"
   | "approved"
   | "exported"
-  | "rejected";
+  | "rejected"
+  | "pending"
+  | "transcribing"
+  | "analyzing"
+  | "completed"
+  | "failed";
 
 interface BadgeProps {
   label: string;
@@ -25,6 +30,11 @@ const variantColor: Record<BadgeVariant, string> = {
   approved: colors.statusApproved,
   exported: colors.statusExported,
   rejected: colors.statusRejected,
+  pending: colors.textDim,
+  transcribing: colors.warning,
+  analyzing: colors.warning,
+  completed: colors.success,
+  failed: colors.danger,
 };
 
 export function Badge({ label, variant }: BadgeProps) {
@@ -41,7 +51,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.sm,
     borderRadius: radii.sm,
-    borderWidth: 1,
+    borderWidth: borderWidth.thin,
     alignSelf: "flex-start",
   },
   label: {
