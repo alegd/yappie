@@ -1,4 +1,20 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+// Provide a safe default for the env loader so transitive imports of
+// lib/env do not fail when a test forgets to mock it.
+process.env.EXPO_PUBLIC_API_URL = process.env.EXPO_PUBLIC_API_URL || "https://api.test";
+
+// Mock useSafeAreaInsets so components reading insets work without a
+// SafeAreaProvider wrapper in every test render.
+jest.mock("react-native-safe-area-context", () => {
+  const inset = { top: 0, right: 0, bottom: 0, left: 0 };
+  const actual = jest.requireActual("react-native-safe-area-context");
+  return {
+    ...actual,
+    useSafeAreaInsets: () => inset,
+    useSafeAreaFrame: () => ({ x: 0, y: 0, width: 390, height: 844 }),
+  };
+});
+
 // Mock @gorhom/bottom-sheet to render its children inline when "open".
 // Avoids needing react-native-reanimated worklets in tests.
 jest.mock("@gorhom/bottom-sheet", () => {
