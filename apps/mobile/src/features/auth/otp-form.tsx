@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "./use-auth";
 import { ApiError } from "@/lib/api-error";
 
+const OTP_LENGTH = 4;
+const OTP_PLACEHOLDER = "1234";
+
 interface OtpFormProps {
   email: string;
 }
@@ -50,21 +53,21 @@ export function OtpForm({ email }: OtpFormProps) {
     }
   };
 
-  const codeIsComplete = code.length === 6;
+  const codeIsComplete = code.length === OTP_LENGTH;
   const nameIsValid = !needsRegister || name.trim().length > 0;
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Enter code</Text>
-      <Text style={styles.subtitle}>We sent a 6-digit code to {email}.</Text>
+      <Text style={styles.subtitle}>We sent a {OTP_LENGTH}-digit code to {email}.</Text>
 
       <Input
         value={code}
-        onChangeText={(t) => setCode(t.replace(/\D/g, "").slice(0, 6))}
-        placeholder="123456"
+        onChangeText={(t) => setCode(t.replace(/\D/g, "").slice(0, OTP_LENGTH))}
+        placeholder={OTP_PLACEHOLDER}
         keyboardType="number-pad"
         autoComplete="one-time-code"
-        maxLength={6}
+        maxLength={OTP_LENGTH}
         error={error}
       />
 
