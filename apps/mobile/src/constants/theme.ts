@@ -1,53 +1,68 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+export const colors = {
+  background: "#0a0a0a",
+  surface: "#0f0f10",
+  surfaceElevated: "#1f1f23",
+  border: "#27272a",
+  borderStrong: "#3f3f46",
 
-import { Platform } from 'react-native';
+  text: "#fafafa",
+  textMuted: "#a1a1aa",
+  textDim: "#71717a",
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+  primary: "#f97316",
+  primaryPressed: "#ea580c",
 
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-  },
-};
+  danger: "#ef4444",
+  success: "#22c55e",
+  warning: "#eab308",
+  info: "#3b82f6",
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+  priorityLow: "#71717a",
+  priorityMedium: "#3b82f6",
+  priorityHigh: "#f97316",
+  priorityCritical: "#ef4444",
+
+  statusDraft: "#71717a",
+  statusApproved: "#3b82f6",
+  statusExported: "#22c55e",
+  statusRejected: "#ef4444",
+} as const;
+
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  xxl: 32,
+} as const;
+
+export const radii = {
+  sm: 6,
+  md: 12,
+  lg: 16,
+  pill: 999,
+} as const;
+
+export const fontSize = {
+  xs: 12,
+  sm: 14,
+  md: 16,
+  lg: 18,
+  xl: 20,
+  xxl: 24,
+  display: 32,
+} as const;
+
+export const fontWeight = {
+  regular: "400",
+  medium: "500",
+  semibold: "600",
+  bold: "700",
+} as const;
+
+export type Colors = typeof colors;
+export type Spacing = typeof spacing;
+export type Radii = typeof radii;
+export type FontSize = typeof fontSize;
+export type FontWeight = typeof fontWeight;

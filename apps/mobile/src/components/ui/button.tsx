@@ -1,4 +1,5 @@
 import { Pressable, Text, StyleSheet } from "react-native";
+import { colors, radii, spacing, fontSize, fontWeight } from "@/constants/theme";
 
 interface ButtonProps {
   label: string;
@@ -32,22 +33,22 @@ const styles = StyleSheet.create({
   base: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 12,
+    paddingVertical: spacing.md + 2,
+    paddingHorizontal: spacing.xl,
+    borderRadius: radii.md,
   },
   primary: {
-    backgroundColor: "#f97316",
+    backgroundColor: colors.primary,
   },
   secondary: {
-    backgroundColor: "#27272a",
+    backgroundColor: colors.border,
   },
   disabled: {
     opacity: 0.5,
   },
   label: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#fafafa",
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
+    color: colors.text,
   },
 });
