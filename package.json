@@ -31,11 +31,11 @@
     "vitest": "^4.1.0"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
+    "!(apps/mobile/**)*.{ts,tsx,js,jsx}": [
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{json,md,yml,yaml,css,scss}": [
+    "!(apps/mobile/**)*.{json,md,yml,yaml,css,scss}": [
       "prettier --write"
     ]
   }

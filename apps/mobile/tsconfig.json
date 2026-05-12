@@ -1,9 +1,17 @@
 {
-  "extends": "@yappie/config/typescript/base",
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "lib": ["ES2022", "DOM"],
-    "jsx": "react-native"
+    "strict": true,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
   },
-  "include": ["src"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ]
 }

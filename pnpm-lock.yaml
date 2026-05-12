@@ -178,12 +178,6 @@ importers:
         specifier: ^5
         version: 5.9.3
 
-  apps/mobile:
-    dependencies:
-      '@yappie/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-
   apps/web:
     dependencies:
       '@hookform/resolvers':
