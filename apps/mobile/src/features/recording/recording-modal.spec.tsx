@@ -11,6 +11,10 @@ jest.mock("@/lib/api/projects", () => ({
   listProjects: jest.fn(),
 }));
 
+jest.mock("@/lib/api/audios", () => ({
+  uploadAudio: jest.fn(),
+}));
+
 // expo-audio mocked at module level. Tests control behavior via the
 // mockRecorderHandle and mockPermissionState below.
 const mockRecorderHandle = {
@@ -44,9 +48,14 @@ const { QueryClient, QueryClientProvider } = require("@tanstack/react-query") as
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const projectsApi = require("@/lib/api/projects") as typeof import("@/lib/api/projects");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
+const audiosApi = require("@/lib/api/audios") as typeof import("@/lib/api/audios");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { ApiError } = require("@/lib/api-error") as typeof import("@/lib/api-error");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { RecordingModal } = require("./recording-modal") as typeof import("./recording-modal");
 
 const listProjectsMock = projectsApi.listProjects as jest.Mock;
+const uploadAudioMock = audiosApi.uploadAudio as jest.Mock;
 
 function buildProject(overrides: Partial<{ id: string; name: string }> = {}) {
   return {
@@ -69,12 +78,14 @@ function renderWithClient(ui: React.ReactElement) {
 describe("RecordingModal", () => {
   beforeEach(() => {
     listProjectsMock.mockReset();
+    uploadAudioMock.mockReset();
     mockBack.mockReset();
     mockDismiss.mockReset();
     mockParams = {};
     mockRecorderHandle.prepareToRecordAsync.mockReset();
     mockRecorderHandle.record.mockReset();
     mockRecorderHandle.stop.mockReset().mockResolvedValue(undefined);
+    mockRecorderHandle.uri = "file:///tmp/test.m4a";
     mockRequestPermission.mockReset();
     mockPermissionState = { granted: true, canAskAgain: true, status: "granted" };
   });
@@ -231,6 +242,107 @@ describe("RecordingModal", () => {
       await waitFor(() => {
         expect(mockRecorderHandle.stop).toHaveBeenCalled();
       });
+    });
+  });
+
+  describe("upload flow", () => {
+    async function startThenStop(findByLabelText: ReturnType<typeof renderWithClient>["findByLabelText"], findByText: ReturnType<typeof renderWithClient>["findByText"]) {
+      fireEvent.press(await findByLabelText("Start recording"));
+      fireEvent.press(await findByText("Stop"));
+    }
+
+    it("calls uploadAudio with FormData and the selected projectId after Stop", async () => {
+      uploadAudioMock.mockResolvedValueOnce({ id: "a1" });
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText, findByText } = renderWithClient(<RecordingModal />);
+      await startThenStop(findByLabelText, findByText);
+      await waitFor(() => {
+        expect(uploadAudioMock).toHaveBeenCalled();
+      });
+      const [formArg, projectArg] = uploadAudioMock.mock.calls[0];
+      expect(formArg).toBeInstanceOf(FormData);
+      expect(projectArg).toBe("p1");
+    });
+
+    it("dismisses the modal on successful upload", async () => {
+      uploadAudioMock.mockResolvedValueOnce({ id: "a1" });
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText, findByText } = renderWithClient(<RecordingModal />);
+      await startThenStop(findByLabelText, findByText);
+      await waitFor(() => {
+        expect(mockDismiss).toHaveBeenCalled();
+      });
+    });
+
+    it("surfaces a payload-too-large message on 413", async () => {
+      uploadAudioMock.mockRejectedValueOnce(new ApiError(413, null, "Too big"));
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText, findByText } = renderWithClient(<RecordingModal />);
+      await startThenStop(findByLabelText, findByText);
+      expect(await findByText(/too long for your plan/i)).toBeTruthy();
+    });
+
+    it("surfaces a quota message on 402", async () => {
+      uploadAudioMock.mockRejectedValueOnce(new ApiError(402, null, "Quota"));
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText, findByText } = renderWithClient(<RecordingModal />);
+      await startThenStop(findByLabelText, findByText);
+      expect(await findByText(/quota|upgrade/i)).toBeTruthy();
+    });
+
+    it("offers a retry button on generic upload failure", async () => {
+      uploadAudioMock.mockRejectedValueOnce(new Error("Network is down"));
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText, findByText } = renderWithClient(<RecordingModal />);
+      await startThenStop(findByLabelText, findByText);
+      expect(await findByText(/retry/i)).toBeTruthy();
+    });
+  });
+
+  describe("cancel during recording", () => {
+    it("clicking Close while recording does not invoke uploadAudio", async () => {
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      fireEvent.press(await findByLabelText("Close recorder"));
+      expect(uploadAudioMock).not.toHaveBeenCalled();
+      expect(mockDismiss).toHaveBeenCalled();
     });
   });
 });

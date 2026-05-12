@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Linking, View, Text, Pressable, FlatList, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAudioRecorder, useAudioRecorderPermissions, RecordingPresets } from "expo-audio";
+import { Button } from "@/components/ui/button";
 import { ListRow } from "@/components/ui/list-row";
 import { Skeleton } from "@/components/ui/skeleton";
 import { colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import { ApiError } from "@/lib/api-error";
+import { uploadAudio } from "@/lib/api/audios";
 import { listProjects } from "@/lib/api/projects";
 import { queryKeys } from "@/lib/query-keys";
 import { formatDuration } from "@/lib/format";
@@ -16,6 +19,7 @@ type RecordingState = "selecting_project" | "idle" | "recording" | "uploading";
 
 export function RecordingModal() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { projectId: initialProjectId } = useLocalSearchParams<{ projectId?: string }>();
   const [permission, requestPermission] = useAudioRecorderPermissions();
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
@@ -32,6 +36,29 @@ export function RecordingModal() {
   const projectsQuery = useQuery({
     queryKey: queryKeys.projects,
     queryFn: () => listProjects(),
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedProjectId) throw new Error("No project selected");
+      const uri = recorder.uri;
+      if (!uri) throw new Error("Missing recording");
+      const formData = new FormData();
+      formData.append("file", {
+        uri,
+        name: `audio-${Date.now()}.m4a`,
+        type: "audio/mp4",
+      } as unknown as Blob);
+      return uploadAudio(formData, selectedProjectId);
+    },
+    onSuccess: () => {
+      if (selectedProjectId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.projectAudios(selectedProjectId) });
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.recentAudios });
+      queryClient.invalidateQueries({ queryKey: queryKeys.quota });
+      router.dismiss();
+    },
   });
 
   const projects = projectsQuery.data?.data ?? [];
@@ -71,6 +98,12 @@ export function RecordingModal() {
     }
     await recorder.stop();
     setState("uploading");
+    uploadMutation.mutate();
+  };
+
+  const handleRetryUpload = () => {
+    uploadMutation.reset();
+    uploadMutation.mutate();
   };
 
   const handleRequestPermission = async () => {
@@ -85,8 +118,25 @@ export function RecordingModal() {
 
   const handleClose = () => {
     if (timerRef.current) clearInterval(timerRef.current);
+    if (state === "recording") {
+      recorder.stop().catch(() => undefined);
+    }
     router.dismiss();
   };
+
+  const uploadErrorMessage = (() => {
+    const err = uploadMutation.error;
+    if (!err) return null;
+    if (err instanceof ApiError) {
+      if (err.status === 413) {
+        return "Audio too long for your plan. Try a shorter recording or upgrade your plan.";
+      }
+      if (err.status === 402 || err.status === 403) {
+        return "You've used your quota. Upgrade your plan to record more audio.";
+      }
+    }
+    return "Upload failed. Tap the button below to try again.";
+  })();
 
   return (
     <View style={styles.container}>
@@ -191,7 +241,14 @@ export function RecordingModal() {
       {state === "uploading" ? (
         <View style={styles.center}>
           <Text style={styles.timer}>{formatDuration(durationSeconds)}</Text>
-          <Text style={styles.processingLabel}>Processing…</Text>
+          {uploadMutation.isError ? (
+            <>
+              <Text style={styles.errorMessage}>{uploadErrorMessage}</Text>
+              <Button label="Retry" onPress={handleRetryUpload} loading={uploadMutation.isPending} />
+            </>
+          ) : (
+            <Text style={styles.processingLabel}>Processing…</Text>
+          )}
         </View>
       ) : null}
     </View>
@@ -293,6 +350,12 @@ const styles = StyleSheet.create({
   processingLabel: {
     fontSize: fontSize.md,
     color: colors.textMuted,
+  },
+  errorMessage: {
+    fontSize: fontSize.sm,
+    color: colors.danger,
+    textAlign: "center",
+    paddingHorizontal: spacing.lg,
   },
   permissionTitle: {
     fontSize: fontSize.lg,
