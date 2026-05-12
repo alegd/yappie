@@ -50,17 +50,20 @@ const styles = StyleSheet.create({
   },
   pill: {
     flexDirection: "row",
+    height: 56,
     backgroundColor: colors.surface,
     borderRadius: radii.pill,
     borderWidth: 1,
     borderColor: colors.border,
     padding: spacing.xs,
     gap: spacing.xs,
+    alignItems: "stretch",
   },
   tab: {
-    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
     borderRadius: radii.pill,
+    alignItems: "center",
+    justifyContent: "center",
   },
   tabActive: {
     backgroundColor: colors.surfaceElevated,

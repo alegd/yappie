@@ -16,8 +16,8 @@ export default function TabsLayout() {
         headerRight: () => <SettingsButton />,
       }}
     >
-      <Tabs.Screen name="projects" />
       <Tabs.Screen name="home" />
+      <Tabs.Screen name="projects" />
     </Tabs>
   );
 }
