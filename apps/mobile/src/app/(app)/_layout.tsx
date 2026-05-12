@@ -2,9 +2,11 @@ import { Stack } from "expo-router";
 import { View, StyleSheet } from "react-native";
 import { FloatingRecordButton } from "@/components/navigation/floating-record-button";
 import { ToastContainer } from "@/components/ui/toast";
+import { useSocket } from "@/hooks/use-socket";
 import { colors } from "@/constants/theme";
 
 export default function AppLayout() {
+  useSocket();
   return (
     <View style={styles.container}>
       <Stack
