@@ -1,5 +1,5 @@
 import { Pressable, Text, StyleSheet } from "react-native";
-import { colors, radii, spacing, fontSize, fontWeight } from "@/constants/theme";
+import { colors, opacity, radii, spacing, fontSize, fontWeight } from "@/constants/theme";
 
 interface ButtonProps {
   label: string;
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
   },
   disabled: {
-    opacity: 0.5,
+    opacity: opacity.disabled,
   },
   label: {
     fontSize: fontSize.md,

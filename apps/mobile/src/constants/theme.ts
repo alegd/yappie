@@ -35,6 +35,7 @@ export const spacing = {
   lg: 16,
   xl: 24,
   xxl: 32,
+  huge: 64,
 } as const;
 
 export const radii = {
@@ -61,8 +62,51 @@ export const fontWeight = {
   bold: "700",
 } as const;
 
+export const iconSize = {
+  xs: 16,
+  sm: 20,
+  md: 22,
+  lg: 24,
+  xl: 26,
+  display: 64,
+} as const;
+
+export const componentSize = {
+  fab: 56,
+  hitArea: 36,
+  closeButton: 32,
+  checkbox: 22,
+  recordingDot: 12,
+  recordingMic: 160,
+  progressBarHeight: 6,
+  descriptionMinHeight: 120,
+} as const;
+
+export const borderWidth = {
+  thin: 1,
+  medium: 1.5,
+  thick: 2,
+} as const;
+
+export const opacity = {
+  pressed: 0.6,
+  pressedSubtle: 0.7,
+  skeleton: 0.6,
+  disabled: 0.5,
+} as const;
+
+export const duration = {
+  recordingTick: 1000,
+  toastDismiss: 3000,
+} as const;
+
 export type Colors = typeof colors;
 export type Spacing = typeof spacing;
 export type Radii = typeof radii;
 export type FontSize = typeof fontSize;
 export type FontWeight = typeof fontWeight;
+export type IconSize = typeof iconSize;
+export type ComponentSize = typeof componentSize;
+export type BorderWidth = typeof borderWidth;
+export type Opacity = typeof opacity;
+export type Duration = typeof duration;
