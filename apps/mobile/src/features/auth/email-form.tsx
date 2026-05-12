@@ -40,7 +40,7 @@ export function EmailForm() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Sign in</Text>
-      <Text style={styles.subtitle}>Enter your email to receive a 6-digit code.</Text>
+      <Text style={styles.subtitle}>Enter your email to receive a 4-digit code.</Text>
 
       <Input
         value={email}

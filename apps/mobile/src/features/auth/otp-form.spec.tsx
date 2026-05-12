@@ -61,7 +61,7 @@ describe("OtpForm", () => {
   it("shows inline error when OTP is wrong (401)", async () => {
     apiFetchMock.mockRejectedValueOnce(new ApiError(401, { message: "bad code" }, "bad code"));
     const { getByPlaceholderText, getByText, findByText } = renderForm();
-    fireEvent.changeText(getByPlaceholderText("123456"), "999999");
+    fireEvent.changeText(getByPlaceholderText("1234"), "9999");
     fireEvent.press(getByText("Verify"));
     expect(await findByText(/incorrect or expired/i)).toBeTruthy();
   });
@@ -73,7 +73,7 @@ describe("OtpForm", () => {
       user: { id: "u1", email: "user@example.com", name: "User" },
     });
     const { getByPlaceholderText, getByText } = renderForm();
-    fireEvent.changeText(getByPlaceholderText("123456"), "123456");
+    fireEvent.changeText(getByPlaceholderText("1234"), "1234");
     fireEvent.press(getByText("Verify"));
 
     await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith("/(tabs)"));
@@ -84,7 +84,7 @@ describe("OtpForm", () => {
       new ApiError(404, { message: "not found" }, "not found"),
     );
     const { getByPlaceholderText, getByText, findByPlaceholderText, findByText } = renderForm();
-    fireEvent.changeText(getByPlaceholderText("123456"), "123456");
+    fireEvent.changeText(getByPlaceholderText("1234"), "1234");
     fireEvent.press(getByText("Verify"));
 
     expect(await findByPlaceholderText("Your name")).toBeTruthy();
@@ -102,7 +102,7 @@ describe("OtpForm", () => {
 
     const { getByPlaceholderText, getByText, findByPlaceholderText, findByText } =
       renderForm("new@example.com");
-    fireEvent.changeText(getByPlaceholderText("123456"), "123456");
+    fireEvent.changeText(getByPlaceholderText("1234"), "1234");
     fireEvent.press(getByText("Verify"));
 
     const nameInput = await findByPlaceholderText("Your name");
