@@ -7,6 +7,7 @@ import { HeaderTitle } from "@/components/ui/header-title";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TranscriptionBlock } from "./transcription-block";
 import { TicketRow } from "@/features/tickets/ticket-row";
+import { TicketDetailSheet } from "@/features/tickets/ticket-detail-sheet";
 import { colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
 import { getAudio } from "@/lib/api/audios";
 import { queryKeys } from "@/lib/query-keys";
@@ -25,6 +26,7 @@ export function AudioDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [openTicketId, setOpenTicketId] = useState<string | null>(null);
 
   const audioQuery = useQuery({
     queryKey: queryKeys.audio(id),
@@ -106,7 +108,7 @@ export function AudioDetail() {
               ticket={item}
               onPress={() => {
                 if (selectMode) toggleSelection(item.id);
-                // sheet press wires in YAP-145
+                else setOpenTicketId(item.id);
               }}
               selectable={selectMode}
               selected={selectedIds.has(item.id)}
@@ -120,6 +122,11 @@ export function AudioDetail() {
           <Text style={styles.footerLabel}>{selectedIds.size} selected</Text>
         </View>
       ) : null}
+
+      <TicketDetailSheet
+        ticket={audio.tickets.find((t) => t.id === openTicketId) ?? null}
+        onClose={() => setOpenTicketId(null)}
+      />
     </View>
   );
 }
