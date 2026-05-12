@@ -9,7 +9,12 @@ export type BadgeVariant =
   | "draft"
   | "approved"
   | "exported"
-  | "rejected";
+  | "rejected"
+  | "pending"
+  | "transcribing"
+  | "analyzing"
+  | "completed"
+  | "failed";
 
 interface BadgeProps {
   label: string;
@@ -25,6 +30,11 @@ const variantColor: Record<BadgeVariant, string> = {
   approved: colors.statusApproved,
   exported: colors.statusExported,
   rejected: colors.statusRejected,
+  pending: colors.textDim,
+  transcribing: colors.warning,
+  analyzing: colors.warning,
+  completed: colors.success,
+  failed: colors.danger,
 };
 
 export function Badge({ label, variant }: BadgeProps) {

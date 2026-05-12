@@ -22,4 +22,12 @@ describe("Badge", () => {
       expect(getByText(variant.toUpperCase())).toBeTruthy();
     }
   });
+
+  it("renders for every audio status variant", () => {
+    const variants = ["pending", "transcribing", "analyzing", "completed", "failed"] as const;
+    for (const variant of variants) {
+      const { getByText } = render(<Badge label={variant.toUpperCase()} variant={variant} />);
+      expect(getByText(variant.toUpperCase())).toBeTruthy();
+    }
+  });
 });
