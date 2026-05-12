@@ -10,12 +10,12 @@ jest.mock("expo-secure-store", () => ({
   }),
 }));
 
-jest.mock("./env", () => ({ env: { apiUrl: "https://api.test" } }));
+jest.mock("../env", () => ({ env: { apiUrl: "https://api.test" } }));
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const tokenStorage = require("./secure-store") as typeof import("./secure-store");
+const tokenStorage = require("../secure-store") as typeof import("../secure-store");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { apiFetch } = require("./api") as typeof import("./api");
+const { apiFetch } = require("./client") as typeof import("./client");
 
 const fetchMock = jest.fn();
 global.fetch = fetchMock as unknown as typeof fetch;

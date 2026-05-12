@@ -1,12 +1,12 @@
-import { ApiError } from "./api-error";
-import { env } from "./env";
+import { ApiError } from "../api-error";
+import { env } from "../env";
 import {
   clearTokens,
   getAccessToken,
   getRefreshToken,
   setAccessToken,
   setRefreshToken,
-} from "./secure-store";
+} from "../secure-store";
 
 const BASE_URL = `${env.apiUrl}/api/v1`;
 
