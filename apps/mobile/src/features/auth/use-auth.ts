@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/api";
+import { apiFetch } from "@/lib/api/client";
 import { getRefreshToken } from "@/lib/secure-store";
 import { useAuthStore, type AuthUser } from "./auth-store";
 

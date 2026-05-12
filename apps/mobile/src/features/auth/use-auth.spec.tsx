@@ -14,14 +14,14 @@ jest.mock("expo-secure-store", () => ({
 
 jest.mock("@/lib/env", () => ({ env: { apiUrl: "https://api.test" } }));
 
-jest.mock("@/lib/api", () => ({
+jest.mock("@/lib/api/client", () => ({
   apiFetch: jest.fn(),
 }));
 
 import { renderHook, act } from "@testing-library/react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const api = require("@/lib/api") as typeof import("@/lib/api");
+const api = require("@/lib/api/client") as typeof import("@/lib/api/client");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { useAuthStore } = require("./auth-store") as typeof import("./auth-store");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
