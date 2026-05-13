@@ -40,6 +40,17 @@ export class JiraService {
     private readonly cache: CacheService,
   ) {}
 
+  buildPostAuthRedirect(returnPath?: string): string {
+    const frontendUrl = this.config.get("FRONTEND_URL");
+    const defaultTarget = `${frontendUrl}/dashboard/settings?jira=connected`;
+
+    if (!returnPath) return defaultTarget;
+    if (returnPath.startsWith("yappie://")) return `${returnPath}?jira=connected`;
+    if (returnPath.startsWith("/") && !returnPath.startsWith("//"))
+      return `${frontendUrl}${returnPath}?jira=connected`;
+    return defaultTarget;
+  }
+
   getAuthUrl(userId: string, returnPath?: string): string {
     const clientId = this.config.get("JIRA_CLIENT_ID");
     const callbackUrl = encodeURIComponent(this.config.get("JIRA_CALLBACK_URL") || "");
