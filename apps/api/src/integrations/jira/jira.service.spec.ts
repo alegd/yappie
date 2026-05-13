@@ -116,6 +116,20 @@ describe("JiraService", () => {
 
       expect(url).toBe("https://yappie.gueden.com/dashboard/settings?jira=connected");
     });
+
+    it("should preserve existing query params on a frontend path", () => {
+      const url = service.buildPostAuthRedirect("/dashboard?tab=integrations");
+
+      expect(url).toBe(
+        "https://yappie.gueden.com/dashboard?tab=integrations&jira=connected",
+      );
+    });
+
+    it("should preserve existing query params on a mobile deep link", () => {
+      const url = service.buildPostAuthRedirect("yappie://settings?section=jira");
+
+      expect(url).toBe("yappie://settings?section=jira&jira=connected");
+    });
   });
 
   describe("exchangeCode", () => {

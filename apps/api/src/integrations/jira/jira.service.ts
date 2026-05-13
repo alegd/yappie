@@ -45,9 +45,10 @@ export class JiraService {
     const defaultTarget = `${frontendUrl}/dashboard/settings?jira=connected`;
 
     if (!returnPath) return defaultTarget;
-    if (returnPath.startsWith("yappie://")) return `${returnPath}?jira=connected`;
+    const sep = returnPath.includes("?") ? "&" : "?";
+    if (returnPath.startsWith("yappie://")) return `${returnPath}${sep}jira=connected`;
     if (returnPath.startsWith("/") && !returnPath.startsWith("//"))
-      return `${frontendUrl}${returnPath}?jira=connected`;
+      return `${frontendUrl}${returnPath}${sep}jira=connected`;
     return defaultTarget;
   }
 
