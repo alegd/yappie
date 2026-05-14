@@ -1,11 +1,14 @@
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import { useState } from "react";
+import { View, Text, Pressable, FlatList, StyleSheet } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { EmptyState } from "@/components/ui/empty-state";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AudioRow } from "@/features/audios/audio-row";
-import { colors, fontSize, radii, spacing } from "@/constants/theme";
+import { ProjectFormModal } from "./project-form-modal";
+import { colors, fontSize, iconSize, opacity, radii, spacing } from "@/constants/theme";
 import { getProject } from "@/lib/api/projects";
 import { listAudios } from "@/lib/api/audios";
 import { queryKeys } from "@/lib/query-keys";
@@ -13,6 +16,7 @@ import { queryKeys } from "@/lib/query-keys";
 export function ProjectView() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const [editing, setEditing] = useState(false);
 
   const projectQuery = useQuery({
     queryKey: queryKeys.project(id),
@@ -34,7 +38,19 @@ export function ProjectView() {
     <View style={styles.container}>
       {project ? (
         <View style={styles.header}>
-          <HeaderTitle title={project.name} />
+          <View style={styles.headerRow}>
+            <View style={styles.headerTitle}>
+              <HeaderTitle title={project.name} />
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Edit project"
+              onPress={() => setEditing(true)}
+              style={({ pressed }) => [styles.editButton, pressed && styles.pressed]}
+            >
+              <Ionicons name="create-outline" size={iconSize.md} color={colors.text} />
+            </Pressable>
+          </View>
           {project.description ? (
             <Text style={styles.description}>{project.description}</Text>
           ) : null}
@@ -66,6 +82,15 @@ export function ProjectView() {
           )}
         />
       )}
+
+      {project ? (
+        <ProjectFormModal
+          visible={editing}
+          mode="edit"
+          project={project}
+          onClose={() => setEditing(false)}
+        />
+      ) : null}
     </View>
   );
 }
@@ -79,6 +104,20 @@ const styles = StyleSheet.create({
   header: {
     paddingBottom: spacing.md,
     gap: spacing.xs,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  headerTitle: {
+    flex: 1,
+  },
+  editButton: {
+    padding: spacing.sm,
+  },
+  pressed: {
+    opacity: opacity.pressed,
   },
   description: {
     fontSize: fontSize.sm,

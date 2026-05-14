@@ -17,7 +17,7 @@ import {
 } from "@/constants/theme";
 import { listProjects } from "@/lib/api/projects";
 import { queryKeys } from "@/lib/query-keys";
-import { CreateProjectModal } from "./create-project-modal";
+import { ProjectFormModal } from "./project-form-modal";
 
 export function ProjectsList() {
   const router = useRouter();
@@ -81,7 +81,7 @@ export function ProjectsList() {
         )}
       />
 
-      <CreateProjectModal visible={modalOpen} onClose={() => setModalOpen(false)} />
+      <ProjectFormModal visible={modalOpen} mode="create" onClose={() => setModalOpen(false)} />
     </View>
   );
 }
