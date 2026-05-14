@@ -43,7 +43,7 @@ export default function RootLayout() {
             <RouteRedirect />
             <Slot />
           </AuthGate>
-          <StatusBar style="auto" />
+          <StatusBar style="light" />
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
