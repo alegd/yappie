@@ -93,4 +93,15 @@ describe("ProjectsList", () => {
     fireEvent.press(plus);
     expect(getByPlaceholderText("Project name")).toBeTruthy();
   });
+
+  it("renders the settings button", async () => {
+    listProjectsMock.mockResolvedValueOnce({
+      data: [buildProject()],
+      total: 1,
+      page: 1,
+      limit: 50,
+    });
+    const { findByLabelText } = renderWithClient(<ProjectsList />);
+    expect(await findByLabelText("Open settings")).toBeTruthy();
+  });
 });

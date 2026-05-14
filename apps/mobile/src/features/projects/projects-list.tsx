@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { View, FlatList, Pressable, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { ListRow } from "@/components/ui/list-row";
+import { SettingsButton } from "@/components/navigation/settings-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   borderWidth,
@@ -21,6 +23,7 @@ import { ProjectFormModal } from "./project-form-modal";
 
 export function ProjectsList() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [modalOpen, setModalOpen] = useState(false);
 
   const projectsQuery = useQuery({
@@ -39,7 +42,7 @@ export function ProjectsList() {
 
   if (projectsQuery.isLoading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
         <View style={styles.titleRow}>
           <HeaderTitle title="Projects" />
         </View>
@@ -55,17 +58,20 @@ export function ProjectsList() {
   const projects = projectsQuery.data?.data ?? [];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
       <View style={styles.titleRow}>
         <HeaderTitle title="Projects" subtitle={`${projects.length} total`} />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Create project"
-          onPress={() => setModalOpen(true)}
-          style={({ pressed }) => [styles.plusButton, pressed && styles.plusPressed]}
-        >
-          <Ionicons name="add" size={iconSize.md} color={colors.text} />
-        </Pressable>
+        <View style={styles.titleActions}>
+          <SettingsButton />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Create project"
+            onPress={() => setModalOpen(true)}
+            style={({ pressed }) => [styles.plusButton, pressed && styles.plusPressed]}
+          >
+            <Ionicons name="add" size={iconSize.md} color={colors.text} />
+          </Pressable>
+        </View>
       </View>
 
       <FlatList
@@ -96,6 +102,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  titleActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
   },
   plusButton: {
     width: componentSize.hitArea,

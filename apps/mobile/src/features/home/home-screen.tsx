@@ -1,7 +1,9 @@
 import { View, Text, FlatList, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { HeaderTitle } from "@/components/ui/header-title";
+import { SettingsButton } from "@/components/navigation/settings-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AudioRow } from "@/features/audios/audio-row";
 import { QuotaWidget } from "./quota-widget";
@@ -12,6 +14,7 @@ import { queryKeys } from "@/lib/query-keys";
 
 export function HomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const quotaQuery = useQuery({
     queryKey: queryKeys.quota,
@@ -26,8 +29,11 @@ export function HomeScreen() {
   const audios = audiosQuery.data?.data ?? [];
 
   return (
-    <View style={styles.container}>
-      <HeaderTitle title="Home" />
+    <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
+      <View style={styles.titleRow}>
+        <HeaderTitle title="Home" />
+        <SettingsButton />
+      </View>
 
       <View style={styles.section}>
         {quotaQuery.data ? (
@@ -65,6 +71,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
     paddingHorizontal: spacing.xl,
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   section: {
     marginTop: spacing.md,

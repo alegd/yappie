@@ -109,4 +109,11 @@ describe("HomeScreen", () => {
       expect(mockPush).toHaveBeenCalledWith("/audios/a1");
     });
   });
+
+  it("renders the settings button", async () => {
+    getQuotaMock.mockResolvedValueOnce(buildQuota());
+    listRecentAudiosMock.mockResolvedValueOnce({ data: [], total: 0, page: 1, limit: 10 });
+    const { findByLabelText } = renderWithClient(<HomeScreen />);
+    expect(await findByLabelText("Open settings")).toBeTruthy();
+  });
 });
