@@ -45,6 +45,7 @@ export function ProjectsList() {
       <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
         <View style={styles.titleRow}>
           <HeaderTitle title="Projects" />
+          <SettingsButton />
         </View>
         <View style={styles.skeletons}>
           <Skeleton width="100%" height={60} borderRadius={radii.md} />
