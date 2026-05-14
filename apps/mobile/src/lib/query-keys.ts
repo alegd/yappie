@@ -6,4 +6,5 @@ export const queryKeys = {
   audio: (id: string) => ["audios", id] as const,
   quota: ["quotas"] as const,
   jiraStatus: ["jira", "status"] as const,
+  jiraProjects: ["jira", "projects"] as const,
 };
