@@ -1,4 +1,5 @@
 import { Alert, View, Text, ScrollView, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as WebBrowser from "expo-web-browser";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { queryKeys } from "@/lib/query-keys";
 const JIRA_RETURN_PATH = "yappie://settings";
 
 export function SettingsScreen() {
+  const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const { logout } = useAuth();
   const queryClient = useQueryClient();
@@ -62,7 +64,7 @@ export function SettingsScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { paddingTop: insets.top + spacing.md }]}>
       <HeaderTitle title="Settings" />
 
       <Text style={styles.sectionLabel}>Account</Text>

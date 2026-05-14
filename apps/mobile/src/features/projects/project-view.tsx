@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { View, Text, Pressable, FlatList, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,6 +16,7 @@ import { queryKeys } from "@/lib/query-keys";
 
 export function ProjectView() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [editing, setEditing] = useState(false);
 
@@ -35,7 +37,7 @@ export function ProjectView() {
   const audios = audiosQuery.data?.data ?? [];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
       {project ? (
         <View style={styles.header}>
           <View style={styles.headerRow}>
