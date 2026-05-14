@@ -37,6 +37,7 @@ export function SettingsScreen() {
     onSuccess: (result) => {
       if (result.type === "success") {
         queryClient.invalidateQueries({ queryKey: queryKeys.jiraStatus });
+        queryClient.invalidateQueries({ queryKey: queryKeys.jiraProjects });
       }
     },
   });
@@ -45,6 +46,7 @@ export function SettingsScreen() {
     mutationFn: () => disconnectJira(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.jiraStatus });
+      queryClient.invalidateQueries({ queryKey: queryKeys.jiraProjects });
     },
   });
 

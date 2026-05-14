@@ -63,7 +63,7 @@ const QUOTA_RESPONSE = {
 
 function renderWithClient(ui: React.ReactElement) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+  return { ...render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>), client };
 }
 
 describe("SettingsScreen", () => {
@@ -174,6 +174,22 @@ describe("SettingsScreen", () => {
         expect(getJiraStatusMock).toHaveBeenCalledTimes(2);
       });
     });
+
+    it("invalidates the Jira projects cache after a successful connect", async () => {
+      getJiraStatusMock.mockResolvedValue({ connected: false });
+      getQuotaMock.mockResolvedValueOnce(QUOTA_RESPONSE);
+      startJiraAuthMock.mockResolvedValueOnce({ url: "https://auth.atlassian.com/x" });
+      mockOpenAuthSessionAsync.mockResolvedValueOnce({
+        type: "success",
+        url: "yappie://settings?jira=connected",
+      });
+      const { findByText, client } = renderWithClient(<SettingsScreen />);
+      const invalidateSpy = jest.spyOn(client, "invalidateQueries");
+      fireEvent.press(await findByText("Connect Jira"));
+      await waitFor(() => {
+        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["jira", "projects"] });
+      });
+    });
   });
 
   describe("Jira disconnect flow", () => {
@@ -224,6 +240,27 @@ describe("SettingsScreen", () => {
       cancelButton?.onPress?.();
 
       expect(disconnectJiraMock).not.toHaveBeenCalled();
+    });
+
+    it("invalidates the Jira projects cache after a confirmed disconnect", async () => {
+      getJiraStatusMock.mockResolvedValue({ connected: true });
+      getQuotaMock.mockResolvedValueOnce(QUOTA_RESPONSE);
+      disconnectJiraMock.mockResolvedValueOnce(undefined);
+
+      const { findByText, client } = renderWithClient(<SettingsScreen />);
+      const invalidateSpy = jest.spyOn(client, "invalidateQueries");
+      fireEvent.press(await findByText("Disconnect Jira"));
+
+      await waitFor(() => {
+        expect(mockAlert).toHaveBeenCalled();
+      });
+      const buttons = mockAlert.mock.calls[0][2] as AlertButton[];
+      const confirmButton = buttons.find((b) => b.style === "destructive");
+      confirmButton?.onPress?.();
+
+      await waitFor(() => {
+        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["jira", "projects"] });
+      });
     });
   });
 });
