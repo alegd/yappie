@@ -44,7 +44,9 @@ export function ProjectFormModal({
       setJiraProjectKey(project?.jiraProjectKey ?? null);
       setError(undefined);
     }
-  }, [visible, project]);
+    // Sync form state only when the modal opens, not on every project reference change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
 
   const mutation = useMutation({
     mutationFn: () => {
@@ -74,7 +76,7 @@ export function ProjectFormModal({
 
   const handleSubmit = () => {
     if (!name.trim()) return;
-    if (context.length > CONTEXT_MAX_LENGTH) {
+    if (context.trim().length > CONTEXT_MAX_LENGTH) {
       setError(`Context must be ${CONTEXT_MAX_LENGTH} characters or fewer`);
       return;
     }
@@ -99,7 +101,6 @@ export function ProjectFormModal({
                 onChangeText={setName}
                 placeholder="Project name"
                 autoCapitalize="words"
-                error={error}
               />
             </View>
             <View style={styles.field}>
@@ -117,6 +118,7 @@ export function ProjectFormModal({
                 placeholder="Context for the AI (optional)"
                 multiline
                 maxLength={CONTEXT_MAX_LENGTH}
+                error={error}
               />
               <Text style={styles.hint}>
                 This context is injected into AI prompts when processing audio for this project.
@@ -127,7 +129,13 @@ export function ProjectFormModal({
               <JiraProjectSelector value={jiraProjectKey} onChange={setJiraProjectKey} />
             </View>
             <View style={styles.actions}>
-              <Pressable onPress={onClose} disabled={mutation.isPending} style={styles.cancel}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Cancel"
+                onPress={onClose}
+                disabled={mutation.isPending}
+                style={styles.cancel}
+              >
                 <Text style={styles.cancelLabel}>Cancel</Text>
               </Pressable>
               <Button

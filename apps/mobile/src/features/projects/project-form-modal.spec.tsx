@@ -8,6 +8,7 @@ jest.mock("@/lib/api/jira", () => ({
   getJiraProjects: jest.fn(),
 }));
 
+// JiraProjectSelector (rendered inside the modal) calls useRouter, so it must be mocked.
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
@@ -111,9 +112,10 @@ describe("ProjectFormModal", () => {
 
   it("submits update with the project id in edit mode", async () => {
     updateProjectMock.mockResolvedValueOnce(buildProject());
+    const onSaved = jest.fn();
     const onClose = jest.fn();
     const { getByPlaceholderText, getByText } = renderWithClient(
-      <ProjectFormModal visible mode="edit" project={buildProject()} onClose={onClose} />,
+      <ProjectFormModal visible mode="edit" project={buildProject()} onClose={onClose} onSaved={onSaved} />,
     );
     fireEvent.changeText(getByPlaceholderText("Project name"), "TiendaVerde 2");
     fireEvent.press(getByText("Save"));
@@ -124,6 +126,9 @@ describe("ProjectFormModal", () => {
         context: "Ana does frontend",
         jiraProjectKey: "TV",
       });
+    });
+    await waitFor(() => {
+      expect(onSaved).toHaveBeenCalledWith(buildProject());
     });
     expect(onClose).toHaveBeenCalled();
   });
