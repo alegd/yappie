@@ -32,6 +32,14 @@ describe("JiraProjectSelector", () => {
     mockPush.mockReset();
   });
 
+  it("renders nothing while the Jira status is loading", () => {
+    getJiraStatusMock.mockReturnValue(new Promise(() => {}));
+    const { toJSON } = renderWithClient(
+      <JiraProjectSelector value={null} onChange={() => {}} />,
+    );
+    expect(toJSON()).toBeNull();
+  });
+
   it("shows a Connect Jira CTA when Jira is not connected", async () => {
     getJiraStatusMock.mockResolvedValueOnce({ connected: false });
     const { findByLabelText } = renderWithClient(

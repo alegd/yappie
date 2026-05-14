@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { getJiraProjects, getJiraStatus } from "@/lib/api/jira";
 import { queryKeys } from "@/lib/query-keys";
-import { borderWidth, colors, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import { borderWidth, colors, fontSize, fontWeight, opacity, radii, spacing } from "@/constants/theme";
 
 interface JiraProjectSelectorProps {
   value: string | null;
@@ -26,6 +26,10 @@ export function JiraProjectSelector({ value, onChange }: JiraProjectSelectorProp
     queryFn: () => getJiraProjects(),
     enabled: connected,
   });
+
+  if (statusQuery.isLoading) {
+    return null;
+  }
 
   if (!connected) {
     return (
@@ -138,6 +142,6 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   pressed: {
-    opacity: 0.6,
+    opacity: opacity.pressed,
   },
 });
