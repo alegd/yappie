@@ -19,6 +19,7 @@ function createMockConfigService() {
         JIRA_CLIENT_ID: "test-client-id",
         JIRA_CLIENT_SECRET: "test-client-secret",
         JIRA_CALLBACK_URL: "http://localhost:3001/api/v1/integrations/jira/callback",
+        FRONTEND_URL: "https://yappie.gueden.com",
       };
       return config[key];
     }),
@@ -82,6 +83,52 @@ describe("JiraService", () => {
       expect(url).toContain("redirect_uri=");
       expect(url).toContain("scope=");
       expect(url).toContain("state=user-1");
+    });
+  });
+
+  describe("buildPostAuthRedirect", () => {
+    it("should redirect to default frontend settings when no returnPath", () => {
+      const url = service.buildPostAuthRedirect();
+
+      expect(url).toBe("https://yappie.gueden.com/dashboard/settings?jira=connected");
+    });
+
+    it("should redirect to a path on the frontend when returnPath starts with /", () => {
+      const url = service.buildPostAuthRedirect("/dashboard/projects/abc");
+
+      expect(url).toBe("https://yappie.gueden.com/dashboard/projects/abc?jira=connected");
+    });
+
+    it("should redirect to the mobile deep link when returnPath uses the yappie:// scheme", () => {
+      const url = service.buildPostAuthRedirect("yappie://settings");
+
+      expect(url).toBe("yappie://settings?jira=connected");
+    });
+
+    it("should fall back to default frontend path for unknown schemes (no open redirect)", () => {
+      const url = service.buildPostAuthRedirect("https://evil.example.com/steal");
+
+      expect(url).toBe("https://yappie.gueden.com/dashboard/settings?jira=connected");
+    });
+
+    it("should fall back to default for protocol-relative URLs", () => {
+      const url = service.buildPostAuthRedirect("//evil.example.com");
+
+      expect(url).toBe("https://yappie.gueden.com/dashboard/settings?jira=connected");
+    });
+
+    it("should preserve existing query params on a frontend path", () => {
+      const url = service.buildPostAuthRedirect("/dashboard?tab=integrations");
+
+      expect(url).toBe(
+        "https://yappie.gueden.com/dashboard?tab=integrations&jira=connected",
+      );
+    });
+
+    it("should preserve existing query params on a mobile deep link", () => {
+      const url = service.buildPostAuthRedirect("yappie://settings?section=jira");
+
+      expect(url).toBe("yappie://settings?section=jira&jira=connected");
     });
   });
 

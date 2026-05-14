@@ -1,18 +1,22 @@
-import { View, Text, ScrollView, StyleSheet } from "react-native";
-import { useQuery } from "@tanstack/react-query";
+import { Alert, View, Text, ScrollView, StyleSheet } from "react-native";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import * as WebBrowser from "expo-web-browser";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { useAuthStore } from "@/features/auth/auth-store";
 import { useAuth } from "@/features/auth/use-auth";
 import { colors, fontSize, fontWeight, spacing } from "@/constants/theme";
-import { getJiraStatus } from "@/lib/api/jira";
+import { disconnectJira, getJiraStatus, startJiraAuth } from "@/lib/api/jira";
 import { getQuota } from "@/lib/api/quotas";
 import { queryKeys } from "@/lib/query-keys";
+
+const JIRA_RETURN_PATH = "yappie://settings";
 
 export function SettingsScreen() {
   const user = useAuthStore((s) => s.user);
   const { logout } = useAuth();
+  const queryClient = useQueryClient();
 
   const jiraQuery = useQuery({
     queryKey: queryKeys.jiraStatus,
@@ -23,6 +27,37 @@ export function SettingsScreen() {
     queryKey: queryKeys.quota,
     queryFn: () => getQuota(),
   });
+
+  const connectJira = useMutation({
+    mutationFn: async () => {
+      const { url } = await startJiraAuth(JIRA_RETURN_PATH);
+      const result = await WebBrowser.openAuthSessionAsync(url, JIRA_RETURN_PATH);
+      return result;
+    },
+    onSuccess: (result) => {
+      if (result.type === "success") {
+        queryClient.invalidateQueries({ queryKey: queryKeys.jiraStatus });
+      }
+    },
+  });
+
+  const disconnectJiraMutation = useMutation({
+    mutationFn: () => disconnectJira(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.jiraStatus });
+    },
+  });
+
+  const handleDisconnectJira = () => {
+    Alert.alert("Disconnect Jira", "You'll need to reconnect to export tickets to Jira.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Disconnect",
+        style: "destructive",
+        onPress: () => disconnectJiraMutation.mutate(),
+      },
+    ]);
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -48,11 +83,24 @@ export function SettingsScreen() {
       <Card>
         <Text style={styles.value}>Jira</Text>
         {jiraQuery.data?.connected ? (
-          <Text style={styles.subtleConnected}>Connected</Text>
+          <View style={styles.connectWrap}>
+            <Text style={styles.subtleConnected}>Connected</Text>
+            <Button
+              label="Disconnect Jira"
+              onPress={handleDisconnectJira}
+              variant="secondary"
+              loading={disconnectJiraMutation.isPending}
+            />
+          </View>
         ) : (
           <View style={styles.connectWrap}>
             <Text style={styles.subtle}>Not connected</Text>
-            <Button label="Connect Jira" onPress={() => {}} variant="secondary" />
+            <Button
+              label="Connect Jira"
+              onPress={() => connectJira.mutate()}
+              variant="secondary"
+              loading={connectJira.isPending}
+            />
           </View>
         )}
       </Card>

@@ -26,3 +26,18 @@ export function exportTicketsBulk(ticketIds: string[]): Promise<unknown> {
 export function getJiraStatus(): Promise<JiraStatus> {
   return apiFetch<JiraStatus>(`/integrations/jira/status`);
 }
+
+export interface JiraAuthStart {
+  url: string;
+}
+
+export function startJiraAuth(returnPath?: string): Promise<JiraAuthStart> {
+  const path = returnPath
+    ? `/integrations/jira/auth?returnPath=${encodeURIComponent(returnPath)}`
+    : `/integrations/jira/auth`;
+  return apiFetch<JiraAuthStart>(path);
+}
+
+export function disconnectJira(): Promise<void> {
+  return apiFetch<void>(`/integrations/jira`, { method: "DELETE" });
+}

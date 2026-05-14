@@ -37,4 +37,25 @@ describe("jira API", () => {
     await jira.getJiraStatus();
     expect(apiFetchMock).toHaveBeenCalledWith("/integrations/jira/status");
   });
+
+  it("startJiraAuth calls GET /integrations/jira/auth with the returnPath query param", async () => {
+    apiFetchMock.mockResolvedValueOnce({ url: "https://auth.atlassian.com/..." });
+    const result = await jira.startJiraAuth("yappie://settings");
+    expect(apiFetchMock).toHaveBeenCalledWith(
+      "/integrations/jira/auth?returnPath=yappie%3A%2F%2Fsettings",
+    );
+    expect(result).toEqual({ url: "https://auth.atlassian.com/..." });
+  });
+
+  it("startJiraAuth omits the query param when no returnPath is provided", async () => {
+    apiFetchMock.mockResolvedValueOnce({ url: "https://auth.atlassian.com/..." });
+    await jira.startJiraAuth();
+    expect(apiFetchMock).toHaveBeenCalledWith("/integrations/jira/auth");
+  });
+
+  it("disconnectJira calls DELETE /integrations/jira", async () => {
+    apiFetchMock.mockResolvedValueOnce(undefined);
+    await jira.disconnectJira();
+    expect(apiFetchMock).toHaveBeenCalledWith("/integrations/jira", { method: "DELETE" });
+  });
 });

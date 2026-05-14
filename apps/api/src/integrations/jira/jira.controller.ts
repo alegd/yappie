@@ -40,13 +40,13 @@ export class JiraController {
   @Public()
   @Get("callback")
   async callback(@Query("code") code: string, @Query("state") state: string, @Res() res: Response) {
-    // State format: "userId" or "userId:/return/path"
+    // State format: "userId" or "userId:<returnPath>". returnPath may be a frontend path
+    // ("/dashboard/...") or a mobile deep link ("yappie://...").
     const [userId, ...returnParts] = state.split(":");
-    const returnPath = returnParts.join(":") || "/dashboard/settings";
+    const returnPath = returnParts.join(":") || undefined;
 
     await this.jiraService.exchangeCode(code, userId);
-    const frontendUrl = process.env.FRONTEND_URL;
-    return res.redirect(`${frontendUrl}${returnPath}?jira=connected`);
+    return res.redirect(this.jiraService.buildPostAuthRedirect(returnPath));
   }
 
   @Post("exchange")
