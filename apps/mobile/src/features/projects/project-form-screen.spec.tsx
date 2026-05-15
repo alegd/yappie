@@ -81,7 +81,13 @@ describe("ProjectFormScreen", () => {
   });
 
   it("does NOT submit create when name is empty or whitespace", () => {
-    const { getByText } = renderWithClient(<ProjectFormScreen mode="create" />);
+    const { getByPlaceholderText, getByText } = renderWithClient(
+      <ProjectFormScreen mode="create" />,
+    );
+    fireEvent.press(getByText("Create"));
+    expect(createProjectMock).not.toHaveBeenCalled();
+
+    fireEvent.changeText(getByPlaceholderText("Project name"), "   ");
     fireEvent.press(getByText("Create"));
     expect(createProjectMock).not.toHaveBeenCalled();
   });

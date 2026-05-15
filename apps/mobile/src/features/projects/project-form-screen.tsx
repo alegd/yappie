@@ -55,6 +55,7 @@ export function ProjectFormScreen({ mode, project }: ProjectFormScreenProps) {
   });
 
   const handleSubmit = () => {
+    setError(undefined);
     if (!name.trim()) return;
     if (context.trim().length > CONTEXT_MAX_LENGTH) {
       setError(`Context must be ${CONTEXT_MAX_LENGTH} characters or fewer`);
