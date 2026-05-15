@@ -17,6 +17,7 @@ interface JiraProjectSelectorProps {
 export function JiraProjectSelector({ value, onChange }: JiraProjectSelectorProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [hasOpenedSheet, setHasOpenedSheet] = useState(false);
 
   const statusQuery = useQuery({
     queryKey: queryKeys.jiraStatus,
@@ -27,7 +28,7 @@ export function JiraProjectSelector({ value, onChange }: JiraProjectSelectorProp
   const projectsQuery = useQuery({
     queryKey: queryKeys.jiraProjects,
     queryFn: () => getJiraProjects(),
-    enabled: connected,
+    enabled: connected && hasOpenedSheet,
   });
 
   if (statusQuery.isLoading) {
@@ -47,27 +48,19 @@ export function JiraProjectSelector({ value, onChange }: JiraProjectSelectorProp
     );
   }
 
-  if (projectsQuery.isError) {
-    return (
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Retry loading Jira projects"
-        onPress={() => projectsQuery.refetch()}
-        style={({ pressed }) => [styles.cta, pressed && styles.pressed]}
-      >
-        <Text style={styles.ctaText}>Couldn&apos;t load Jira projects. Tap to retry.</Text>
-      </Pressable>
-    );
-  }
-
   const projects = projectsQuery.data ?? [];
+
+  const handleOpen = () => {
+    setHasOpenedSheet(true);
+    setOpen(true);
+  };
 
   return (
     <View>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Select Jira project"
-        onPress={() => setOpen(true)}
+        onPress={handleOpen}
         style={({ pressed }) => [styles.field, pressed && styles.pressed]}
       >
         <Text style={value ? styles.fieldValue : styles.fieldPlaceholder}>
@@ -83,22 +76,35 @@ export function JiraProjectSelector({ value, onChange }: JiraProjectSelectorProp
         handleIndicatorStyle={{ backgroundColor: colors.textDim }}
       >
         <ScrollView contentContainerStyle={styles.sheetContent}>
-          {projects.map((project) => (
+          {projectsQuery.isError ? (
             <Pressable
-              key={project.id}
               accessibilityRole="button"
-              accessibilityLabel={`Jira project ${project.key}`}
-              onPress={() => {
-                onChange(project.key);
-                setOpen(false);
-              }}
-              style={({ pressed }) => [styles.option, pressed && styles.pressed]}
+              accessibilityLabel="Retry loading Jira projects"
+              onPress={() => projectsQuery.refetch()}
+              style={({ pressed }) => [styles.cta, pressed && styles.pressed]}
             >
-              <Text style={styles.optionText}>
-                {project.key} — {project.name}
-              </Text>
+              <Text style={styles.ctaText}>Couldn&apos;t load Jira projects. Tap to retry.</Text>
             </Pressable>
-          ))}
+          ) : projectsQuery.isLoading ? (
+            <Text style={styles.statusText}>Loading…</Text>
+          ) : (
+            projects.map((project) => (
+              <Pressable
+                key={project.id}
+                accessibilityRole="button"
+                accessibilityLabel={`Jira project ${project.key}`}
+                onPress={() => {
+                  onChange(project.key);
+                  setOpen(false);
+                }}
+                style={({ pressed }) => [styles.option, pressed && styles.pressed]}
+              >
+                <Text style={styles.optionText}>
+                  {project.key} — {project.name}
+                </Text>
+              </Pressable>
+            ))
+          )}
         </ScrollView>
       </BottomSheet>
     </View>
@@ -140,6 +146,11 @@ const styles = StyleSheet.create({
   sheetContent: {
     padding: spacing.lg,
     gap: spacing.xs,
+  },
+  statusText: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    paddingVertical: spacing.md,
   },
   option: {
     paddingHorizontal: spacing.lg,

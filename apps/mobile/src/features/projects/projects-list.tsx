@@ -39,7 +39,7 @@ export function ProjectsList() {
 
   const listPaddingTop = headerHeight + spacing.md;
 
-  const renderHeader = (subtitle?: string) => (
+  const renderHeader = () => (
     <GlassHeader onLayout={onHeaderLayout}>
       <View style={styles.titleRow}>
         <HeaderTitle title="Projects" />
@@ -87,7 +87,7 @@ export function ProjectsList() {
           />
         )}
       />
-      {renderHeader(`${projects.length} total`)}
+      {renderHeader()}
     </View>
   );
 }
