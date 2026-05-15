@@ -12,7 +12,7 @@ import {
   spacing,
 } from "@/constants/theme";
 
-const HIDDEN_ROUTES = ["settings", "record"];
+const HIDDEN_ROUTES = ["settings", "record", "project-form"];
 const PROJECT_DETAIL_SEGMENT = "projects";
 
 export function FloatingRecordButton() {

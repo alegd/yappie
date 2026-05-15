@@ -44,6 +44,12 @@ describe("FloatingRecordButton", () => {
     expect(queryByLabelText("Record audio")).toBeNull();
   });
 
+  it("hides on the project-form screen", () => {
+    mockSegments = ["(app)", "project-form"];
+    const { queryByLabelText } = render(<FloatingRecordButton />);
+    expect(queryByLabelText("Record audio")).toBeNull();
+  });
+
   it("pushes /record with no params from a tab route", () => {
     mockSegments = ["(app)", "(tabs)", "home"];
     const { getByLabelText } = render(<FloatingRecordButton />);
