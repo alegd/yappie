@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { View, FlatList, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,12 +19,10 @@ import {
 } from "@/constants/theme";
 import { listProjects } from "@/lib/api/projects";
 import { queryKeys } from "@/lib/query-keys";
-import { ProjectFormModal } from "./project-form-modal";
 
 export function ProjectsList() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [modalOpen, setModalOpen] = useState(false);
 
   const projectsQuery = useQuery({
     queryKey: queryKeys.projects,
@@ -67,7 +65,7 @@ export function ProjectsList() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Create project"
-            onPress={() => setModalOpen(true)}
+            onPress={() => router.push("/project-form?mode=create")}
             style={({ pressed }) => [styles.plusButton, pressed && styles.plusPressed]}
           >
             <Ionicons name="add" size={iconSize.md} color={colors.text} />
@@ -88,7 +86,6 @@ export function ProjectsList() {
         )}
       />
 
-      <ProjectFormModal visible={modalOpen} mode="create" onClose={() => setModalOpen(false)} />
     </View>
   );
 }
