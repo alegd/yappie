@@ -34,6 +34,7 @@ export default function AppLayout() {
             name="record"
             options={{ presentation: "modal", headerShown: false }}
           />
+          <Stack.Screen name="project-form" options={{ headerShown: false }} />
         </Stack>
         <FloatingRecordButton />
         <FloatingBackButton />
