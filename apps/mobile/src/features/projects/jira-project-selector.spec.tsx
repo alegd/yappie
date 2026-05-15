@@ -83,12 +83,27 @@ describe("JiraProjectSelector", () => {
     expect(onChange).toHaveBeenCalledWith("TV");
   });
 
-  it("shows a retry affordance when the projects query fails", async () => {
+  it("shows a retry affordance inside the sheet when the projects query fails", async () => {
     getJiraStatusMock.mockResolvedValueOnce({ connected: true });
     getJiraProjectsMock.mockRejectedValueOnce(new Error("token expired"));
     const { findByLabelText } = renderWithClient(
       <JiraProjectSelector value={null} onChange={() => {}} />,
     );
+    fireEvent.press(await findByLabelText("Select Jira project"));
     expect(await findByLabelText("Retry loading Jira projects")).toBeTruthy();
+  });
+
+  it("does not fetch Jira projects until the sheet is opened", async () => {
+    getJiraStatusMock.mockResolvedValueOnce({ connected: true });
+    getJiraProjectsMock.mockResolvedValueOnce([{ id: "1", key: "TV", name: "TiendaVerde" }]);
+    const { findByLabelText } = renderWithClient(
+      <JiraProjectSelector value={null} onChange={() => {}} />,
+    );
+    await findByLabelText("Select Jira project");
+    expect(getJiraProjectsMock).not.toHaveBeenCalled();
+    fireEvent.press(await findByLabelText("Select Jira project"));
+    await waitFor(() => {
+      expect(getJiraProjectsMock).toHaveBeenCalled();
+    });
   });
 });

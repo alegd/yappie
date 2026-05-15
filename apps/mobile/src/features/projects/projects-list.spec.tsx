@@ -90,7 +90,7 @@ describe("ProjectsList", () => {
     const { findByLabelText } = renderWithClient(<ProjectsList />);
     const plus = await findByLabelText("Create project");
     fireEvent.press(plus);
-    expect(mockPush).toHaveBeenCalledWith("/project-form?mode=create");
+    expect(mockPush).toHaveBeenCalledWith({ pathname: "/project-form", params: { mode: "create" } });
   });
 
   it("renders the settings button", async () => {
