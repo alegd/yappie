@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { View, Text, Pressable, FlatList, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
@@ -8,7 +7,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AudioRow } from "@/features/audios/audio-row";
-import { ProjectFormModal } from "./project-form-modal";
 import { colors, fontSize, iconSize, opacity, radii, spacing } from "@/constants/theme";
 import { getProject } from "@/lib/api/projects";
 import { listAudios } from "@/lib/api/audios";
@@ -18,7 +16,6 @@ export function ProjectView() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [editing, setEditing] = useState(false);
 
   const projectQuery = useQuery({
     queryKey: queryKeys.project(id),
@@ -47,7 +44,7 @@ export function ProjectView() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Edit project"
-              onPress={() => setEditing(true)}
+              onPress={() => router.push(`/project-form?mode=edit&id=${project.id}`)}
               style={({ pressed }) => [styles.editButton, pressed && styles.pressed]}
             >
               <Ionicons name="create-outline" size={iconSize.md} color={colors.text} />
@@ -85,14 +82,6 @@ export function ProjectView() {
         />
       )}
 
-      {project ? (
-        <ProjectFormModal
-          visible={editing}
-          mode="edit"
-          project={project}
-          onClose={() => setEditing(false)}
-        />
-      ) : null}
     </View>
   );
 }

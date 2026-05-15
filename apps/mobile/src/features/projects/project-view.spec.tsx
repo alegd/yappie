@@ -14,11 +14,6 @@ jest.mock("@/lib/api/audios", () => ({
   listAudios: jest.fn(),
 }));
 
-jest.mock("@/lib/api/jira", () => ({
-  getJiraStatus: jest.fn().mockResolvedValue({ connected: false }),
-  getJiraProjects: jest.fn(),
-}));
-
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { render, fireEvent, waitFor } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -106,12 +101,12 @@ describe("ProjectView", () => {
     expect(await findByText("call.m4a")).toBeTruthy();
   });
 
-  it("opens the edit modal when the Edit button is pressed", async () => {
+  it("navigates to the edit form when the Edit button is pressed", async () => {
     getProjectMock.mockResolvedValue(buildProject());
     listAudiosMock.mockResolvedValueOnce({ data: [], total: 0, page: 1, limit: 20 });
-    const { findByLabelText, findByText } = renderWithClient(<ProjectView />);
+    const { findByLabelText } = renderWithClient(<ProjectView />);
     fireEvent.press(await findByLabelText("Edit project"));
-    expect(await findByText("Edit project")).toBeTruthy();
+    expect(mockPush).toHaveBeenCalledWith("/project-form?mode=edit&id=p1");
   });
 
   it("pushes /audios/<id> when an audio row is tapped", async () => {
