@@ -62,6 +62,6 @@ describe("FloatingRecordButton", () => {
     mockParams = { id: "p1" };
     const { getByLabelText } = render(<FloatingRecordButton />);
     fireEvent.press(getByLabelText("Record audio"));
-    expect(mockPush).toHaveBeenCalledWith("/record?projectId=p1");
+    expect(mockPush).toHaveBeenCalledWith({ pathname: "/record", params: { projectId: "p1" } });
   });
 });

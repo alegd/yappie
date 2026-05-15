@@ -2,6 +2,7 @@ import { Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, useSegments } from "expo-router";
+import { GlassView } from "expo-glass-effect";
 import {
   borderWidth,
   colors,
@@ -28,29 +29,33 @@ export function FloatingBackButton() {
       accessibilityRole="button"
       accessibilityLabel="Go back"
       style={({ pressed }) => [
-        styles.button,
-        { bottom: insets.bottom + spacing.sm, left: insets.left + spacing.lg },
+        styles.position,
+        { bottom: insets.bottom + spacing.sm, left: insets.left + spacing.xl },
         pressed && styles.pressed,
       ]}
     >
-      <Ionicons name="chevron-back" size={iconSize.xl} color={colors.text} />
+      <GlassView style={styles.fab} glassEffectStyle="regular" colorScheme="dark">
+        <Ionicons name="chevron-back" size={iconSize.xl} color={colors.text} />
+      </GlassView>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
+  position: {
     position: "absolute",
+  },
+  pressed: {
+    opacity: opacity.pressedSubtle,
+  },
+  fab: {
     width: componentSize.fab,
     height: componentSize.fab,
     borderRadius: radii.pill,
     borderWidth: borderWidth.medium,
     borderColor: colors.borderStrong,
-    backgroundColor: colors.surface,
     alignItems: "center",
     justifyContent: "center",
-  },
-  pressed: {
-    opacity: opacity.pressedSubtle,
+    overflow: "hidden",
   },
 });

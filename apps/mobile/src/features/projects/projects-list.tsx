@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
-import { View, FlatList, Pressable, StyleSheet, type LayoutChangeEvent } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useEffect } from "react";
+import { View, FlatList, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { GlassView } from "expo-glass-effect";
+import { GlassHeader, useGlassHeader } from "@/components/ui/glass-header";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { ListRow } from "@/components/ui/list-row";
 import { SettingsButton } from "@/components/navigation/settings-button";
@@ -21,16 +20,9 @@ import {
 import { listProjects } from "@/lib/api/projects";
 import { queryKeys } from "@/lib/query-keys";
 
-const HEADER_FALLBACK_HEIGHT = 120;
-
 export function ProjectsList() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const [headerHeight, setHeaderHeight] = useState<number | null>(null);
-
-  const handleHeaderLayout = (e: LayoutChangeEvent) => {
-    setHeaderHeight(e.nativeEvent.layout.height);
-  };
+  const { height: headerHeight, onLayout: onHeaderLayout } = useGlassHeader();
 
   const projectsQuery = useQuery({
     queryKey: queryKeys.projects,
@@ -46,15 +38,10 @@ export function ProjectsList() {
     }
   }, [hasZeroProjects, router]);
 
-  const listPaddingTop = (headerHeight ?? HEADER_FALLBACK_HEIGHT) + spacing.md;
+  const listPaddingTop = headerHeight + spacing.md;
 
   const renderHeader = (subtitle?: string) => (
-    <GlassView
-      onLayout={handleHeaderLayout}
-      glassEffectStyle="regular"
-      colorScheme="dark"
-      style={[styles.header, { paddingTop: insets.top + spacing.md }]}
-    >
+    <GlassHeader onLayout={onHeaderLayout}>
       <View style={styles.titleRow}>
         <HeaderTitle title="Projects" subtitle={subtitle} />
         <View style={styles.titleActions}>
@@ -69,7 +56,7 @@ export function ProjectsList() {
           </Pressable>
         </View>
       </View>
-    </GlassView>
+    </GlassHeader>
   );
 
   if (projectsQuery.isLoading) {
@@ -111,14 +98,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.md,
-  },
   titleRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -148,7 +127,6 @@ const styles = StyleSheet.create({
   },
   skeletons: {
     paddingHorizontal: spacing.xl,
-    paddingTop: spacing.md,
     gap: spacing.sm,
   },
 });

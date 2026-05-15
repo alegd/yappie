@@ -1,7 +1,7 @@
 import { View, Text, FlatList, StyleSheet } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import { GlassHeader, useGlassHeader } from "@/components/ui/glass-header";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { SettingsButton } from "@/components/navigation/settings-button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,7 +14,7 @@ import { queryKeys } from "@/lib/query-keys";
 
 export function HomeScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const { height: headerHeight, onLayout: onHeaderLayout } = useGlassHeader();
 
   const quotaQuery = useQuery({
     queryKey: queryKeys.quota,
@@ -28,13 +28,8 @@ export function HomeScreen() {
 
   const audios = audiosQuery.data?.data ?? [];
 
-  return (
-    <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
-      <View style={styles.titleRow}>
-        <HeaderTitle title="Home" />
-        <SettingsButton />
-      </View>
-
+  const listHeader = (
+    <>
       <View style={styles.section}>
         {quotaQuery.data ? (
           <QuotaWidget quota={quotaQuery.data} />
@@ -42,26 +37,37 @@ export function HomeScreen() {
           <Skeleton width="100%" height={96} borderRadius={radii.md} />
         )}
       </View>
-
       <Text style={styles.sectionLabel}>Recent audios</Text>
+    </>
+  );
 
-      {audiosQuery.isLoading ? (
-        <View style={styles.list}>
-          <Skeleton width="100%" height={80} borderRadius={radii.md} />
-          <Skeleton width="100%" height={80} borderRadius={radii.md} />
+  const listEmpty = audiosQuery.isLoading ? (
+    <View style={styles.list}>
+      <Skeleton width="100%" height={80} borderRadius={radii.md} />
+      <Skeleton width="100%" height={80} borderRadius={radii.md} />
+    </View>
+  ) : (
+    <Text style={styles.emptyText}>No audios yet. Tap the record button to start.</Text>
+  );
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={audios}
+        keyExtractor={(a) => a.id}
+        contentContainerStyle={[styles.list, { paddingTop: headerHeight + spacing.md }]}
+        ListHeaderComponent={listHeader}
+        ListEmptyComponent={listEmpty}
+        renderItem={({ item }) => (
+          <AudioRow audio={item} onPress={() => router.push(`/audios/${item.id}`)} />
+        )}
+      />
+      <GlassHeader onLayout={onHeaderLayout}>
+        <View style={styles.titleRow}>
+          <HeaderTitle title="Home" />
+          <SettingsButton />
         </View>
-      ) : audios.length === 0 ? (
-        <Text style={styles.emptyText}>No audios yet. Tap the record button to start.</Text>
-      ) : (
-        <FlatList
-          data={audios}
-          keyExtractor={(a) => a.id}
-          contentContainerStyle={styles.list}
-          renderItem={({ item }) => (
-            <AudioRow audio={item} onPress={() => router.push(`/audios/${item.id}`)} />
-          )}
-        />
-      )}
+      </GlassHeader>
     </View>
   );
 }
@@ -70,7 +76,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingHorizontal: spacing.xl,
   },
   titleRow: {
     flexDirection: "row",
@@ -78,7 +83,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   section: {
-    marginTop: spacing.md,
     marginBottom: spacing.lg,
   },
   sectionLabel: {
@@ -95,6 +99,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
   },
   list: {
+    paddingHorizontal: spacing.xl,
     paddingBottom: spacing.huge,
     gap: spacing.sm,
   },

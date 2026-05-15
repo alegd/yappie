@@ -106,7 +106,7 @@ describe("ProjectView", () => {
     listAudiosMock.mockResolvedValueOnce({ data: [], total: 0, page: 1, limit: 20 });
     const { findByLabelText } = renderWithClient(<ProjectView />);
     fireEvent.press(await findByLabelText("Edit project"));
-    expect(mockPush).toHaveBeenCalledWith("/project-form?mode=edit&id=p1");
+    expect(mockPush).toHaveBeenCalledWith({ pathname: "/project-form", params: { mode: "edit", id: "p1" } });
   });
 
   it("pushes /audios/<id> when an audio row is tapped", async () => {
