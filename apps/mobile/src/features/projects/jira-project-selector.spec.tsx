@@ -57,7 +57,7 @@ describe("JiraProjectSelector", () => {
     expect(mockPush).toHaveBeenCalledWith("/settings");
   });
 
-  it("shows the placeholder and expands the project list when connected", async () => {
+  it("shows the placeholder and opens the project list in a bottom sheet when connected", async () => {
     getJiraStatusMock.mockResolvedValueOnce({ connected: true });
     getJiraProjectsMock.mockResolvedValueOnce([
       { id: "1", key: "TV", name: "TiendaVerde" },

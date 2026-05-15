@@ -1,10 +1,13 @@
-import { useState } from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { useRef, useState } from "react";
+import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
+import BottomSheet from "@gorhom/bottom-sheet";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { getJiraProjects, getJiraStatus } from "@/lib/api/jira";
 import { queryKeys } from "@/lib/query-keys";
 import { borderWidth, colors, fontSize, fontWeight, opacity, radii, spacing } from "@/constants/theme";
+
+const SNAP_POINTS = ["50%"];
 
 interface JiraProjectSelectorProps {
   value: string | null;
@@ -13,7 +16,8 @@ interface JiraProjectSelectorProps {
 
 export function JiraProjectSelector({ value, onChange }: JiraProjectSelectorProps) {
   const router = useRouter();
-  const [expanded, setExpanded] = useState(false);
+  const sheetRef = useRef<BottomSheet>(null);
+  const [open, setOpen] = useState(false);
 
   const statusQuery = useQuery({
     queryKey: queryKeys.jiraStatus,
@@ -64,15 +68,23 @@ export function JiraProjectSelector({ value, onChange }: JiraProjectSelectorProp
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Select Jira project"
-        onPress={() => setExpanded((open) => !open)}
+        onPress={() => setOpen(true)}
         style={({ pressed }) => [styles.field, pressed && styles.pressed]}
       >
         <Text style={value ? styles.fieldValue : styles.fieldPlaceholder}>
           {value ?? "Select Jira project"}
         </Text>
       </Pressable>
-      {expanded ? (
-        <View style={styles.list}>
+      <BottomSheet
+        ref={sheetRef}
+        index={open ? 0 : -1}
+        snapPoints={SNAP_POINTS}
+        enablePanDownToClose
+        onClose={() => setOpen(false)}
+        backgroundStyle={{ backgroundColor: colors.surface }}
+        handleIndicatorStyle={{ backgroundColor: colors.textDim }}
+      >
+        <ScrollView contentContainerStyle={styles.sheetContent}>
           {projects.map((project) => (
             <Pressable
               key={project.id}
@@ -80,7 +92,7 @@ export function JiraProjectSelector({ value, onChange }: JiraProjectSelectorProp
               accessibilityLabel={`Jira project ${project.key}`}
               onPress={() => {
                 onChange(project.key);
-                setExpanded(false);
+                setOpen(false);
               }}
               style={({ pressed }) => [styles.option, pressed && styles.pressed]}
             >
@@ -89,8 +101,8 @@ export function JiraProjectSelector({ value, onChange }: JiraProjectSelectorProp
               </Text>
             </Pressable>
           ))}
-        </View>
-      ) : null}
+        </ScrollView>
+      </BottomSheet>
     </View>
   );
 }
@@ -124,17 +136,14 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     color: colors.textDim,
   },
-  list: {
-    marginTop: spacing.xs,
-    borderRadius: radii.md,
-    borderWidth: borderWidth.thin,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    overflow: "hidden",
+  sheetContent: {
+    padding: spacing.lg,
+    gap: spacing.xs,
   },
   option: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
+    borderRadius: radii.md,
   },
   optionText: {
     fontSize: fontSize.md,
