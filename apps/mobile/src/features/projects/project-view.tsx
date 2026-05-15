@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AudioRow } from "@/features/audios/audio-row";
-import { colors, fontSize, iconSize, opacity, radii, spacing } from "@/constants/theme";
+import { colors, font, fontSize, iconSize, opacity, radii, spacing } from "@/constants/theme";
 import { getProject } from "@/lib/api/projects";
 import { listAudios } from "@/lib/api/audios";
 import { queryKeys } from "@/lib/query-keys";
@@ -111,6 +111,7 @@ const styles = StyleSheet.create({
     opacity: opacity.pressed,
   },
   description: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textMuted,
   },

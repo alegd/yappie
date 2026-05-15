@@ -5,8 +5,8 @@ import {
   borderWidth,
   colors,
   componentSize,
+  font,
   fontSize,
-  fontWeight,
   iconSize,
   opacity,
   radii,
@@ -104,8 +104,8 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   title: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
     color: colors.text,
   },
   badges: {
@@ -115,8 +115,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   jiraKey: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
     color: colors.statusExported,
   },
 });

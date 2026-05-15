@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Button } from "./button";
-import { colors, fontSize, fontWeight, iconSize, spacing } from "@/constants/theme";
+import { colors, font, fontSize, iconSize, spacing } from "@/constants/theme";
 
 interface ErrorScreenProps {
   error: Error;
@@ -31,12 +31,13 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   title: {
+    fontFamily: font.heading.bold,
     fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
     color: colors.text,
     textAlign: "center",
   },
   message: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textMuted,
     textAlign: "center",

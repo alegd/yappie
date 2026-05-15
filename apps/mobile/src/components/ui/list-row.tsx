@@ -3,8 +3,8 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   borderWidth,
   colors,
+  font,
   fontSize,
-  fontWeight,
   iconSize,
   opacity,
   radii,
@@ -59,11 +59,12 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   title: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
     color: colors.text,
   },
   subtitle: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textMuted,
   },

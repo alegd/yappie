@@ -12,8 +12,8 @@ import {
   colors,
   componentSize,
   duration,
+  font,
   fontSize,
-  fontWeight,
   iconSize,
   opacity,
   radii,
@@ -292,8 +292,8 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: "center",
+    fontFamily: font.heading.semibold,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
     color: colors.text,
   },
   headerSpacer: {
@@ -321,6 +321,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   hint: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.md,
     color: colors.textMuted,
   },
@@ -331,13 +332,13 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
   },
   recordButtonLabel: {
+    fontFamily: font.heading.semibold,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
+    color: "#FFFFFF",
   },
   timer: {
+    fontFamily: font.heading.bold,
     fontSize: fontSize.display,
-    fontWeight: fontWeight.bold,
     color: colors.text,
     fontVariant: ["tabular-nums"],
   },
@@ -354,27 +355,30 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
   },
   stopButtonLabel: {
+    fontFamily: font.heading.semibold,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
+    color: "#FFFFFF",
   },
   processingLabel: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.md,
     color: colors.textMuted,
   },
   errorMessage: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.danger,
     textAlign: "center",
     paddingHorizontal: spacing.lg,
   },
   permissionTitle: {
+    fontFamily: font.heading.semibold,
     fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
     color: colors.text,
     textAlign: "center",
   },
   permissionBody: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textMuted,
     textAlign: "center",

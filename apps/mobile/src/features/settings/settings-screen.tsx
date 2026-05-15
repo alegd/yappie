@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { useAuthStore } from "@/features/auth/auth-store";
 import { useAuth } from "@/features/auth/use-auth";
-import { colors, fontSize, fontWeight, spacing } from "@/constants/theme";
+import { colors, font, fontSize, spacing } from "@/constants/theme";
 import { disconnectJira, getJiraStatus, startJiraAuth } from "@/lib/api/jira";
 import { getQuota } from "@/lib/api/quotas";
 import { queryKeys } from "@/lib/query-keys";
@@ -130,26 +130,28 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   sectionLabel: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.sm,
     color: colors.textMuted,
     letterSpacing: 0.5,
     marginTop: spacing.lg,
   },
   value: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
     color: colors.text,
   },
   subtle: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textMuted,
     marginTop: spacing.xs,
   },
   subtleConnected: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.sm,
     color: colors.success,
     marginTop: spacing.xs,
-    fontWeight: fontWeight.semibold,
   },
   connectWrap: {
     marginTop: spacing.sm,

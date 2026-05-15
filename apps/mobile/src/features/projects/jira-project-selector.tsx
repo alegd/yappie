@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { getJiraProjects, getJiraStatus } from "@/lib/api/jira";
 import { queryKeys } from "@/lib/query-keys";
-import { borderWidth, colors, fontSize, fontWeight, opacity, radii, spacing } from "@/constants/theme";
+import { borderWidth, colors, font, fontSize, opacity, radii, spacing } from "@/constants/theme";
 
 const SNAP_POINTS = ["50%"];
 
@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   ctaText: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textMuted,
   },
@@ -127,10 +128,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   fieldValue: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.md,
     color: colors.text,
   },
   fieldPlaceholder: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.md,
     color: colors.textDim,
   },
@@ -144,8 +147,8 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
   },
   optionText: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
     color: colors.text,
   },
   pressed: {

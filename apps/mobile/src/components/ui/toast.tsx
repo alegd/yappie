@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { borderWidth, colors, duration, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import { borderWidth, colors, duration, font, fontSize, radii, spacing } from "@/constants/theme";
 
 export type ToastVariant = "success" | "error" | "info";
 
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     borderWidth: borderWidth.thin,
   },
   message: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
   },
 });

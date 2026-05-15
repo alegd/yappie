@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { JiraProjectSelector } from "./jira-project-selector";
-import { colors, fontSize, fontWeight, spacing } from "@/constants/theme";
+import { colors, font, fontSize, spacing } from "@/constants/theme";
 import { createProject, updateProject } from "@/lib/api/projects";
 import { queryKeys } from "@/lib/query-keys";
 import type { Project } from "@/lib/api/types";
@@ -136,13 +136,14 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   label: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
     color: colors.textMuted,
     marginBottom: spacing.xs,
   },
   hint: {
     marginTop: spacing.xs,
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textMuted,
   },
@@ -158,8 +159,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   cancelLabel: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
     color: colors.textMuted,
   },
 });

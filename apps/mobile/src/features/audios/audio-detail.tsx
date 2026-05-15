@@ -11,7 +11,7 @@ import { toast } from "@/components/ui/toast";
 import { TranscriptionBlock } from "./transcription-block";
 import { TicketRow } from "@/features/tickets/ticket-row";
 import { TicketDetailSheet } from "@/features/tickets/ticket-detail-sheet";
-import { borderWidth, colors, fontSize, fontWeight, opacity, radii, spacing } from "@/constants/theme";
+import { borderWidth, colors, font, fontSize, opacity, radii, spacing } from "@/constants/theme";
 import { ApiError } from "@/lib/api-error";
 import { getAudio } from "@/lib/api/audios";
 import { exportTicketsBulk } from "@/lib/api/jira";
@@ -195,6 +195,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   meta: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textMuted,
   },
@@ -205,8 +206,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   ticketsTitle: {
+    fontFamily: font.heading.semibold,
     fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
     color: colors.text,
   },
   toggleButton: {
@@ -220,11 +221,12 @@ const styles = StyleSheet.create({
     opacity: opacity.pressed,
   },
   toggleLabel: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
     color: colors.textMuted,
   },
   emptyText: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textDim,
     paddingVertical: spacing.lg,
@@ -251,8 +253,8 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   footerLabel: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
     color: colors.text,
   },
 });

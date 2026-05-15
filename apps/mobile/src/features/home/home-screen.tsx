@@ -7,7 +7,7 @@ import { SettingsButton } from "@/components/navigation/settings-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AudioRow } from "@/features/audios/audio-row";
 import { QuotaWidget } from "./quota-widget";
-import { colors, fontSize, radii, spacing } from "@/constants/theme";
+import { colors, font, fontSize, radii, spacing } from "@/constants/theme";
 import { listRecentAudios } from "@/lib/api/audios";
 import { getQuota } from "@/lib/api/quotas";
 import { queryKeys } from "@/lib/query-keys";
@@ -82,12 +82,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   sectionLabel: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.sm,
     color: colors.textMuted,
     letterSpacing: 0.5,
     marginBottom: spacing.sm,
   },
   emptyText: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textDim,
     paddingVertical: spacing.lg,

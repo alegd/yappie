@@ -4,8 +4,8 @@ import {
   borderWidth,
   colors,
   componentSize,
+  font,
   fontSize,
-  fontWeight,
   radii,
   spacing,
 } from "@/constants/theme";
@@ -77,12 +77,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceElevated,
   },
   label: {
+    fontFamily: font.heading.medium,
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
     color: colors.textDim,
   },
   labelActive: {
+    fontFamily: font.heading.semibold,
     color: colors.text,
-    fontWeight: fontWeight.semibold,
   },
 });

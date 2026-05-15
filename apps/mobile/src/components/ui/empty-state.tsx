@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import { Button } from "./button";
-import { colors, fontSize, fontWeight, spacing } from "@/constants/theme";
+import { colors, font, fontSize, spacing } from "@/constants/theme";
 
 interface EmptyStateProps {
   headline: string;
@@ -34,12 +34,13 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   headline: {
+    fontFamily: font.heading.semibold,
     fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
     color: colors.text,
     textAlign: "center",
   },
   body: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textMuted,
     textAlign: "center",

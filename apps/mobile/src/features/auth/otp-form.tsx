@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { colors, font, fontSize, spacing } from "@/constants/theme";
 import { useAuth } from "./use-auth";
 import { ApiError } from "@/lib/api-error";
 
@@ -93,15 +94,16 @@ export function OtpForm({ email }: OtpFormProps) {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    gap: 16,
+    gap: spacing.lg,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: "#fafafa",
+    fontFamily: font.heading.bold,
+    fontSize: fontSize.xxl,
+    color: colors.text,
   },
   subtitle: {
-    fontSize: 16,
-    color: "#71717a",
+    fontFamily: font.body.regular,
+    fontSize: fontSize.md,
+    color: colors.textMuted,
   },
 });

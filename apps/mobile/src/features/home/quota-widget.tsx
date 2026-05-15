@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import { Card } from "@/components/ui/card";
-import { colors, componentSize, fontSize, fontWeight, radii, spacing } from "@/constants/theme";
+import { colors, componentSize, font, fontSize, radii, spacing } from "@/constants/theme";
 import type { Quota } from "@/lib/api/types";
 
 interface QuotaWidgetProps {
@@ -34,19 +34,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   plan: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
     color: colors.textMuted,
     letterSpacing: 0.5,
   },
   upgrade: {
+    fontFamily: font.heading.semibold,
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
     color: colors.primary,
   },
   usage: {
+    fontFamily: font.heading.bold,
     fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
     color: colors.text,
     marginTop: spacing.sm,
     fontVariant: ["tabular-nums"],
