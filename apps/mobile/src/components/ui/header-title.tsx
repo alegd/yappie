@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet } from "react-native";
 import { colors, font, fontSize, spacing } from "@/constants/theme";
+import { StyleSheet, Text, View } from "react-native";
 
 interface HeaderTitleProps {
   title: string;
@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: font.heading.bold,
-    fontSize: fontSize.xxl,
+    fontSize: fontSize.xl,
     color: colors.text,
   },
   subtitle: {

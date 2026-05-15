@@ -1,12 +1,7 @@
-import { useEffect } from "react";
-import { View, FlatList, Pressable, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
+import { SettingsButton } from "@/components/navigation/settings-button";
 import { GlassHeader, useGlassHeader } from "@/components/ui/glass-header";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { ListRow } from "@/components/ui/list-row";
-import { SettingsButton } from "@/components/navigation/settings-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   borderWidth,
@@ -19,6 +14,11 @@ import {
 } from "@/constants/theme";
 import { listProjects } from "@/lib/api/projects";
 import { queryKeys } from "@/lib/query-keys";
+import { Ionicons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 
 export function ProjectsList() {
   const router = useRouter();
@@ -29,8 +29,7 @@ export function ProjectsList() {
     queryFn: () => listProjects(),
   });
 
-  const hasZeroProjects =
-    projectsQuery.isSuccess && (projectsQuery.data?.data.length ?? 0) === 0;
+  const hasZeroProjects = projectsQuery.isSuccess && (projectsQuery.data?.data.length ?? 0) === 0;
 
   useEffect(() => {
     if (hasZeroProjects) {
@@ -43,9 +42,8 @@ export function ProjectsList() {
   const renderHeader = (subtitle?: string) => (
     <GlassHeader onLayout={onHeaderLayout}>
       <View style={styles.titleRow}>
-        <HeaderTitle title="Projects" subtitle={subtitle} />
+        <HeaderTitle title="Projects" />
         <View style={styles.titleActions}>
-          <SettingsButton />
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Create project"
@@ -54,6 +52,7 @@ export function ProjectsList() {
           >
             <Ionicons name="add" size={iconSize.md} color={colors.text} />
           </Pressable>
+          <SettingsButton />
         </View>
       </View>
     </GlassHeader>
