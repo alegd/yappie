@@ -44,7 +44,7 @@ export function ProjectView() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Edit project"
-              onPress={() => router.push(`/project-form?mode=edit&id=${project.id}`)}
+              onPress={() => router.push({ pathname: "/project-form", params: { mode: "edit", id: project.id } })}
               style={({ pressed }) => [styles.editButton, pressed && styles.pressed]}
             >
               <Ionicons name="create-outline" size={iconSize.md} color={colors.text} />
@@ -81,7 +81,6 @@ export function ProjectView() {
           )}
         />
       )}
-
     </View>
   );
 }

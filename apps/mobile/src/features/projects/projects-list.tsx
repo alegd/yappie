@@ -65,7 +65,7 @@ export function ProjectsList() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Create project"
-            onPress={() => router.push("/project-form?mode=create")}
+            onPress={() => router.push({ pathname: "/project-form", params: { mode: "create" } })}
             style={({ pressed }) => [styles.plusButton, pressed && styles.plusPressed]}
           >
             <Ionicons name="add" size={iconSize.md} color={colors.text} />
@@ -85,7 +85,6 @@ export function ProjectsList() {
           />
         )}
       />
-
     </View>
   );
 }
