@@ -3,7 +3,13 @@ import { Linking, View, Text, Pressable, FlatList, StyleSheet } from "react-nati
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useAudioRecorder, useAudioRecorderPermissions, RecordingPresets } from "expo-audio";
+import {
+  useAudioRecorder,
+  RecordingPresets,
+  getRecordingPermissionsAsync,
+  requestRecordingPermissionsAsync,
+  type PermissionResponse,
+} from "expo-audio";
 import { Button } from "@/components/ui/button";
 import { ListRow } from "@/components/ui/list-row";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,8 +18,8 @@ import {
   colors,
   componentSize,
   duration,
+  font,
   fontSize,
-  fontWeight,
   iconSize,
   opacity,
   radii,
@@ -32,8 +38,26 @@ export function RecordingModal() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { projectId: initialProjectId } = useLocalSearchParams<{ projectId?: string }>();
-  const [permission, requestPermission] = useAudioRecorderPermissions();
+  const [permission, setPermission] = useState<PermissionResponse | null>(null);
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+
+  useEffect(() => {
+    let cancelled = false;
+    getRecordingPermissionsAsync()
+      .then((result) => {
+        if (!cancelled) setPermission(result);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const requestPermission = async () => {
+    const result = await requestRecordingPermissionsAsync();
+    setPermission(result);
+    return result;
+  };
 
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     initialProjectId ?? null,
@@ -292,8 +316,8 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: "center",
+    fontFamily: font.heading.semibold,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
     color: colors.text,
   },
   headerSpacer: {
@@ -321,6 +345,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   hint: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.md,
     color: colors.textMuted,
   },
@@ -331,13 +356,13 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
   },
   recordButtonLabel: {
+    fontFamily: font.heading.semibold,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
+    color: "#FFFFFF",
   },
   timer: {
+    fontFamily: font.heading.bold,
     fontSize: fontSize.display,
-    fontWeight: fontWeight.bold,
     color: colors.text,
     fontVariant: ["tabular-nums"],
   },
@@ -354,27 +379,30 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
   },
   stopButtonLabel: {
+    fontFamily: font.heading.semibold,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
+    color: "#FFFFFF",
   },
   processingLabel: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.md,
     color: colors.textMuted,
   },
   errorMessage: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.danger,
     textAlign: "center",
     paddingHorizontal: spacing.lg,
   },
   permissionTitle: {
+    fontFamily: font.heading.semibold,
     fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
     color: colors.text,
     textAlign: "center",
   },
   permissionBody: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textMuted,
     textAlign: "center",

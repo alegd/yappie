@@ -1,5 +1,5 @@
 import { Pressable, Text, StyleSheet } from "react-native";
-import { colors, opacity, radii, spacing, fontSize, fontWeight } from "@/constants/theme";
+import { borderWidth, colors, font, opacity, radii, spacing, fontSize } from "@/constants/theme";
 
 interface ButtonProps {
   label: string;
@@ -16,6 +16,7 @@ export function Button({ label, onPress, disabled, loading, variant = "primary" 
     variant === "primary" ? styles.primary : styles.secondary,
     isDisabled && styles.disabled,
   ];
+  const labelStyle = variant === "primary" ? styles.labelPrimary : styles.labelSecondary;
   return (
     <Pressable
       onPress={onPress}
@@ -24,7 +25,7 @@ export function Button({ label, onPress, disabled, loading, variant = "primary" 
       accessibilityState={{ disabled: isDisabled }}
       style={containerStyles}
     >
-      <Text style={styles.label}>{loading ? `${label} — Loading…` : label}</Text>
+      <Text style={labelStyle}>{loading ? `${label} — Loading…` : label}</Text>
     </Pressable>
   );
 }
@@ -41,14 +42,21 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   secondary: {
-    backgroundColor: colors.border,
+    backgroundColor: "transparent",
+    borderWidth: borderWidth.medium,
+    borderColor: colors.primary,
   },
   disabled: {
     opacity: opacity.disabled,
   },
-  label: {
+  labelPrimary: {
+    fontFamily: font.heading.semibold,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
-    color: colors.text,
+    color: "#FFFFFF",
+  },
+  labelSecondary: {
+    fontFamily: font.heading.semibold,
+    fontSize: fontSize.md,
+    color: colors.primary,
   },
 });

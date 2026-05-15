@@ -11,8 +11,8 @@ import {
   borderWidth,
   colors,
   componentSize,
+  font,
   fontSize,
-  fontWeight,
   iconSize,
   opacity,
   radii,
@@ -282,14 +282,14 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
+    fontFamily: font.heading.bold,
     fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
     color: colors.text,
   },
   titleInput: {
     flex: 1,
+    fontFamily: font.heading.bold,
     fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
     color: colors.text,
     borderBottomWidth: borderWidth.thin,
     borderBottomColor: colors.border,
@@ -328,31 +328,33 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
   },
   priorityChipLabel: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
     color: colors.textMuted,
   },
   priorityChipLabelActive: {
     color: colors.text,
   },
   jiraKey: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
     color: colors.statusExported,
   },
   sectionLabel: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
     color: colors.textMuted,
     letterSpacing: 0.5,
     marginTop: spacing.md,
   },
   description: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.md,
     color: colors.text,
     lineHeight: fontSize.md * 1.5,
   },
   descriptionInput: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.md,
     color: colors.text,
     backgroundColor: colors.background,
@@ -375,8 +377,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   dangerLabel: {
+    fontFamily: font.heading.semibold,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
     color: colors.danger,
   },
   secondary: {
@@ -384,8 +386,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   secondaryLabel: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
     color: colors.textMuted,
   },
 });

@@ -19,7 +19,6 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "package": "com.yappie.mobile",
-      "permissions": ["RECORD_AUDIO"],
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -41,6 +40,12 @@
         }
       ],
       "expo-secure-store",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Yappie uses the microphone to record audio that gets transcribed into tickets."
+        }
+      ],
       [
         "expo-build-properties",
         {

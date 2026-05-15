@@ -4,8 +4,8 @@ import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import {
   borderWidth,
   colors,
+  font,
   fontSize,
-  fontWeight,
   iconSize,
   opacity,
   radii,
@@ -70,11 +70,12 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   title: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
     color: colors.text,
   },
   meta: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textMuted,
   },

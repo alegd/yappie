@@ -1,31 +1,31 @@
 export const colors = {
-  background: "#0a0a0a",
-  surface: "#0f0f10",
-  surfaceElevated: "#1f1f23",
-  border: "#27272a",
-  borderStrong: "#3f3f46",
+  background: "#1C1C28",
+  surface: "#2A2A38",
+  surfaceElevated: "#33333F",
+  border: "rgba(255,255,255,0.08)",
+  borderStrong: "rgba(255,255,255,0.16)",
 
-  text: "#fafafa",
-  textMuted: "#a1a1aa",
-  textDim: "#71717a",
+  text: "#F5F5F5",
+  textMuted: "#A0A0B8",
+  textDim: "#6B6B80",
 
-  primary: "#f97316",
-  primaryPressed: "#ea580c",
+  primary: "#E8612F",
+  primaryPressed: "#C04F26",
 
-  danger: "#ef4444",
-  success: "#22c55e",
-  warning: "#eab308",
-  info: "#3b82f6",
+  danger: "#FF4757",
+  success: "#15803D",
+  warning: "#FFB347",
+  info: "#5B86E5",
 
-  priorityLow: "#71717a",
-  priorityMedium: "#3b82f6",
-  priorityHigh: "#f97316",
-  priorityCritical: "#ef4444",
+  priorityLow: "#A0A0B8",
+  priorityMedium: "#5B86E5",
+  priorityHigh: "#FF6B35",
+  priorityCritical: "#FF4757",
 
-  statusDraft: "#71717a",
-  statusApproved: "#3b82f6",
-  statusExported: "#22c55e",
-  statusRejected: "#ef4444",
+  statusDraft: "#5B86E5",
+  statusApproved: "#2ED47A",
+  statusExported: "#15803D",
+  statusRejected: "#FF4757",
 } as const;
 
 export const spacing = {
@@ -47,6 +47,7 @@ export const radii = {
 
 export const fontSize = {
   xs: 12,
+  badge: 11,
   sm: 14,
   md: 16,
   lg: 18,
@@ -60,6 +61,20 @@ export const fontWeight = {
   medium: "500",
   semibold: "600",
   bold: "700",
+} as const;
+
+export const font = {
+  heading: {
+    medium: "Sora_500Medium",
+    semibold: "Sora_600SemiBold",
+    bold: "Sora_700Bold",
+    extraBold: "Sora_800ExtraBold",
+  },
+  body: {
+    regular: "DMSans_400Regular",
+    medium: "DMSans_500Medium",
+    bold: "DMSans_700Bold",
+  },
 } as const;
 
 export const iconSize = {
@@ -105,6 +120,7 @@ export type Spacing = typeof spacing;
 export type Radii = typeof radii;
 export type FontSize = typeof fontSize;
 export type FontWeight = typeof fontWeight;
+export type Font = typeof font;
 export type IconSize = typeof iconSize;
 export type ComponentSize = typeof componentSize;
 export type BorderWidth = typeof borderWidth;

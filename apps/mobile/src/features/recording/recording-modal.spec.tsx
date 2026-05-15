@@ -33,7 +33,8 @@ const mockRequestPermission = jest.fn();
 
 jest.mock("expo-audio", () => ({
   useAudioRecorder: () => mockRecorderHandle,
-  useAudioRecorderPermissions: () => [mockPermissionState, mockRequestPermission],
+  getRecordingPermissionsAsync: jest.fn(async () => mockPermissionState),
+  requestRecordingPermissionsAsync: () => mockRequestPermission(),
   RecordingPresets: { HIGH_QUALITY: {} },
 }));
 

@@ -30,6 +30,8 @@
     }
   },
   "dependencies": {
+    "@expo-google-fonts/dm-sans": "^0.4.2",
+    "@expo-google-fonts/sora": "^0.4.2",
     "@expo/vector-icons": "^15.0.2",
     "@gorhom/bottom-sheet": "^5.2.14",
     "@react-navigation/bottom-tabs": "^7.2.0",
@@ -44,6 +46,7 @@
     "expo-constants": "~55.0.7",
     "expo-file-system": "~55.0.19",
     "expo-font": "~55.0.4",
+    "expo-glass-effect": "^55.0.11",
     "expo-haptics": "~55.0.8",
     "expo-image": "~55.0.6",
     "expo-linking": "~55.0.7",

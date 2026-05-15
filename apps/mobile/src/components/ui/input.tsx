@@ -1,5 +1,5 @@
 import { TextInput, View, Text, StyleSheet, type TextInputProps } from "react-native";
-import { borderWidth, colors, radii, spacing, fontSize } from "@/constants/theme";
+import { borderWidth, colors, font, radii, spacing, fontSize } from "@/constants/theme";
 
 interface InputProps extends TextInputProps {
   error?: string;
@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     backgroundColor: colors.surface,
     color: colors.text,
+    fontFamily: font.body.regular,
     fontSize: fontSize.md,
   },
   inputError: {
@@ -42,6 +43,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     marginTop: spacing.xs,
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.danger,
   },

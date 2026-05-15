@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, fontSize, fontWeight, iconSize, opacity, radii, spacing } from "@/constants/theme";
+import { colors, font, fontSize, iconSize, opacity, radii, spacing } from "@/constants/theme";
 
 interface TranscriptionBlockProps {
   text: string | null;
@@ -45,6 +45,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
   },
   muted: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textDim,
     fontStyle: "italic",
@@ -58,11 +59,12 @@ const styles = StyleSheet.create({
     opacity: opacity.pressed,
   },
   toggleLabel: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
     color: colors.textMuted,
   },
   body: {
+    fontFamily: font.body.regular,
     marginTop: spacing.md,
     fontSize: fontSize.md,
     color: colors.text,

@@ -1,11 +1,12 @@
 import { Pressable, View, Text, StyleSheet } from "react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { GlassView } from "expo-glass-effect";
 import {
   borderWidth,
   colors,
   componentSize,
+  font,
   fontSize,
-  fontWeight,
   radii,
   spacing,
 } from "@/constants/theme";
@@ -21,11 +22,11 @@ export function PillTabBar({ state, navigation, insets }: BottomTabBarProps) {
     <View
       style={[
         styles.wrapper,
-        { paddingBottom: insets.bottom + spacing.sm, paddingLeft: insets.left + spacing.lg },
+        { paddingBottom: insets.bottom + spacing.sm, paddingLeft: insets.left + spacing.xl },
       ]}
       pointerEvents="box-none"
     >
-      <View style={styles.pill}>
+      <GlassView style={styles.pill} glassEffectStyle="regular" colorScheme="dark">
         {state.routes.map((route, index) => {
           const active = index === state.index;
           const label = TAB_LABELS[route.name] ?? route.name;
@@ -45,7 +46,7 @@ export function PillTabBar({ state, navigation, insets }: BottomTabBarProps) {
             </Pressable>
           );
         })}
-      </View>
+      </GlassView>
     </View>
   );
 }
@@ -59,13 +60,13 @@ const styles = StyleSheet.create({
   pill: {
     flexDirection: "row",
     height: componentSize.fab,
-    backgroundColor: colors.surface,
     borderRadius: radii.pill,
     borderWidth: borderWidth.thin,
     borderColor: colors.border,
     padding: spacing.xs,
     gap: spacing.xs,
     alignItems: "stretch",
+    overflow: "hidden",
   },
   tab: {
     paddingHorizontal: spacing.lg,
@@ -77,12 +78,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceElevated,
   },
   label: {
+    fontFamily: font.heading.medium,
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
     color: colors.textDim,
   },
   labelActive: {
+    fontFamily: font.heading.semibold,
     color: colors.text,
-    fontWeight: fontWeight.semibold,
   },
 });

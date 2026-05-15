@@ -1,12 +1,7 @@
-import { useEffect } from "react";
-import { View, FlatList, Pressable, StyleSheet } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
+import { SettingsButton } from "@/components/navigation/settings-button";
+import { GlassHeader, useGlassHeader } from "@/components/ui/glass-header";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { ListRow } from "@/components/ui/list-row";
-import { SettingsButton } from "@/components/navigation/settings-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   borderWidth,
@@ -19,18 +14,22 @@ import {
 } from "@/constants/theme";
 import { listProjects } from "@/lib/api/projects";
 import { queryKeys } from "@/lib/query-keys";
+import { Ionicons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 
 export function ProjectsList() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const { height: headerHeight, onLayout: onHeaderLayout } = useGlassHeader();
 
   const projectsQuery = useQuery({
     queryKey: queryKeys.projects,
     queryFn: () => listProjects(),
   });
 
-  const hasZeroProjects =
-    projectsQuery.isSuccess && (projectsQuery.data?.data.length ?? 0) === 0;
+  const hasZeroProjects = projectsQuery.isSuccess && (projectsQuery.data?.data.length ?? 0) === 0;
 
   useEffect(() => {
     if (hasZeroProjects) {
@@ -38,30 +37,13 @@ export function ProjectsList() {
     }
   }, [hasZeroProjects, router]);
 
-  if (projectsQuery.isLoading) {
-    return (
-      <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
-        <View style={styles.titleRow}>
-          <HeaderTitle title="Projects" />
-          <SettingsButton />
-        </View>
-        <View style={styles.skeletons}>
-          <Skeleton width="100%" height={60} borderRadius={radii.md} />
-          <Skeleton width="100%" height={60} borderRadius={radii.md} />
-          <Skeleton width="100%" height={60} borderRadius={radii.md} />
-        </View>
-      </View>
-    );
-  }
+  const listPaddingTop = headerHeight + spacing.md;
 
-  const projects = projectsQuery.data?.data ?? [];
-
-  return (
-    <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
+  const renderHeader = () => (
+    <GlassHeader onLayout={onHeaderLayout}>
       <View style={styles.titleRow}>
-        <HeaderTitle title="Projects" subtitle={`${projects.length} total`} />
+        <HeaderTitle title="Projects" />
         <View style={styles.titleActions}>
-          <SettingsButton />
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Create project"
@@ -70,13 +52,33 @@ export function ProjectsList() {
           >
             <Ionicons name="add" size={iconSize.md} color={colors.text} />
           </Pressable>
+          <SettingsButton />
         </View>
       </View>
+    </GlassHeader>
+  );
 
+  if (projectsQuery.isLoading) {
+    return (
+      <View style={styles.container}>
+        <View style={[styles.skeletons, { paddingTop: listPaddingTop }]}>
+          <Skeleton width="100%" height={60} borderRadius={radii.md} />
+          <Skeleton width="100%" height={60} borderRadius={radii.md} />
+          <Skeleton width="100%" height={60} borderRadius={radii.md} />
+        </View>
+        {renderHeader()}
+      </View>
+    );
+  }
+
+  const projects = projectsQuery.data?.data ?? [];
+
+  return (
+    <View style={styles.container}>
       <FlatList
         data={projects}
         keyExtractor={(p) => p.id}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingTop: listPaddingTop }]}
         renderItem={({ item }) => (
           <ListRow
             title={item.name}
@@ -85,6 +87,7 @@ export function ProjectsList() {
           />
         )}
       />
+      {renderHeader()}
     </View>
   );
 }
@@ -93,7 +96,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingHorizontal: spacing.xl,
   },
   titleRow: {
     flexDirection: "row",
@@ -118,12 +120,12 @@ const styles = StyleSheet.create({
     opacity: opacity.pressed,
   },
   list: {
-    paddingTop: spacing.md,
+    paddingHorizontal: spacing.xl,
     paddingBottom: spacing.huge,
     gap: spacing.sm,
   },
   skeletons: {
-    paddingTop: spacing.md,
+    paddingHorizontal: spacing.xl,
     gap: spacing.sm,
   },
 });

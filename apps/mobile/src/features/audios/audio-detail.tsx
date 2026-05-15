@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { Alert, View, Text, FlatList, Pressable, StyleSheet } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { GlassHeader, useGlassHeader } from "@/components/ui/glass-header";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
 import { TranscriptionBlock } from "./transcription-block";
 import { TicketRow } from "@/features/tickets/ticket-row";
 import { TicketDetailSheet } from "@/features/tickets/ticket-detail-sheet";
-import { borderWidth, colors, fontSize, fontWeight, opacity, radii, spacing } from "@/constants/theme";
+import { borderWidth, colors, font, fontSize, opacity, radii, spacing } from "@/constants/theme";
 import { ApiError } from "@/lib/api-error";
 import { getAudio } from "@/lib/api/audios";
 import { exportTicketsBulk } from "@/lib/api/jira";
@@ -28,13 +28,13 @@ const audioStatusToVariant: Record<AudioStatus, BadgeVariant> = {
 };
 
 export function AudioDetail() {
-  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [openTicketId, setOpenTicketId] = useState<string | null>(null);
+  const { height: headerHeight, onLayout: onHeaderLayout } = useGlassHeader();
 
   const audioQuery = useQuery({
     queryKey: queryKeys.audio(id),
@@ -92,33 +92,24 @@ export function AudioDetail() {
 
   if (audioQuery.isLoading || !audio) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
-        <View style={styles.headerSkeleton}>
-          <Skeleton width="60%" height={28} borderRadius={radii.sm} />
-          <Skeleton width="40%" height={14} borderRadius={radii.sm} />
-        </View>
-        <View style={styles.list}>
+      <View style={styles.container}>
+        <View style={[styles.skeletonsBody, { paddingTop: headerHeight + spacing.md }]}>
           <Skeleton width="100%" height={80} borderRadius={radii.md} />
           <Skeleton width="100%" height={80} borderRadius={radii.md} />
         </View>
+        <GlassHeader onLayout={onHeaderLayout}>
+          <View style={styles.headerSkeleton}>
+            <Skeleton width="60%" height={28} borderRadius={radii.sm} />
+            <Skeleton width="40%" height={14} borderRadius={radii.sm} />
+          </View>
+        </GlassHeader>
       </View>
     );
   }
 
-  return (
-    <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
-      <View style={styles.header}>
-        <HeaderTitle title={audio.fileName} />
-        <View style={styles.headerMeta}>
-          <Text style={styles.meta}>
-            {formatDuration(audio.duration)} · {timeAgo(audio.createdAt)}
-          </Text>
-          <Badge label={audio.status} variant={audioStatusToVariant[audio.status]} />
-        </View>
-      </View>
-
+  const listHeader = (
+    <>
       <TranscriptionBlock text={audio.transcription} />
-
       <View style={styles.ticketsHeader}>
         <Text style={styles.ticketsTitle}>Tickets ({audio.tickets.length})</Text>
         {audio.tickets.length > 0 ? (
@@ -133,27 +124,31 @@ export function AudioDetail() {
           </Pressable>
         ) : null}
       </View>
+    </>
+  );
 
-      {audio.tickets.length === 0 ? (
-        <Text style={styles.emptyText}>No tickets were generated for this audio.</Text>
-      ) : (
-        <FlatList
-          data={audio.tickets}
-          keyExtractor={(t) => t.id}
-          contentContainerStyle={styles.list}
-          renderItem={({ item }) => (
-            <TicketRow
-              ticket={item}
-              onPress={() => {
-                if (selectMode) toggleSelection(item.id);
-                else setOpenTicketId(item.id);
-              }}
-              selectable={selectMode}
-              selected={selectedIds.has(item.id)}
-            />
-          )}
-        />
-      )}
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={audio.tickets}
+        keyExtractor={(t) => t.id}
+        contentContainerStyle={[styles.list, { paddingTop: headerHeight + spacing.md }]}
+        ListHeaderComponent={listHeader}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No tickets were generated for this audio.</Text>
+        }
+        renderItem={({ item }) => (
+          <TicketRow
+            ticket={item}
+            onPress={() => {
+              if (selectMode) toggleSelection(item.id);
+              else setOpenTicketId(item.id);
+            }}
+            selectable={selectMode}
+            selected={selectedIds.has(item.id)}
+          />
+        )}
+      />
 
       {selectMode && selectedIds.size > 0 ? (
         <View style={styles.footer}>
@@ -165,6 +160,16 @@ export function AudioDetail() {
           />
         </View>
       ) : null}
+
+      <GlassHeader onLayout={onHeaderLayout}>
+        <HeaderTitle title={audio.fileName} />
+        <View style={styles.headerMeta}>
+          <Text style={styles.meta}>
+            {formatDuration(audio.duration)} · {timeAgo(audio.createdAt)}
+          </Text>
+          <Badge label={audio.status} variant={audioStatusToVariant[audio.status]} />
+        </View>
+      </GlassHeader>
 
       <TicketDetailSheet
         ticket={audio.tickets.find((t) => t.id === openTicketId) ?? null}
@@ -178,14 +183,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingHorizontal: spacing.xl,
-  },
-  header: {
-    paddingBottom: spacing.sm,
-    gap: spacing.xs,
   },
   headerSkeleton: {
-    paddingTop: spacing.lg,
     gap: spacing.sm,
   },
   headerMeta: {
@@ -193,8 +192,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.md,
     flexWrap: "wrap",
+    marginTop: spacing.xs,
   },
   meta: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textMuted,
   },
@@ -203,10 +204,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginTop: spacing.md,
+    marginBottom: spacing.md,
   },
   ticketsTitle: {
+    fontFamily: font.heading.semibold,
     fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
     color: colors.text,
   },
   toggleButton: {
@@ -220,17 +222,22 @@ const styles = StyleSheet.create({
     opacity: opacity.pressed,
   },
   toggleLabel: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
     color: colors.textMuted,
   },
   emptyText: {
+    fontFamily: font.body.regular,
     fontSize: fontSize.sm,
     color: colors.textDim,
     paddingVertical: spacing.lg,
   },
+  skeletonsBody: {
+    paddingHorizontal: spacing.xl,
+    gap: spacing.sm,
+  },
   list: {
-    paddingTop: spacing.md,
+    paddingHorizontal: spacing.xl,
     paddingBottom: spacing.huge,
     gap: spacing.sm,
   },
@@ -251,8 +258,8 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   footerLabel: {
+    fontFamily: font.body.medium,
     fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
     color: colors.text,
   },
 });
