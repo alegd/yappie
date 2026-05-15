@@ -106,7 +106,7 @@ export function AudioDetail() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
       <View style={styles.header}>
         <HeaderTitle title={audio.fileName} />
         <View style={styles.headerMeta}>
