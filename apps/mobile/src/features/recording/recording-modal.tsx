@@ -3,7 +3,13 @@ import { Linking, View, Text, Pressable, FlatList, StyleSheet } from "react-nati
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useAudioRecorder, useAudioRecorderPermissions, RecordingPresets } from "expo-audio";
+import {
+  useAudioRecorder,
+  RecordingPresets,
+  getRecordingPermissionsAsync,
+  requestRecordingPermissionsAsync,
+  type PermissionResponse,
+} from "expo-audio";
 import { Button } from "@/components/ui/button";
 import { ListRow } from "@/components/ui/list-row";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,8 +38,26 @@ export function RecordingModal() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { projectId: initialProjectId } = useLocalSearchParams<{ projectId?: string }>();
-  const [permission, requestPermission] = useAudioRecorderPermissions();
+  const [permission, setPermission] = useState<PermissionResponse | null>(null);
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+
+  useEffect(() => {
+    let cancelled = false;
+    getRecordingPermissionsAsync()
+      .then((result) => {
+        if (!cancelled) setPermission(result);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const requestPermission = async () => {
+    const result = await requestRecordingPermissionsAsync();
+    setPermission(result);
+    return result;
+  };
 
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     initialProjectId ?? null,
