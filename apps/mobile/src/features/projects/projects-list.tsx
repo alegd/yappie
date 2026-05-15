@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { View, FlatList, Pressable, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { HeaderTitle } from "@/components/ui/header-title";
 import { ListRow } from "@/components/ui/list-row";
+import { SettingsButton } from "@/components/navigation/settings-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   borderWidth,
@@ -17,11 +19,10 @@ import {
 } from "@/constants/theme";
 import { listProjects } from "@/lib/api/projects";
 import { queryKeys } from "@/lib/query-keys";
-import { CreateProjectModal } from "./create-project-modal";
 
 export function ProjectsList() {
   const router = useRouter();
-  const [modalOpen, setModalOpen] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const projectsQuery = useQuery({
     queryKey: queryKeys.projects,
@@ -39,9 +40,10 @@ export function ProjectsList() {
 
   if (projectsQuery.isLoading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
         <View style={styles.titleRow}>
           <HeaderTitle title="Projects" />
+          <SettingsButton />
         </View>
         <View style={styles.skeletons}>
           <Skeleton width="100%" height={60} borderRadius={radii.md} />
@@ -55,17 +57,20 @@ export function ProjectsList() {
   const projects = projectsQuery.data?.data ?? [];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
       <View style={styles.titleRow}>
         <HeaderTitle title="Projects" subtitle={`${projects.length} total`} />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Create project"
-          onPress={() => setModalOpen(true)}
-          style={({ pressed }) => [styles.plusButton, pressed && styles.plusPressed]}
-        >
-          <Ionicons name="add" size={iconSize.md} color={colors.text} />
-        </Pressable>
+        <View style={styles.titleActions}>
+          <SettingsButton />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Create project"
+            onPress={() => router.push("/project-form?mode=create")}
+            style={({ pressed }) => [styles.plusButton, pressed && styles.plusPressed]}
+          >
+            <Ionicons name="add" size={iconSize.md} color={colors.text} />
+          </Pressable>
+        </View>
       </View>
 
       <FlatList
@@ -81,7 +86,6 @@ export function ProjectsList() {
         )}
       />
 
-      <CreateProjectModal visible={modalOpen} onClose={() => setModalOpen(false)} />
     </View>
   );
 }
@@ -96,6 +100,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  titleActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
   },
   plusButton: {
     width: componentSize.hitArea,

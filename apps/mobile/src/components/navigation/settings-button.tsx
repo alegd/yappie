@@ -24,7 +24,6 @@ const styles = StyleSheet.create({
     height: componentSize.hitArea,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: spacing.md,
   },
   pressed: {
     opacity: opacity.pressed,

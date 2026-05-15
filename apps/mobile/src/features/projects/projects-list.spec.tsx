@@ -7,7 +7,6 @@ jest.mock("expo-router", () => ({
 
 jest.mock("@/lib/api/projects", () => ({
   listProjects: jest.fn(),
-  createProject: jest.fn(),
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -81,16 +80,27 @@ describe("ProjectsList", () => {
     expect(mockPush).toHaveBeenCalledWith("/projects/p1");
   });
 
-  it("opens the create modal when the + button is pressed", async () => {
+  it("navigates to the create form when the + button is pressed", async () => {
     listProjectsMock.mockResolvedValueOnce({
       data: [buildProject()],
       total: 1,
       page: 1,
       limit: 50,
     });
-    const { findByLabelText, getByPlaceholderText } = renderWithClient(<ProjectsList />);
+    const { findByLabelText } = renderWithClient(<ProjectsList />);
     const plus = await findByLabelText("Create project");
     fireEvent.press(plus);
-    expect(getByPlaceholderText("Project name")).toBeTruthy();
+    expect(mockPush).toHaveBeenCalledWith("/project-form?mode=create");
+  });
+
+  it("renders the settings button", async () => {
+    listProjectsMock.mockResolvedValueOnce({
+      data: [buildProject()],
+      total: 1,
+      page: 1,
+      limit: 50,
+    });
+    const { findByLabelText } = renderWithClient(<ProjectsList />);
+    expect(await findByLabelText("Open settings")).toBeTruthy();
   });
 });

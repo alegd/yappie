@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Alert, View, Text, FlatList, Pressable, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Badge, type BadgeVariant } from "@/components/ui/badge";
@@ -27,6 +28,7 @@ const audioStatusToVariant: Record<AudioStatus, BadgeVariant> = {
 };
 
 export function AudioDetail() {
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -90,7 +92,7 @@ export function AudioDetail() {
 
   if (audioQuery.isLoading || !audio) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
         <View style={styles.headerSkeleton}>
           <Skeleton width="60%" height={28} borderRadius={radii.sm} />
           <Skeleton width="40%" height={14} borderRadius={radii.sm} />
@@ -104,7 +106,7 @@ export function AudioDetail() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
       <View style={styles.header}>
         <HeaderTitle title={audio.fileName} />
         <View style={styles.headerMeta}>

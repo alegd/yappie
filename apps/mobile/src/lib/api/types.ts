@@ -65,9 +65,17 @@ export interface Paginated<T> {
   limit: number;
 }
 
+export interface JiraProject {
+  id: string;
+  key: string;
+  name: string;
+}
+
 export interface CreateProjectInput {
   name: string;
   description?: string;
+  context?: string;
+  jiraProjectKey?: string;
 }
 
 export interface UpdateProjectInput {

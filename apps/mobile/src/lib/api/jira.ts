@@ -1,4 +1,5 @@
 import { apiFetch } from "./client";
+import type { JiraProject } from "./types";
 
 export interface JiraExportResult {
   jiraIssueKey: string;
@@ -40,4 +41,8 @@ export function startJiraAuth(returnPath?: string): Promise<JiraAuthStart> {
 
 export function disconnectJira(): Promise<void> {
   return apiFetch<void>(`/integrations/jira`, { method: "DELETE" });
+}
+
+export function getJiraProjects(): Promise<JiraProject[]> {
+  return apiFetch<JiraProject[]>(`/integrations/jira/projects`);
 }

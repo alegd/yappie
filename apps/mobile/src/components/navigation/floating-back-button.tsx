@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useLocalSearchParams, useRouter, useSegments } from "expo-router";
+import { useRouter, useSegments } from "expo-router";
 import {
   borderWidth,
   colors,
@@ -12,40 +12,28 @@ import {
   spacing,
 } from "@/constants/theme";
 
-const HIDDEN_ROUTES = ["settings", "record", "project-form"];
-const PROJECT_DETAIL_SEGMENT = "projects";
+const VISIBLE_SEGMENTS = ["[id]", "settings"];
 
-export function FloatingRecordButton() {
+export function FloatingBackButton() {
   const router = useRouter();
   const segments = useSegments();
-  const params = useLocalSearchParams<{ id?: string }>();
   const insets = useSafeAreaInsets();
 
-  const isHidden = segments.some((segment) => HIDDEN_ROUTES.includes(segment));
-  if (isHidden) return null;
-
-  const handlePress = () => {
-    const isProjectDetail =
-      segments.includes(PROJECT_DETAIL_SEGMENT) && segments.some((s) => s === "[id]");
-    if (isProjectDetail && params.id) {
-      router.push(`/record?projectId=${params.id}`);
-    } else {
-      router.push("/record");
-    }
-  };
+  const isVisible = segments.some((segment) => VISIBLE_SEGMENTS.includes(segment));
+  if (!isVisible) return null;
 
   return (
     <Pressable
-      onPress={handlePress}
+      onPress={() => router.back()}
       accessibilityRole="button"
-      accessibilityLabel="Record audio"
+      accessibilityLabel="Go back"
       style={({ pressed }) => [
         styles.button,
-        { bottom: insets.bottom + spacing.sm, right: insets.right + spacing.lg },
+        { bottom: insets.bottom + spacing.sm, left: insets.left + spacing.lg },
         pressed && styles.pressed,
       ]}
     >
-      <Ionicons name="mic-outline" size={iconSize.xl} color={colors.text} />
+      <Ionicons name="chevron-back" size={iconSize.xl} color={colors.text} />
     </Pressable>
   );
 }

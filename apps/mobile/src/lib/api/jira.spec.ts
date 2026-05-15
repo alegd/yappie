@@ -58,4 +58,11 @@ describe("jira API", () => {
     await jira.disconnectJira();
     expect(apiFetchMock).toHaveBeenCalledWith("/integrations/jira", { method: "DELETE" });
   });
+
+  it("getJiraProjects calls GET /integrations/jira/projects", async () => {
+    apiFetchMock.mockResolvedValueOnce([{ id: "1", key: "TV", name: "TiendaVerde" }]);
+    const result = await jira.getJiraProjects();
+    expect(apiFetchMock).toHaveBeenCalledWith("/integrations/jira/projects");
+    expect(result).toEqual([{ id: "1", key: "TV", name: "TiendaVerde" }]);
+  });
 });

@@ -3,6 +3,7 @@ import { View, StyleSheet } from "react-native";
 import { ErrorBoundary } from "react-error-boundary";
 import * as Sentry from "@sentry/react-native";
 import { FloatingRecordButton } from "@/components/navigation/floating-record-button";
+import { FloatingBackButton } from "@/components/navigation/floating-back-button";
 import { ErrorScreen } from "@/components/ui/error-screen";
 import { ToastContainer } from "@/components/ui/toast";
 import { useSocket } from "@/hooks/use-socket";
@@ -26,15 +27,17 @@ export default function AppLayout() {
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-          <Stack.Screen name="projects/[id]" />
-          <Stack.Screen name="audios/[id]" />
-          <Stack.Screen name="settings" options={{ headerTitle: "Settings" }} />
+          <Stack.Screen name="projects/[id]" options={{ headerShown: false }} />
+          <Stack.Screen name="audios/[id]" options={{ headerShown: false }} />
+          <Stack.Screen name="settings" options={{ headerShown: false }} />
           <Stack.Screen
             name="record"
             options={{ presentation: "modal", headerShown: false }}
           />
+          <Stack.Screen name="project-form" options={{ headerShown: false }} />
         </Stack>
         <FloatingRecordButton />
+        <FloatingBackButton />
         <ToastContainer />
       </View>
     </ErrorBoundary>
