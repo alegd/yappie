@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useQuery } from "@tanstack/react-query";
@@ -16,7 +16,6 @@ interface JiraProjectSelectorProps {
 
 export function JiraProjectSelector({ value, onChange }: JiraProjectSelectorProps) {
   const router = useRouter();
-  const sheetRef = useRef<BottomSheet>(null);
   const [open, setOpen] = useState(false);
 
   const statusQuery = useQuery({
@@ -76,7 +75,6 @@ export function JiraProjectSelector({ value, onChange }: JiraProjectSelectorProp
         </Text>
       </Pressable>
       <BottomSheet
-        ref={sheetRef}
         index={open ? 0 : -1}
         snapPoints={SNAP_POINTS}
         enablePanDownToClose
