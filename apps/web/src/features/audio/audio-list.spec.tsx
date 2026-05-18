@@ -142,6 +142,7 @@ function mockQueries(
 describe("AudioList", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseQuery.mockReset();
     mockLocalStorage.clear();
     Object.defineProperty(globalThis, "localStorage", {
       value: mockLocalStorage,
