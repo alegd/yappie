@@ -6,6 +6,8 @@ const API_V1 = "/v1";
 export const AUTH_REQUEST_OTP = `${API_V1}/auth/request-otp`;
 export const AUTH_VERIFY_OTP = `${API_V1}/auth/verify-otp`;
 export const AUTH_COMPLETE_REGISTER = `${API_V1}/auth/complete-register`;
+export const ACCOUNT_DELETE_REQUEST = `${API_V1}/auth/account/delete/request`;
+export const ACCOUNT_DELETE_CONFIRM = `${API_V1}/auth/account/delete/confirm`;
 
 // ─── Audio ───────────────────────────────────────────────
 export const AUDIO_LIST = `${API_V1}/audio?limit=50`;
