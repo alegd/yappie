@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter, useSegments } from "expo-router";
 import { FloatingFab } from "./floating-fab";
 
-const HIDDEN_ROUTES = ["settings", "record", "project-form"];
+const HIDDEN_ROUTES = ["settings", "record", "project-form", "account"];
 const PROJECT_DETAIL_SEGMENT = "projects";
 
 export function FloatingRecordButton() {
