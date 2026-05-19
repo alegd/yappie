@@ -1,7 +1,7 @@
 import { useRouter, useSegments } from "expo-router";
 import { FloatingFab } from "./floating-fab";
 
-const VISIBLE_SEGMENTS = ["[id]", "settings"];
+const VISIBLE_SEGMENTS = ["[id]", "settings", "account"];
 
 export function FloatingBackButton() {
   const router = useRouter();

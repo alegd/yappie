@@ -6,17 +6,29 @@ interface ButtonProps {
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "danger";
 }
+
+const containerByVariant = {
+  primary: "primary",
+  secondary: "secondary",
+  danger: "danger",
+} as const;
+
+const labelByVariant = {
+  primary: "labelPrimary",
+  secondary: "labelSecondary",
+  danger: "labelPrimary",
+} as const;
 
 export function Button({ label, onPress, disabled, loading, variant = "primary" }: ButtonProps) {
   const isDisabled = disabled || loading;
   const containerStyles = [
     styles.base,
-    variant === "primary" ? styles.primary : styles.secondary,
+    styles[containerByVariant[variant]],
     isDisabled && styles.disabled,
   ];
-  const labelStyle = variant === "primary" ? styles.labelPrimary : styles.labelSecondary;
+  const labelStyle = styles[labelByVariant[variant]];
   return (
     <Pressable
       onPress={onPress}
@@ -45,6 +57,9 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     borderWidth: borderWidth.medium,
     borderColor: colors.primary,
+  },
+  danger: {
+    backgroundColor: colors.danger,
   },
   disabled: {
     opacity: opacity.disabled,

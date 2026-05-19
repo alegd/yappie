@@ -135,6 +135,15 @@ describe("SettingsScreen", () => {
     });
   });
 
+  it("renders the Danger zone with a Delete my account button", async () => {
+    getJiraStatusMock.mockResolvedValueOnce({ connected: false });
+    getQuotaMock.mockResolvedValueOnce(QUOTA_RESPONSE);
+    const { findByText, getByText } = renderWithClient(<SettingsScreen />);
+
+    expect(await findByText("Danger zone")).toBeTruthy();
+    expect(getByText("Delete my account")).toBeTruthy();
+  });
+
   describe("Jira connect flow", () => {
     it("opens an auth session with the Atlassian URL when Connect Jira is pressed", async () => {
       getJiraStatusMock.mockResolvedValueOnce({ connected: false });

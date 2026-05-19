@@ -1,6 +1,7 @@
 import { Alert, View, Text, ScrollView, StyleSheet } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as WebBrowser from "expo-web-browser";
+import { useRouter } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { GlassHeader, useGlassHeader } from "@/components/ui/glass-header";
@@ -18,6 +19,7 @@ export function SettingsScreen() {
   const user = useAuthStore((s) => s.user);
   const { logout } = useAuth();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { height: headerHeight, onLayout: onHeaderLayout } = useGlassHeader();
 
   const jiraQuery = useQuery({
@@ -116,6 +118,22 @@ export function SettingsScreen() {
             loading={logout.isPending}
           />
         </View>
+
+        <Text style={[styles.sectionLabel, styles.dangerLabel]}>Danger zone</Text>
+        <Card>
+          <Text style={styles.value}>Delete account</Text>
+          <Text style={styles.subtle}>
+            Permanently delete your account, recordings, projects, tickets and integrations.
+            This cannot be undone.
+          </Text>
+          <View style={styles.dangerActionWrap}>
+            <Button
+              label="Delete my account"
+              onPress={() => router.push("/account/delete")}
+              variant="danger"
+            />
+          </View>
+        </Card>
       </ScrollView>
 
       <GlassHeader onLayout={onHeaderLayout}>
@@ -165,5 +183,12 @@ const styles = StyleSheet.create({
   },
   signOutWrap: {
     marginTop: spacing.xxl,
+  },
+  dangerLabel: {
+    color: colors.danger,
+    marginTop: spacing.xxl,
+  },
+  dangerActionWrap: {
+    marginTop: spacing.sm,
   },
 });

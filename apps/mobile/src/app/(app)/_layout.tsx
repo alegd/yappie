@@ -42,6 +42,7 @@ export default function AppLayout() {
             options={{ presentation: "modal", headerShown: false }}
           />
           <Stack.Screen name="project-form" options={{ headerShown: false }} />
+          <Stack.Screen name="account/delete" options={{ headerShown: false }} />
         </Stack>
         <FloatingRecordButton />
         <FloatingBackButton />
