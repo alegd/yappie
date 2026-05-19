@@ -68,6 +68,40 @@ describe("OtpService", () => {
 
       expect(mockRedis.set).toHaveBeenCalledWith(cooldownKey, "1", "EX", 60);
     });
+
+    it("should namespace OTP storage by purpose when purpose is provided", async () => {
+      mockRedis.exists.mockResolvedValue(0);
+      mockRedis.incr.mockResolvedValue(1);
+      mockRedis.set.mockResolvedValue("OK");
+      mockRedis.expire.mockResolvedValue(1);
+
+      await otpService.generateAndStore(email, "account-deletion");
+
+      expect(mockRedis.set).toHaveBeenCalledWith(
+        `otp:account-deletion:${email}`,
+        expect.any(String),
+        "EX",
+        600,
+      );
+    });
+
+    it("should namespace cooldown and rate keys by purpose to isolate from login OTPs", async () => {
+      mockRedis.exists.mockResolvedValue(0);
+      mockRedis.incr.mockResolvedValue(1);
+      mockRedis.set.mockResolvedValue("OK");
+      mockRedis.expire.mockResolvedValue(1);
+
+      await otpService.generateAndStore(email, "account-deletion");
+
+      expect(mockRedis.exists).toHaveBeenCalledWith(`otp:cooldown:account-deletion:${email}`);
+      expect(mockRedis.incr).toHaveBeenCalledWith(`otp:rate:account-deletion:${email}`);
+      expect(mockRedis.set).toHaveBeenCalledWith(
+        `otp:cooldown:account-deletion:${email}`,
+        "1",
+        "EX",
+        60,
+      );
+    });
   });
 
   describe("verify", () => {
@@ -114,6 +148,16 @@ describe("OtpService", () => {
 
       expect(result).toBe(false);
     });
+
+    it("should read from purpose-namespaced key when purpose is provided", async () => {
+      const stored = JSON.stringify({ code: "1234", attempts: 0 });
+      mockRedis.get.mockResolvedValue(stored);
+      mockRedis.set.mockResolvedValue("OK");
+
+      await otpService.verify(email, "1234", "account-deletion");
+
+      expect(mockRedis.get).toHaveBeenCalledWith(`otp:account-deletion:${email}`);
+    });
   });
 
   describe("markVerified", () => {
@@ -127,6 +171,23 @@ describe("OtpService", () => {
       expect(mockRedis.set).toHaveBeenCalledWith(
         otpKey,
         JSON.stringify({ code: "1234", attempts: 0, verified: true }),
+        "EX",
+        300,
+      );
+    });
+
+    it("should write to purpose-namespaced key when purpose is provided", async () => {
+      const stored = JSON.stringify({ code: "1234", attempts: 0 });
+      mockRedis.get.mockResolvedValue(stored);
+      mockRedis.set.mockResolvedValue("OK");
+
+      await otpService.markVerified(email, "account-deletion");
+
+      const purposedKey = `otp:account-deletion:${email}`;
+      expect(mockRedis.get).toHaveBeenCalledWith(purposedKey);
+      expect(mockRedis.set).toHaveBeenCalledWith(
+        purposedKey,
+        expect.any(String),
         "EX",
         300,
       );
@@ -155,6 +216,14 @@ describe("OtpService", () => {
 
       expect(result).toBe(false);
     });
+
+    it("should read from purpose-namespaced key when purpose is provided", async () => {
+      mockRedis.get.mockResolvedValue(null);
+
+      await otpService.isVerified(email, "1234", "account-deletion");
+
+      expect(mockRedis.get).toHaveBeenCalledWith(`otp:account-deletion:${email}`);
+    });
   });
 
   describe("delete", () => {
@@ -164,6 +233,14 @@ describe("OtpService", () => {
       await otpService.delete(email);
 
       expect(mockRedis.del).toHaveBeenCalledWith(otpKey);
+    });
+
+    it("should delete the purpose-namespaced key when purpose is provided", async () => {
+      mockRedis.del.mockResolvedValue(1);
+
+      await otpService.delete(email, "account-deletion");
+
+      expect(mockRedis.del).toHaveBeenCalledWith(`otp:account-deletion:${email}`);
     });
   });
 });
