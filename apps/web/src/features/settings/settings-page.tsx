@@ -1,5 +1,6 @@
 "use client";
 
+import { AccountDeletionSection } from "./account-deletion-section";
 import { AppearanceSection } from "./appearance-section";
 import { BillingSection } from "./billing-section";
 import { IntegrationsSection } from "./integrations-section";
@@ -17,6 +18,7 @@ export function SettingsPage() {
         <AppearanceSection />
         <IntegrationsSection />
         <TemplatesSection />
+        <AccountDeletionSection />
       </div>
     </div>
   );
