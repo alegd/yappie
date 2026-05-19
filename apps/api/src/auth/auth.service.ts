@@ -1,6 +1,8 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common";
@@ -8,6 +10,7 @@ import { JwtService } from "@nestjs/jwt";
 import { randomBytes } from "crypto";
 import { EmailService } from "../email/email.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
+import { STORAGE_ADAPTER, type StorageAdapter } from "../storage/storage.interface.js";
 import { OtpService } from "./otp.service.js";
 
 export interface SessionContext {
@@ -17,11 +20,14 @@ export interface SessionContext {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly otpService: OtpService,
     private readonly emailService: EmailService,
+    @Inject(STORAGE_ADAPTER) private readonly storage: StorageAdapter,
   ) {}
 
   async requestOtp(email: string) {
@@ -192,6 +198,66 @@ export class AuthService {
       },
       data: { revokedAt: new Date() },
     });
+  }
+
+  async requestAccountDeletion(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      // Silent no-op: do not leak whether the email is registered.
+      return { requested: true };
+    }
+
+    const code = await this.otpService.generateAndStore(email, "account-deletion");
+    await this.emailService.sendAccountDeletionOtp(email, code);
+
+    return { requested: true };
+  }
+
+  async confirmAccountDeletion(email: string, code: string) {
+    const isValid = await this.otpService.verify(email, code, "account-deletion");
+
+    if (!isValid) {
+      throw new UnauthorizedException("Invalid or expired code");
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      throw new UnauthorizedException("Invalid or expired code");
+    }
+
+    const jiraIntegration = await this.prisma.integration.findUnique({
+      where: { userId_type: { userId: user.id, type: "JIRA" } },
+    });
+
+    const audios = await this.prisma.audioRecording.findMany({
+      where: { userId: user.id },
+      select: { filePath: true },
+    });
+
+    for (const audio of audios) {
+      try {
+        await this.storage.delete(audio.filePath);
+      } catch (err) {
+        // Best-effort: log and continue so the account delete still completes.
+        // Orphaned files can be cleaned up by a separate sweep job.
+        this.logger.warn(
+          `Failed to delete storage file ${audio.filePath} for user ${user.id}: ${
+            (err as Error).message
+          }`,
+        );
+      }
+    }
+
+    await this.prisma.user.delete({ where: { id: user.id } });
+
+    await this.otpService.delete(email, "account-deletion");
+    await this.emailService.sendAccountDeletionConfirmation(email, {
+      hadJira: !!jiraIntegration,
+    });
+
+    return { deleted: true };
   }
 
   private async generateTokens(

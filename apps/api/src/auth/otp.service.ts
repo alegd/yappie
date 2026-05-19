@@ -9,6 +9,8 @@ interface OtpData {
   verified?: boolean;
 }
 
+export type OtpPurpose = "account-deletion";
+
 const OTP_TTL = 600;
 const VERIFIED_TTL = 300;
 const COOLDOWN_TTL = 60;
@@ -16,14 +18,21 @@ const RATE_WINDOW_TTL = 3600;
 const MAX_ATTEMPTS = 3;
 const MAX_RATE = 5;
 
+function keysFor(email: string, purpose?: OtpPurpose) {
+  const suffix = purpose ? `${purpose}:${email}` : email;
+  return {
+    otpKey: `otp:${suffix}`,
+    cooldownKey: `otp:cooldown:${suffix}`,
+    rateKey: `otp:rate:${suffix}`,
+  };
+}
+
 @Injectable()
 export class OtpService {
   constructor(@Inject(REDIS_CLIENT) private readonly redis: Redis) {}
 
-  async generateAndStore(email: string): Promise<string> {
-    const cooldownKey = `otp:cooldown:${email}`;
-    const rateKey = `otp:rate:${email}`;
-    const otpKey = `otp:${email}`;
+  async generateAndStore(email: string, purpose?: OtpPurpose): Promise<string> {
+    const { otpKey, cooldownKey, rateKey } = keysFor(email, purpose);
 
     const hasCooldown = await this.redis.exists(cooldownKey);
     if (hasCooldown) {
@@ -53,8 +62,8 @@ export class OtpService {
     return code;
   }
 
-  async verify(email: string, code: string): Promise<boolean> {
-    const otpKey = `otp:${email}`;
+  async verify(email: string, code: string, purpose?: OtpPurpose): Promise<boolean> {
+    const { otpKey } = keysFor(email, purpose);
     const raw = await this.redis.get(otpKey);
 
     if (!raw) return false;
@@ -82,8 +91,8 @@ export class OtpService {
     return false;
   }
 
-  async markVerified(email: string): Promise<void> {
-    const otpKey = `otp:${email}`;
+  async markVerified(email: string, purpose?: OtpPurpose): Promise<void> {
+    const { otpKey } = keysFor(email, purpose);
     const raw = await this.redis.get(otpKey);
 
     if (!raw) return;
@@ -94,8 +103,8 @@ export class OtpService {
     await this.redis.set(otpKey, JSON.stringify(data), "EX", VERIFIED_TTL);
   }
 
-  async isVerified(email: string, code: string): Promise<boolean> {
-    const otpKey = `otp:${email}`;
+  async isVerified(email: string, code: string, purpose?: OtpPurpose): Promise<boolean> {
+    const { otpKey } = keysFor(email, purpose);
     const raw = await this.redis.get(otpKey);
 
     if (!raw) return false;
@@ -110,8 +119,8 @@ export class OtpService {
     return storedBuf.length === inputBuf.length && crypto.timingSafeEqual(storedBuf, inputBuf);
   }
 
-  async delete(email: string): Promise<void> {
-    const otpKey = `otp:${email}`;
+  async delete(email: string, purpose?: OtpPurpose): Promise<void> {
+    const { otpKey } = keysFor(email, purpose);
     await this.redis.del(otpKey);
   }
 }
