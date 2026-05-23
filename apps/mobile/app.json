@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Yappie",
-    "slug": "yappie-mobile",
+    "slug": "yappie",
     "version": "0.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.yappie.mobile"
+      "bundleIdentifier": "com.gueden.yappie"
     },
     "android": {
       "adaptiveIcon": {
@@ -18,8 +18,14 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "package": "com.yappie.mobile",
-      "predictiveBackGestureEnabled": false
+      "package": "com.gueden.yappie",
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ]
     },
     "web": {
       "output": "static",
@@ -59,6 +65,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "33ac821a-1026-4027-a5ce-e70df1499a3a"
+      }
     }
   }
 }

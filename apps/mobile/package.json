@@ -1,5 +1,5 @@
 {
-  "name": "yappie-mobile",
+  "name": "yappie",
   "main": "expo-router/entry",
   "version": "0.0.0",
   "private": true,
@@ -7,13 +7,19 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "lint": "expo lint",
-    "prebuild": "expo prebuild --clean",
     "reset-project": "node ./scripts/reset-project.js",
     "start": "expo start",
     "test": "jest --watchAll",
     "test:ci": "jest --ci",
     "test:coverage": "jest --coverage",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "prebuild": "expo prebuild --clean",
+    "build:android:preview": "expo prebuild --clean && eas build -p android --local --profile preview",
+    "build:android:staging": "expo prebuild --clean && eas build -p android --local --profile staging",
+    "build:android": "expo prebuild --clean && eas build -p android --local --profile production",
+    "build:ios": "expo prebuild --clean && eas build -p ios --local",
+    "release:android": "expo prebuild --clean && eas build -p android --profile production --submit",
+    "release:ios": "expo prebuild --clean && eas build -p ios --profile production --submit"
   },
   "jest": {
     "preset": "jest-expo",
