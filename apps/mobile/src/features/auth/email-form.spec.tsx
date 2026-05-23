@@ -52,10 +52,16 @@ describe("EmailForm", () => {
     mockRouter.push.mockReset();
   });
 
+  it("renders the 'What's your email?' heading and Continue button", () => {
+    const { getByText } = renderForm();
+    expect(getByText(/what's your email\?/i)).toBeTruthy();
+    expect(getByText("Continue")).toBeTruthy();
+  });
+
   it("shows error when submitting an invalid email", async () => {
     const { getByText, getByPlaceholderText, findByText } = renderForm();
     fireEvent.changeText(getByPlaceholderText("you@example.com"), "not-an-email");
-    fireEvent.press(getByText("Send code"));
+    fireEvent.press(getByText("Continue"));
     expect(await findByText(/valid email/i)).toBeTruthy();
     expect(apiFetchMock).not.toHaveBeenCalled();
   });
@@ -64,7 +70,7 @@ describe("EmailForm", () => {
     apiFetchMock.mockResolvedValueOnce({});
     const { getByText, getByPlaceholderText } = renderForm();
     fireEvent.changeText(getByPlaceholderText("you@example.com"), "user@example.com");
-    fireEvent.press(getByText("Send code"));
+    fireEvent.press(getByText("Continue"));
 
     await waitFor(() => {
       expect(apiFetchMock).toHaveBeenCalledWith(
@@ -84,7 +90,7 @@ describe("EmailForm", () => {
     apiFetchMock.mockRejectedValueOnce(Object.assign(new Error("Too many"), { status: 429 }));
     const { getByText, getByPlaceholderText, findByText } = renderForm();
     fireEvent.changeText(getByPlaceholderText("you@example.com"), "user@example.com");
-    fireEvent.press(getByText("Send code"));
+    fireEvent.press(getByText("Continue"));
     expect(await findByText(/wait a minute/i)).toBeTruthy();
   });
 });
