@@ -28,8 +28,8 @@ describe("app index route", () => {
     expect(getByText("redirect:/projects")).toBeTruthy();
   });
 
-  it("redirects to /(auth)/email when not authenticated", () => {
+  it("redirects to /(auth)/welcome when not authenticated", () => {
     const { getByText } = render(<Index />);
-    expect(getByText("redirect:/(auth)/email")).toBeTruthy();
+    expect(getByText("redirect:/(auth)/welcome")).toBeTruthy();
   });
 });

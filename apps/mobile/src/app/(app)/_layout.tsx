@@ -16,7 +16,7 @@ export default function AppLayout() {
   useSocket();
 
   if (!hydrated) return null;
-  if (!accessToken) return <Redirect href="/(auth)/email" />;
+  if (!accessToken) return <Redirect href="/(auth)/welcome" />;
 
   return (
     <ErrorBoundary
