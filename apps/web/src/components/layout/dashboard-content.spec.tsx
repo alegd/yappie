@@ -2,6 +2,19 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardContent } from "./dashboard-content";
 
+const { mockUseSession, mockUseSocket } = vi.hoisted(() => ({
+  mockUseSession: vi.fn(),
+  mockUseSocket: vi.fn(),
+}));
+
+vi.mock("next-auth/react", () => ({
+  useSession: mockUseSession,
+}));
+
+vi.mock("@/hooks/use-socket", () => ({
+  useSocket: mockUseSocket,
+}));
+
 vi.mock("@/components/ui/toast/toast-provider", () => ({
   ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
@@ -25,6 +38,10 @@ const defaultProps = {
 describe("DashboardContent", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseSession.mockReturnValue({
+      data: { accessToken: "jwt-123" },
+      status: "authenticated",
+    });
   });
 
   it("should render children content", () => {
@@ -33,7 +50,6 @@ describe("DashboardContent", () => {
         <div>Dashboard children</div>
       </DashboardContent>,
     );
-
     expect(screen.getByText("Dashboard children")).toBeInTheDocument();
   });
 
@@ -43,7 +59,25 @@ describe("DashboardContent", () => {
         <div>Content</div>
       </DashboardContent>,
     );
-
     expect(screen.getByTestId("sidebar-user")).toHaveTextContent("Jane Doe");
+  });
+
+  it("invokes useSocket with the session accessToken", () => {
+    render(
+      <DashboardContent {...defaultProps}>
+        <div>Content</div>
+      </DashboardContent>,
+    );
+    expect(mockUseSocket).toHaveBeenCalledWith({ token: "jwt-123" });
+  });
+
+  it("invokes useSocket with null when there is no session", () => {
+    mockUseSession.mockReturnValue({ data: null, status: "unauthenticated" });
+    render(
+      <DashboardContent {...defaultProps}>
+        <div>Content</div>
+      </DashboardContent>,
+    );
+    expect(mockUseSocket).toHaveBeenCalledWith({ token: null });
   });
 });

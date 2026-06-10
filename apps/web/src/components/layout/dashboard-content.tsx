@@ -1,5 +1,7 @@
 "use client";
 
+import { useSession } from "next-auth/react";
+import { useSocket } from "@/hooks/use-socket";
 import { QuotaBanner } from "./quota-banner";
 import { Sidebar } from "./sidebar";
 
@@ -9,6 +11,9 @@ interface DashboardContentProps {
 }
 
 export function DashboardContent({ user, children }: DashboardContentProps) {
+  const { data: session } = useSession();
+  useSocket({ token: session?.accessToken ?? null });
+
   return (
     <div className="flex bg-surface/40 h-screen">
       <Sidebar user={user} />
