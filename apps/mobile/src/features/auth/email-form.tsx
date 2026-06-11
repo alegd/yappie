@@ -40,8 +40,10 @@ export function EmailForm() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sign in</Text>
-      <Text style={styles.subtitle}>Enter your email to receive a 4-digit code.</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>What&apos;s your email?</Text>
+        <Text style={styles.subtitle}>We&apos;ll send you a code to sign in</Text>
+      </View>
 
       <Input
         value={email}
@@ -54,7 +56,7 @@ export function EmailForm() {
       />
 
       <Button
-        label="Send code"
+        label="Continue"
         onPress={handleSubmit}
         loading={requestOtp.isPending}
         disabled={requestOtp.isPending}
@@ -67,18 +69,25 @@ export function EmailForm() {
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
+    flex: 1,
+    justifyContent: "center",
     gap: spacing.lg,
+  },
+  header: {
+    alignItems: "center",
+    gap: spacing.sm,
   },
   title: {
     fontFamily: font.heading.bold,
     fontSize: fontSize.xxl,
     color: colors.text,
+    textAlign: "center",
   },
   subtitle: {
     fontFamily: font.body.regular,
     fontSize: fontSize.md,
     color: colors.textMuted,
+    textAlign: "center",
   },
   error: {
     fontFamily: font.body.regular,

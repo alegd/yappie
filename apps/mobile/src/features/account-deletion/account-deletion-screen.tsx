@@ -46,7 +46,7 @@ export function AccountDeletionScreen() {
     try {
       await confirmMutation.mutateAsync({ email, code });
       await logout();
-      // The (app)/_layout guard redirects to /(auth)/email when accessToken clears.
+      // The (app)/_layout guard redirects to /(auth)/welcome when accessToken clears.
     } catch {
       setError("Couldn't delete account. Try again.");
     }
