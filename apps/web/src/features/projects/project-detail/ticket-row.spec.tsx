@@ -19,9 +19,16 @@ const baseTicket: Ticket = {
 };
 
 describe("TicketRow", () => {
-  it("renders title, priority badge, and status badge", () => {
-    render(<TicketRow ticket={baseTicket} isSelected={false} onToggle={vi.fn()} />);
-    expect(screen.getByText("Fix bug")).toBeInTheDocument();
+  it("renders title as a button and the badges", () => {
+    render(
+      <TicketRow
+        ticket={baseTicket}
+        isSelected={false}
+        onToggle={vi.fn()}
+        onTitleClick={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Fix bug" })).toBeInTheDocument();
     expect(screen.getByText("HIGH")).toBeInTheDocument();
     expect(screen.getByText("DRAFT")).toBeInTheDocument();
   });
@@ -33,21 +40,62 @@ describe("TicketRow", () => {
       jiraIssueKey: "PROJ-42",
       jiraIssueUrl: "https://example.atlassian.net/browse/PROJ-42",
     };
-    render(<TicketRow ticket={exported} isSelected={false} onToggle={vi.fn()} />);
+    render(
+      <TicketRow ticket={exported} isSelected={false} onToggle={vi.fn()} onTitleClick={vi.fn()} />,
+    );
     const link = screen.getByText("PROJ-42").closest("a");
     expect(link).toHaveAttribute("href", "https://example.atlassian.net/browse/PROJ-42");
   });
 
-  it("calls onToggle with the ticket id when the checkbox is clicked", async () => {
+  it("calls onToggle when the checkbox is clicked", async () => {
     const onToggle = vi.fn();
-    const user = userEvent.setup();
-    render(<TicketRow ticket={baseTicket} isSelected={false} onToggle={onToggle} />);
-    await user.click(screen.getByRole("checkbox"));
+    const u = userEvent.setup();
+    render(
+      <TicketRow
+        ticket={baseTicket}
+        isSelected={false}
+        onToggle={onToggle}
+        onTitleClick={vi.fn()}
+      />,
+    );
+    await u.click(screen.getByRole("checkbox"));
     expect(onToggle).toHaveBeenCalledWith("t-1");
   });
 
+  it("clicking the title calls onTitleClick with the ticket id", async () => {
+    const onTitleClick = vi.fn();
+    const u = userEvent.setup();
+    render(
+      <TicketRow
+        ticket={baseTicket}
+        isSelected={false}
+        onToggle={vi.fn()}
+        onTitleClick={onTitleClick}
+      />,
+    );
+    await u.click(screen.getByRole("button", { name: "Fix bug" }));
+    expect(onTitleClick).toHaveBeenCalledWith("t-1");
+  });
+
+  it("clicking the title does NOT toggle selection", async () => {
+    const onToggle = vi.fn();
+    const u = userEvent.setup();
+    render(
+      <TicketRow
+        ticket={baseTicket}
+        isSelected={false}
+        onToggle={onToggle}
+        onTitleClick={vi.fn()}
+      />,
+    );
+    await u.click(screen.getByRole("button", { name: "Fix bug" }));
+    expect(onToggle).not.toHaveBeenCalled();
+  });
+
   it("reflects selected state on the checkbox", () => {
-    render(<TicketRow ticket={baseTicket} isSelected={true} onToggle={vi.fn()} />);
+    render(
+      <TicketRow ticket={baseTicket} isSelected={true} onToggle={vi.fn()} onTitleClick={vi.fn()} />,
+    );
     expect(screen.getByRole("checkbox")).toBeChecked();
   });
 });

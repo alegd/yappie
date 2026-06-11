@@ -9,9 +9,10 @@ interface TicketRowProps {
   ticket: Ticket;
   isSelected: boolean;
   onToggle: (ticketId: string) => void;
+  onTitleClick: (ticketId: string) => void;
 }
 
-export function TicketRow({ ticket, isSelected, onToggle }: TicketRowProps) {
+export function TicketRow({ ticket, isSelected, onToggle, onTitleClick }: TicketRowProps) {
   return (
     <div className="flex items-center gap-3 px-3 py-2 border-border border-b last:border-b-0">
       <input
@@ -21,7 +22,13 @@ export function TicketRow({ ticket, isSelected, onToggle }: TicketRowProps) {
         aria-label={`Select ${ticket.title}`}
         className="border-zinc-600 rounded"
       />
-      <p className="flex-1 min-w-0 font-medium text-sm truncate">{ticket.title}</p>
+      <button
+        type="button"
+        onClick={() => onTitleClick(ticket.id)}
+        className="flex-1 min-w-0 font-medium text-sm truncate text-left hover:text-accent transition cursor-pointer"
+      >
+        {ticket.title}
+      </button>
       <Badge variant={priorityVariants[ticket.priority]}>{ticket.priority}</Badge>
       <Badge variant={ticketStatusVariants[ticket.status]}>{ticket.status}</Badge>
       {ticket.jiraIssueKey && (
