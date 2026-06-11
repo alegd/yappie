@@ -5,12 +5,24 @@ import { describe, expect, it, vi } from "vitest";
 import { AudioAccordion } from "./audio-accordion";
 import type { AudioRecording } from "@/features/audio/types";
 
+let lastOnTicketClick: ((id: string) => void) | undefined;
 vi.mock("./audio-accordion-content", () => ({
-  AudioAccordionContent: ({ audioId, isOpen }: { audioId: string; isOpen: boolean }) => (
-    <div data-testid={`content-${audioId}`} data-open={String(isOpen)}>
-      content
-    </div>
-  ),
+  AudioAccordionContent: ({
+    audioId,
+    isOpen,
+    onTicketClick,
+  }: {
+    audioId: string;
+    isOpen: boolean;
+    onTicketClick: (id: string) => void;
+  }) => {
+    lastOnTicketClick = onTicketClick;
+    return (
+      <div data-testid={`content-${audioId}`} data-open={String(isOpen)}>
+        content
+      </div>
+    );
+  },
 }));
 
 const audio: AudioRecording = {
@@ -47,6 +59,7 @@ describe("AudioAccordion", () => {
         selection={new Set()}
         onSelectionChange={vi.fn()}
         jiraConnected={true}
+        onTicketClick={vi.fn()}
       />,
       [],
     );
@@ -63,6 +76,7 @@ describe("AudioAccordion", () => {
         selection={new Set()}
         onSelectionChange={vi.fn()}
         jiraConnected={true}
+        onTicketClick={vi.fn()}
       />,
       [],
     );
@@ -78,6 +92,7 @@ describe("AudioAccordion", () => {
         selection={new Set()}
         onSelectionChange={vi.fn()}
         jiraConnected={true}
+        onTicketClick={vi.fn()}
       />,
       ["a-1"],
     );
@@ -97,10 +112,29 @@ describe("AudioAccordion", () => {
         selection={new Set()}
         onSelectionChange={vi.fn()}
         jiraConnected={true}
+        onTicketClick={vi.fn()}
       />,
       [],
     );
     await user.click(screen.getByRole("button", { name: /rec\.webm/i }));
     expect(onToggle).toHaveBeenCalledWith("a-1");
+  });
+
+  it("forwards onTicketClick to the inner content", () => {
+    const onTicketClick = vi.fn();
+    renderWithRoot(
+      <AudioAccordion
+        audio={audio}
+        isOpen={true}
+        onToggle={vi.fn()}
+        selection={new Set()}
+        onSelectionChange={vi.fn()}
+        jiraConnected={true}
+        onTicketClick={onTicketClick}
+      />,
+      ["a-1"],
+    );
+    lastOnTicketClick?.("t-9");
+    expect(onTicketClick).toHaveBeenCalledWith("t-9");
   });
 });

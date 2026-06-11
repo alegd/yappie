@@ -23,6 +23,7 @@ interface AudioAccordionProps {
   selection: Set<string>;
   onSelectionChange: (next: Set<string>) => void;
   jiraConnected: boolean;
+  onTicketClick: (ticketId: string) => void;
 }
 
 export function AudioAccordion({
@@ -32,6 +33,7 @@ export function AudioAccordion({
   selection,
   onSelectionChange,
   jiraConnected,
+  onTicketClick,
 }: AudioAccordionProps) {
   const status = audioStatusConfig[audio.status];
 
@@ -65,6 +67,7 @@ export function AudioAccordion({
             selection={selection}
             onSelectionChange={onSelectionChange}
             jiraConnected={jiraConnected}
+            onTicketClick={onTicketClick}
           />
         ) : null}
       </Accordion.Content>
