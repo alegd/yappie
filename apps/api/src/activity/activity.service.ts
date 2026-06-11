@@ -30,7 +30,7 @@ export type ActivityItem =
       at: string;
     };
 
-interface ActivityResponse {
+export interface ActivityResponse {
   data: ActivityItem[];
   total: number;
 }
