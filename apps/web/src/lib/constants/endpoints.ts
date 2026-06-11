@@ -40,6 +40,9 @@ export const analyticsOverview = (from: string, to: string) =>
 // ─── Quotas ─────────────────────────────────────────────
 export const QUOTAS = `${API_V1}/quotas`;
 
+// ─── Activity ───────────────────────────────────────────
+export const ACTIVITY_FEED = `${API_V1}/activity?limit=10`;
+
 // ─── Billing ────────────────────────────────────────────
 export const BILLING_STATUS = `${API_V1}/billing/status`;
 export const BILLING_CHECKOUT_SESSION = `${API_V1}/billing/checkout-session`;

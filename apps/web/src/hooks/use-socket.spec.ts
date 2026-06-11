@@ -89,7 +89,7 @@ describe("useSocket", () => {
     expect(eventNames).toContain("audio:failed");
   });
 
-  it("audio:progress invalidates any SWR key starting with /v1/audio", async () => {
+  it("audio:progress invalidates audio + projects + activity keys", async () => {
     await act(async () => {
       renderHook(() => useSocket({ token: "jwt-123" }));
     });
@@ -101,6 +101,9 @@ describe("useSocket", () => {
     expect(matcher("/v1/audio?limit=50")).toBe(true);
     expect(matcher("/v1/audio?limit=50&projectId=p-1")).toBe(true);
     expect(matcher("/v1/audio/a-1")).toBe(true);
+    expect(matcher("/v1/projects?limit=50")).toBe(true);
+    expect(matcher("/v1/projects/p-1")).toBe(true);
+    expect(matcher("/v1/activity?limit=10")).toBe(true);
     expect(matcher("/v1/tickets?limit=50")).toBe(false);
     expect(matcher(null)).toBe(false);
   });
