@@ -1,0 +1,184 @@
+import { render, screen } from "@testing-library/react";
+import { act } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ProjectDetail } from "./project-detail";
+import { useSocketEvents } from "@/hooks/use-socket-events";
+
+const { mockUseQuery } = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(),
+}));
+
+vi.mock("@/hooks/use-query", () => ({
+  useQuery: mockUseQuery,
+  invalidateQuery: vi.fn(),
+}));
+
+vi.mock("./project-header", () => ({
+  ProjectHeader: ({ project }: { project: { name: string } }) => (
+    <div data-testid="project-header">{project.name}</div>
+  ),
+}));
+
+vi.mock("./stats-footer", () => ({
+  StatsFooter: ({ audios }: { audios: unknown[] }) => (
+    <div data-testid="stats-footer" data-count={audios.length} />
+  ),
+}));
+
+vi.mock("./empty-state", () => ({
+  EmptyState: ({ projectId }: { projectId: string }) => (
+    <div data-testid="empty-state">{projectId}</div>
+  ),
+}));
+
+// Capture the most recent `isOpen` per audio so we can assert auto-expand.
+const recordedOpen: Record<string, boolean> = {};
+
+vi.mock("./audio-accordion", () => ({
+  AudioAccordion: ({
+    audio,
+    isOpen,
+  }: {
+    audio: { id: string; fileName: string };
+    isOpen: boolean;
+  }) => {
+    recordedOpen[audio.id] = isOpen;
+    return (
+      <div data-testid={`accordion-${audio.id}`} data-open={String(isOpen)}>
+        {audio.fileName}
+      </div>
+    );
+  },
+}));
+
+vi.mock("@radix-ui/react-accordion", () => ({
+  Root: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="accordion-root">{children}</div>
+  ),
+}));
+
+const project = {
+  id: "p-1",
+  name: "Marketing",
+  description: "Desc",
+  context: null,
+  userId: "u-1",
+  createdAt: "",
+  updatedAt: "",
+};
+
+function setupQueries(opts: {
+  project?: typeof project | undefined;
+  projectLoading?: boolean;
+  projectError?: Error;
+  audios?: Array<{ id: string; fileName: string; status?: string; tickets?: unknown[] }>;
+  audiosLoading?: boolean;
+  jiraConnected?: boolean;
+}) {
+  let i = 0;
+  mockUseQuery.mockImplementation(() => {
+    // Cycle through the 3 queries (project, audios, jira) so re-renders
+    // (e.g. after auto-expand) keep returning consistent data.
+    const which = i++ % 3;
+    if (which === 0) {
+      return {
+        data: opts.project,
+        isLoading: opts.projectLoading ?? false,
+        error: opts.projectError,
+        mutate: vi.fn(),
+      };
+    }
+    if (which === 1) {
+      return {
+        data: opts.audios
+          ? { data: opts.audios, total: opts.audios.length, page: 1, limit: 50 }
+          : undefined,
+        isLoading: opts.audiosLoading ?? false,
+        error: undefined,
+        mutate: vi.fn(),
+      };
+    }
+    return {
+      data: { connected: opts.jiraConnected ?? false, siteName: null },
+      isLoading: false,
+      error: undefined,
+      mutate: vi.fn(),
+    };
+  });
+}
+
+describe("ProjectDetail", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    for (const k of Object.keys(recordedOpen)) delete recordedOpen[k];
+    useSocketEvents.setState({ lastAudioCompleted: null });
+  });
+
+  it("shows a loader while the project is loading", () => {
+    setupQueries({ projectLoading: true });
+    render(<ProjectDetail id="p-1" />);
+    expect(screen.getByLabelText(/loading project/i)).toBeInTheDocument();
+  });
+
+  it("shows an error message when the project query errors", () => {
+    setupQueries({ projectError: new Error("boom") });
+    render(<ProjectDetail id="p-1" />);
+    expect(screen.getByText(/couldn.?t load this project/i)).toBeInTheDocument();
+  });
+
+  it("renders the empty state when there are no audios", () => {
+    setupQueries({ project, audios: [] });
+    render(<ProjectDetail id="p-1" />);
+    expect(screen.getByTestId("project-header")).toHaveTextContent("Marketing");
+    expect(screen.getByTestId("empty-state")).toHaveTextContent("p-1");
+  });
+
+  it("renders one accordion per audio plus the stats footer", () => {
+    setupQueries({
+      project,
+      audios: [
+        { id: "a-1", fileName: "rec1.webm" },
+        { id: "a-2", fileName: "rec2.webm" },
+      ],
+    });
+    render(<ProjectDetail id="p-1" />);
+    expect(screen.getByTestId("accordion-a-1")).toBeInTheDocument();
+    expect(screen.getByTestId("accordion-a-2")).toBeInTheDocument();
+    expect(screen.getByTestId("stats-footer")).toHaveAttribute("data-count", "2");
+  });
+
+  it("auto-expands an audio when useSocketEvents emits a completion for that audioId", () => {
+    setupQueries({
+      project,
+      audios: [
+        { id: "a-1", fileName: "rec1.webm" },
+        { id: "a-2", fileName: "rec2.webm" },
+      ],
+    });
+    render(<ProjectDetail id="p-1" />);
+
+    expect(recordedOpen["a-1"]).toBe(false);
+
+    act(() => {
+      useSocketEvents.getState().emitAudioCompleted({ audioId: "a-1", ticketCount: 3 });
+    });
+
+    expect(recordedOpen["a-1"]).toBe(true);
+    // Other accordion stays as it was
+    expect(recordedOpen["a-2"]).toBe(false);
+  });
+
+  it("ignores completion events for audios that are not part of this project", () => {
+    setupQueries({
+      project,
+      audios: [{ id: "a-1", fileName: "rec1.webm" }],
+    });
+    render(<ProjectDetail id="p-1" />);
+
+    act(() => {
+      useSocketEvents.getState().emitAudioCompleted({ audioId: "a-999", ticketCount: 1 });
+    });
+
+    expect(recordedOpen["a-1"]).toBe(false);
+  });
+});
