@@ -10,6 +10,8 @@ export interface Ticket {
   projectId: string | null;
   createdAt: string;
   updatedAt: string;
+  sourceTranscript?: string | null;
+  audioRecording?: { id: string; fileName: string };
 }
 
 export interface TicketListResponse {
