@@ -12,29 +12,9 @@ import { AlertCircle, ArrowLeft, FileText, Loader2, Trash2 } from "lucide-react"
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { priorityVariants, ticketStatusVariants } from "../tickets/badge-variants";
+import { audioStatusConfig } from "./status-config";
 import { AudioRecording } from "./types";
-
-const statusConfig = {
-  PENDING: { label: "Pending", variant: "default" as const },
-  TRANSCRIBING: { label: "Transcribing", variant: "info" as const },
-  ANALYZING: { label: "Analyzing", variant: "purple" as const },
-  COMPLETED: { label: "Completed", variant: "success" as const },
-  FAILED: { label: "Failed", variant: "danger" as const },
-};
-
-const priorityVariants: Record<string, "default" | "warning" | "orange" | "danger"> = {
-  LOW: "default",
-  MEDIUM: "warning",
-  HIGH: "orange",
-  CRITICAL: "danger",
-};
-
-const ticketStatusVariants: Record<string, "default" | "success" | "info" | "danger"> = {
-  DRAFT: "default",
-  APPROVED: "success",
-  EXPORTED: "info",
-  REJECTED: "danger",
-};
 
 interface AudioDetailProps {
   audioId: string;
@@ -87,7 +67,7 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
     );
   }
 
-  const status = statusConfig[audio.status];
+  const status = audioStatusConfig[audio.status];
 
   return (
     <div>

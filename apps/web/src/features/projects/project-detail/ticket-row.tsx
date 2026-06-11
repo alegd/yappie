@@ -2,21 +2,8 @@
 
 import { SquareArrowOutUpRightIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { priorityVariants, ticketStatusVariants } from "@/features/tickets/badge-variants";
 import type { Ticket } from "@/features/tickets/types";
-
-const priorityVariants: Record<string, "default" | "warning" | "orange" | "danger"> = {
-  LOW: "default",
-  MEDIUM: "warning",
-  HIGH: "orange",
-  CRITICAL: "danger",
-};
-
-const statusVariants: Record<string, "default" | "success" | "info" | "danger"> = {
-  DRAFT: "default",
-  APPROVED: "success",
-  EXPORTED: "info",
-  REJECTED: "danger",
-};
 
 interface TicketRowProps {
   ticket: Ticket;
@@ -36,7 +23,7 @@ export function TicketRow({ ticket, isSelected, onToggle }: TicketRowProps) {
       />
       <p className="flex-1 min-w-0 font-medium text-sm truncate">{ticket.title}</p>
       <Badge variant={priorityVariants[ticket.priority]}>{ticket.priority}</Badge>
-      <Badge variant={statusVariants[ticket.status]}>{ticket.status}</Badge>
+      <Badge variant={ticketStatusVariants[ticket.status]}>{ticket.status}</Badge>
       {ticket.jiraIssueKey && (
         <a
           href={ticket.jiraIssueUrl || "#"}

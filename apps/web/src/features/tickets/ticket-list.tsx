@@ -29,22 +29,9 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "@/components/ui/toast/Toast";
+import { priorityVariants, ticketStatusVariants } from "./badge-variants";
 import { ActionsMenu } from "./components/actions-menu";
 import { Ticket, TicketListResponse } from "./types";
-
-const priorityVariants: Record<string, "default" | "warning" | "orange" | "danger"> = {
-  LOW: "default",
-  MEDIUM: "warning",
-  HIGH: "orange",
-  CRITICAL: "danger",
-};
-
-const statusVariants: Record<string, "default" | "success" | "info" | "danger"> = {
-  DRAFT: "default",
-  APPROVED: "success",
-  EXPORTED: "info",
-  REJECTED: "danger",
-};
 
 interface JiraStatus {
   connected: boolean;
@@ -208,7 +195,7 @@ export function TicketList() {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => (
-        <Badge variant={statusVariants[row.original.status]}>{row.original.status}</Badge>
+        <Badge variant={ticketStatusVariants[row.original.status]}>{row.original.status}</Badge>
       ),
     },
     {

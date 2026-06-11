@@ -15,12 +15,13 @@ import {
 import { DELETE } from "@/lib/constants/http";
 import { audioDetailPage } from "@/lib/constants/pages";
 import { AppSelect } from "@/components/ui/app-select";
-import { AlertCircle, CheckCircle2, Clock, FileAudio, Loader2, Trash2, X } from "lucide-react";
+import { FileAudio, Loader2, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { ProjectListResponse } from "../projects/types";
 import { AudioUpload } from "./audio-upload";
 import { OnboardingChecklist } from "./onboarding-checklist";
+import { audioStatusConfig } from "./status-config";
 import { AudioListResponse } from "./types";
 
 interface JiraStatus {
@@ -30,14 +31,6 @@ interface JiraStatus {
 }
 
 const JIRA_BANNER_KEY = "yappie:jira-banner-dismissed";
-
-const statusConfig = {
-  PENDING: { label: "Pending", variant: "default" as const, icon: Clock },
-  TRANSCRIBING: { label: "Transcribing", variant: "info" as const, icon: Loader2 },
-  ANALYZING: { label: "Analyzing", variant: "purple" as const, icon: Loader2 },
-  COMPLETED: { label: "Completed", variant: "success" as const, icon: CheckCircle2 },
-  FAILED: { label: "Failed", variant: "danger" as const, icon: AlertCircle },
-};
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -177,7 +170,7 @@ export function AudioList() {
       ) : (
         <div className="space-y-3">
           {audios.map((audio) => {
-            const status = statusConfig[audio.status];
+            const status = audioStatusConfig[audio.status];
             return (
               <Card key={audio.id}>
                 <div className="flex items-center gap-4 p-4 hover:border-border-hover transition">

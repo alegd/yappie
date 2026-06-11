@@ -3,19 +3,9 @@
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { audioStatusConfig } from "@/features/audio/status-config";
 import type { AudioRecording } from "@/features/audio/types";
 import { AudioAccordionContent } from "./audio-accordion-content";
-
-const statusConfig: Record<
-  AudioRecording["status"],
-  { label: string; variant: "default" | "info" | "purple" | "success" | "danger" }
-> = {
-  PENDING: { label: "Pending", variant: "default" },
-  TRANSCRIBING: { label: "Transcribing", variant: "info" },
-  ANALYZING: { label: "Analyzing", variant: "purple" },
-  COMPLETED: { label: "Completed", variant: "success" },
-  FAILED: { label: "Failed", variant: "danger" },
-};
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleString("en-US", {
@@ -43,7 +33,7 @@ export function AudioAccordion({
   onSelectionChange,
   jiraConnected,
 }: AudioAccordionProps) {
-  const status = statusConfig[audio.status];
+  const status = audioStatusConfig[audio.status];
 
   return (
     <Accordion.Item
