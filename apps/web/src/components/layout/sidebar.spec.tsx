@@ -1,122 +1,148 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Sidebar } from "./sidebar";
 
-const { mockUsePathname, mockSignOut } = vi.hoisted(() => ({
-  mockUsePathname: vi.fn(),
+const { mockUseQuery, mockSignOut, mockUsePathname } = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(),
   mockSignOut: vi.fn(),
+  mockUsePathname: vi.fn(),
 }));
 
-vi.mock("next/navigation", () => ({
-  usePathname: mockUsePathname,
+vi.mock("@/hooks/use-query", () => ({
+  useQuery: mockUseQuery,
 }));
 
 vi.mock("next-auth/react", () => ({
   signOut: mockSignOut,
 }));
 
+vi.mock("next/navigation", () => ({
+  usePathname: mockUsePathname,
+}));
+
 vi.mock("next/link", () => ({
-  default: ({ children, href, ...props }: any) => (
-    <a href={href} {...props}>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  default: ({ children, href, ...rest }: any) => (
+    <a href={href} {...rest}>
       {children}
     </a>
   ),
 }));
 
-const defaultUser = { name: "John Doe", email: "john@example.com" };
+const user = { name: "Jane Doe", email: "jane@example.com" };
+
+const mockProjects = {
+  data: [
+    { id: "p-a", name: "Apple", pendingTicketCount: 0 },
+    { id: "p-b", name: "Banana", pendingTicketCount: 3 },
+    { id: "p-c", name: "Cherry", pendingTicketCount: 1 },
+  ],
+  total: 3,
+  page: 1,
+  limit: 50,
+};
 
 describe("Sidebar", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUsePathname.mockReturnValue("/dashboard/audios");
+    mockUsePathname.mockReturnValue("/dashboard");
+    mockUseQuery.mockReturnValue({
+      data: mockProjects,
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
   });
 
-  it("should render all navigation items", () => {
-    render(<Sidebar user={defaultUser} />);
-
-    expect(screen.getByText("Audios")).toBeInTheDocument();
-    expect(screen.getByText("Tickets")).toBeInTheDocument();
-    expect(screen.getByText("Projects")).toBeInTheDocument();
-    expect(screen.getByText("Analytics")).toBeInTheDocument();
-    expect(screen.getByText("Settings")).toBeInTheDocument();
+  it("renders Home / + New project / Settings as fixed nav items", () => {
+    render(<Sidebar user={user} />);
+    expect(screen.getByRole("link", { name: /home/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /\+ new project/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /settings/i })).toBeInTheDocument();
   });
 
-  it("should render Yappie logo link pointing to /dashboard/audios", () => {
-    render(<Sidebar user={defaultUser} />);
-
-    const logo = screen.getByText("Yappie");
-    expect(logo).toBeInTheDocument();
-    expect(logo.closest("a")).toHaveAttribute("href", "/dashboard/audios");
+  it("does NOT render legacy Audios / Tickets / Projects / Analytics top-level items", () => {
+    render(<Sidebar user={user} />);
+    expect(screen.queryByRole("link", { name: /^audios$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /^tickets$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /^projects$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /^analytics$/i })).not.toBeInTheDocument();
   });
 
-  it("should display user name and email", () => {
-    render(<Sidebar user={defaultUser} />);
-
-    expect(screen.getByText("John Doe")).toBeInTheDocument();
-    expect(screen.getByText("john@example.com")).toBeInTheDocument();
+  it("renders each project as a nav item sorted alphabetically", () => {
+    render(<Sidebar user={user} />);
+    const projectLinks = screen
+      .getAllByRole("link")
+      .filter((l) => /^Apple|Banana|Cherry$/.test(l.textContent?.replace(/\d+$/, "") ?? ""));
+    expect(projectLinks[0]).toHaveTextContent("Apple");
+    expect(projectLinks[1].textContent).toMatch(/Banana/);
+    expect(projectLinks[2].textContent).toMatch(/Cherry/);
   });
 
-  it("should display user initial in avatar", () => {
-    render(<Sidebar user={defaultUser} />);
-
-    expect(screen.getByText("J")).toBeInTheDocument();
+  it("project links point to /dashboard/projects/[id]", () => {
+    render(<Sidebar user={user} />);
+    const apple = screen.getByRole("link", { name: /apple/i });
+    expect(apple).toHaveAttribute("href", "/dashboard/projects/p-a");
   });
 
-  it("should call signOut when logout button clicked", async () => {
-    const user = userEvent.setup();
+  it("shows pendingTicketCount badge only when > 0", () => {
+    render(<Sidebar user={user} />);
+    const banana = screen.getByRole("link", { name: /banana/i });
+    expect(banana).toHaveTextContent("3");
+    const apple = screen.getByRole("link", { name: /apple/i });
+    expect(apple).not.toHaveTextContent("0");
+  });
 
-    render(<Sidebar user={defaultUser} />);
+  it("highlights the active project when the pathname matches", () => {
+    mockUsePathname.mockReturnValue("/dashboard/projects/p-b");
+    render(<Sidebar user={user} />);
+    const banana = screen.getByRole("link", { name: /banana/i });
+    expect(banana.className).toMatch(/bg-accent-surface|text-accent/);
+  });
 
-    const logoutButtons = screen.getAllByRole("button");
-    const logoutButton = logoutButtons.find((btn) => !btn.getAttribute("aria-label"));
-    await user.click(logoutButton!);
+  it("does NOT highlight a project when the pathname is the /edit subroute", () => {
+    mockUsePathname.mockReturnValue("/dashboard/projects/p-b/edit");
+    render(<Sidebar user={user} />);
+    const banana = screen.getByRole("link", { name: /banana/i });
+    expect(banana.className).not.toMatch(/bg-accent-surface/);
+  });
 
+  it("Home link points to /dashboard", () => {
+    render(<Sidebar user={user} />);
+    expect(screen.getByRole("link", { name: /home/i })).toHaveAttribute("href", "/dashboard");
+  });
+
+  it("+ New project link points to /dashboard/projects/new", () => {
+    render(<Sidebar user={user} />);
+    expect(screen.getByRole("link", { name: /\+ new project/i })).toHaveAttribute(
+      "href",
+      "/dashboard/projects/new",
+    );
+  });
+
+  it("renders user chrome (name + email) at the bottom", () => {
+    render(<Sidebar user={user} />);
+    expect(screen.getByText("Jane Doe")).toBeInTheDocument();
+    expect(screen.getByText("jane@example.com")).toBeInTheDocument();
+  });
+
+  it("logout button calls signOut", async () => {
+    const u = userEvent.setup();
+    render(<Sidebar user={user} />);
+    await u.click(screen.getByLabelText(/log out/i));
     expect(mockSignOut).toHaveBeenCalledWith({ redirectTo: "/auth" });
   });
 
-  it("should have mobile toggle button", () => {
-    render(<Sidebar user={defaultUser} />);
-
-    expect(screen.getByRole("button", { name: "Toggle menu" })).toBeInTheDocument();
-  });
-
-  it("should toggle mobile menu when toggle button clicked", async () => {
-    const user = userEvent.setup();
-    render(<Sidebar user={defaultUser} />);
-
-    const toggleButton = screen.getByRole("button", { name: "Toggle menu" });
-    await user.click(toggleButton);
-
-    // Overlay should appear
-    expect(screen.getByRole("button", { name: "Close menu" })).toBeInTheDocument();
-  });
-
-  it("should close mobile menu when overlay clicked", async () => {
-    const user = userEvent.setup();
-    render(<Sidebar user={defaultUser} />);
-
-    // Open menu
-    const toggleButton = screen.getByRole("button", { name: "Toggle menu" });
-    await user.click(toggleButton);
-
-    // Click overlay to close
-    const overlay = screen.getByRole("button", { name: "Close menu" });
-    await user.click(overlay);
-
-    // Overlay should disappear
-    expect(screen.queryByRole("button", { name: "Close menu" })).not.toBeInTheDocument();
-  });
-
-  it("should highlight active nav item based on pathname", () => {
-    mockUsePathname.mockReturnValue("/dashboard/tickets");
-
-    render(<Sidebar user={defaultUser} />);
-
-    const ticketsLink = screen.getByText("Tickets").closest("a");
-    expect(ticketsLink).toHaveClass("text-accent");
-
-    const audiosLink = screen.getByText("Audios").closest("a");
-    expect(audiosLink).not.toHaveClass("text-accent");
+  it("renders gracefully with no projects", () => {
+    mockUseQuery.mockReturnValue({
+      data: { data: [], total: 0, page: 1, limit: 50 },
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
+    render(<Sidebar user={user} />);
+    expect(screen.getByRole("link", { name: /home/i })).toBeInTheDocument();
+    expect(screen.queryByText(/apple|banana|cherry/i)).not.toBeInTheDocument();
   });
 });
