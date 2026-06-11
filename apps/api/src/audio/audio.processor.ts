@@ -91,6 +91,7 @@ export class AudioProcessor extends WorkerHost {
                 audioRecordingId: audioId,
                 projectId: recording.projectId ?? undefined,
                 userId,
+                sourceTranscript: ticket.sourceQuote || null,
               },
             }),
           ),

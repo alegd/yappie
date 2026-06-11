@@ -238,6 +238,79 @@ describe("AudioProcessor", () => {
     );
   });
 
+  it("should persist sourceTranscript from AI sourceQuote when creating tickets", async () => {
+    const audioBuffer = Buffer.from("fake-audio");
+    mockStorage.get.mockResolvedValue(audioBuffer);
+    mockAudioService.findOne.mockResolvedValue({
+      id: "audio-1",
+      filePath: "user-1/recording.mp3",
+      fileName: "recording.mp3",
+      userId: "user-1",
+      projectId: null,
+    });
+    mockAIService.transcribe.mockResolvedValue({
+      text: "We need auth",
+      duration: 10,
+    });
+    mockAIService.decompose.mockResolvedValue([{ title: "Auth", description: "Add auth" }]);
+    mockAIService.generateTickets.mockResolvedValue([
+      {
+        title: "T",
+        description: "D",
+        priority: "HIGH",
+        sourceQuote: "quoted",
+      },
+    ]);
+    mockAudioService.updateStatus.mockResolvedValue({});
+    mockPrisma.ticket.count.mockResolvedValue(0);
+    mockPrisma.ticket.create.mockResolvedValueOnce({ id: "t-1" });
+    mockPrisma.$transaction.mockResolvedValue([{ id: "t-1" }]);
+
+    await processor.process({
+      data: { audioId: "audio-1", userId: "user-1" },
+    } as never);
+
+    expect(mockPrisma.ticket.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        title: "T",
+        description: "D",
+        priority: "HIGH",
+        sourceTranscript: "quoted",
+      }),
+    });
+  });
+
+  it("should default sourceTranscript to null when AI omits sourceQuote", async () => {
+    const audioBuffer = Buffer.from("fake-audio");
+    mockStorage.get.mockResolvedValue(audioBuffer);
+    mockAudioService.findOne.mockResolvedValue({
+      id: "audio-1",
+      filePath: "user-1/recording.mp3",
+      fileName: "recording.mp3",
+      userId: "user-1",
+      projectId: null,
+    });
+    mockAIService.transcribe.mockResolvedValue({ text: "Some task", duration: 12.3 });
+    mockAIService.decompose.mockResolvedValue([{ title: "T", description: "D" }]);
+    mockAIService.generateTickets.mockResolvedValue([
+      { title: "T", description: "D", priority: "LOW" },
+    ]);
+    mockAudioService.updateStatus.mockResolvedValue({});
+    mockPrisma.ticket.count.mockResolvedValue(0);
+    mockPrisma.ticket.create.mockResolvedValueOnce({ id: "t-1" });
+    mockPrisma.$transaction.mockResolvedValue([{ id: "t-1" }]);
+
+    await processor.process({
+      data: { audioId: "audio-1", userId: "user-1" },
+    } as never);
+
+    expect(mockPrisma.ticket.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        sourceTranscript: null,
+      }),
+    });
+  });
+
   it("should not fail pipeline when trackConsumption throws", async () => {
     const audioBuffer = Buffer.from("fake-audio");
     mockStorage.get.mockResolvedValue(audioBuffer);
