@@ -81,12 +81,10 @@ export function AudioAccordionContent({
   return (
     <div>
       {data.transcription && (
-        <details className="px-4 py-3 border-border border-b">
-          <summary className="cursor-pointer text-foreground/75 text-xs uppercase tracking-wider">
-            Transcript
-          </summary>
-          <p className="mt-2 text-sm leading-relaxed whitespace-pre-wrap">{data.transcription}</p>
-        </details>
+        <div className="px-4 py-3 border-border border-b">
+          <p className="mb-2 text-foreground/75 text-xs uppercase tracking-wider">Transcript</p>
+          <p className="text-sm leading-relaxed whitespace-pre-wrap">{data.transcription}</p>
+        </div>
       )}
 
       {tickets.length === 0 ? (
