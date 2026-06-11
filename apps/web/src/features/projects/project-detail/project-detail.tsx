@@ -12,6 +12,7 @@ import { AudioAccordion } from "./audio-accordion";
 import { EmptyState } from "./empty-state";
 import { ProjectHeader } from "./project-header";
 import { StatsFooter } from "./stats-footer";
+import { TicketDetailDrawer } from "./ticket-detail-drawer";
 
 interface JiraStatus {
   connected: boolean;
@@ -36,6 +37,8 @@ export function ProjectDetail({ id }: ProjectDetailProps) {
 
   const [openValues, setOpenValues] = useState<string[]>([]);
   const [selectionByAudio, setSelectionByAudio] = useState<Record<string, Set<string>>>({});
+  const [openTicketId, setOpenTicketId] = useState<string | null>(null);
+  const [openTicketAudioId, setOpenTicketAudioId] = useState<string>("");
 
   const lastCompleted = useSocketEvents((s) => s.lastAudioCompleted);
 
@@ -96,12 +99,22 @@ export function ProjectDetail({ id }: ProjectDetailProps) {
               selection={selectionByAudio[audio.id] ?? new Set()}
               onSelectionChange={setSelectionForAudio(audio.id)}
               jiraConnected={jiraConnected}
+              onTicketClick={(ticketId) => {
+                setOpenTicketId(ticketId);
+                setOpenTicketAudioId(audio.id);
+              }}
             />
           ))}
         </Accordion.Root>
       )}
 
       <StatsFooter audios={audios} />
+      <TicketDetailDrawer
+        ticketId={openTicketId}
+        audioId={openTicketAudioId}
+        jiraConnected={jiraConnected}
+        onClose={() => setOpenTicketId(null)}
+      />
     </div>
   );
 }
