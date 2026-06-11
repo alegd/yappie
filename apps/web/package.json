@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-accordion": "^1.2.13",
     "@radix-ui/react-select": "^2.2.6",
     "@sentry/nextjs": "^10",
     "@tanstack/react-table": "^8.21.3",
