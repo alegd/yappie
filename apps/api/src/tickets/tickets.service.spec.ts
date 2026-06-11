@@ -55,6 +55,24 @@ describe("TicketsService", () => {
         data: expect.objectContaining({ userId: "user-1" }),
       });
     });
+
+    it("should persist sourceTranscript when provided", async () => {
+      mockPrisma.ticket.create.mockResolvedValue({ ...mockTicket, sourceTranscript: "quoted" });
+
+      await service.create({
+        title: "T",
+        description: "D",
+        priority: "HIGH",
+        audioRecordingId: "audio-1",
+        projectId: "proj-1",
+        userId: "user-1",
+        sourceTranscript: "quoted",
+      });
+
+      expect(mockPrisma.ticket.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ sourceTranscript: "quoted" }),
+      });
+    });
   });
 
   describe("findAll", () => {
@@ -118,6 +136,23 @@ describe("TicketsService", () => {
       mockPrisma.ticket.findUnique.mockResolvedValue(mockTicket);
 
       await expect(service.findOne("ticket-1", "other-user")).rejects.toThrow(ForbiddenException);
+    });
+
+    it("should include audioRecording { id, fileName } in the response", async () => {
+      mockPrisma.ticket.findUnique.mockResolvedValue({
+        ...mockTicket,
+        audioRecording: { id: "audio-1", fileName: "rec.webm" },
+      });
+
+      const result = await service.findOne("ticket-1", "user-1");
+
+      expect(result).toMatchObject({
+        audioRecording: { id: "audio-1", fileName: "rec.webm" },
+      });
+      expect(mockPrisma.ticket.findUnique).toHaveBeenCalledWith({
+        where: { id: "ticket-1" },
+        include: { audioRecording: { select: { id: true, fileName: true } } },
+      });
     });
   });
 
