@@ -23,15 +23,24 @@ export class ProjectsService {
   async findAll(userId: string, pagination: { page: number; limit: number }) {
     const skip = (pagination.page - 1) * pagination.limit;
 
-    const [data, total] = await Promise.all([
+    const [rows, total] = await Promise.all([
       this.prisma.project.findMany({
         where: { userId },
         skip,
         take: pagination.limit,
         orderBy: { createdAt: "desc" },
+        include: {
+          _count: { select: { tickets: { where: { status: "DRAFT" } } } },
+        },
       }),
       this.prisma.project.count({ where: { userId } }),
     ]);
+
+    const data = rows.map((row) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { _count, ...rest } = row as any;
+      return { ...rest, pendingTicketCount: _count?.tickets ?? 0 };
+    });
 
     return { data, total, page: pagination.page, limit: pagination.limit };
   }
