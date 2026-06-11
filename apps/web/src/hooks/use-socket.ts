@@ -12,8 +12,9 @@ interface UseSocketOptions {
   token: string | null;
 }
 
-const isAudioKey = (key: unknown): boolean =>
-  typeof key === "string" && key.startsWith("/v1/audio");
+const isAudioOrProjectsOrActivityKey = (key: unknown): boolean =>
+  typeof key === "string" &&
+  (key.startsWith("/v1/audio") || key.startsWith("/v1/projects") || key.startsWith("/v1/activity"));
 
 export function useSocket({ token }: UseSocketOptions) {
   const socketRef = useRef<Socket | null>(null);
@@ -40,7 +41,7 @@ export function useSocket({ token }: UseSocketOptions) {
         };
         const message = labels[data.status] || data.status;
         toast.info(message, { id: `progress-${data.audioId}` });
-        globalMutate(isAudioKey);
+        globalMutate(isAudioOrProjectsOrActivityKey);
       });
 
       socket.on("audio:completed", (data: { audioId: string; ticketCount: number }) => {
@@ -48,7 +49,7 @@ export function useSocket({ token }: UseSocketOptions) {
           `Done! ${data.ticketCount} ticket${data.ticketCount !== 1 ? "s" : ""} generated.`,
           { id: `progress-${data.audioId}` },
         );
-        globalMutate(isAudioKey);
+        globalMutate(isAudioOrProjectsOrActivityKey);
         invalidateQuery(TICKETS_LIST);
         useSocketEvents.getState().emitAudioCompleted({
           audioId: data.audioId,
@@ -60,7 +61,7 @@ export function useSocket({ token }: UseSocketOptions) {
         toast.error(`Processing failed: ${data.error}`, {
           id: `progress-${data.audioId}`,
         });
-        globalMutate(isAudioKey);
+        globalMutate(isAudioOrProjectsOrActivityKey);
       });
     }
 

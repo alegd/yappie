@@ -7,6 +7,7 @@ export interface Project {
   userId: string;
   createdAt: string;
   updatedAt: string;
+  pendingTicketCount?: number;
 }
 
 export interface ProjectListResponse {

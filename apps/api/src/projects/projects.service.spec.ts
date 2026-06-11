@@ -62,7 +62,7 @@ describe("ProjectsService", () => {
 
       const result = await service.findAll(userId, { page: 1, limit: 10 });
 
-      expect(result.data).toEqual(projects);
+      expect(result.data).toEqual([{ ...mockProject, pendingTicketCount: 0 }]);
       expect(result.total).toBe(1);
       expect(mockPrisma.project.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -71,6 +71,31 @@ describe("ProjectsService", () => {
           take: 10,
         }),
       );
+    });
+
+    it("includes pendingTicketCount per project (count of DRAFT tickets)", async () => {
+      mockPrisma.project.findMany.mockResolvedValue([{ ...mockProject, _count: { tickets: 3 } }]);
+      mockPrisma.project.count.mockResolvedValue(1);
+
+      const result = await service.findAll(userId, { page: 1, limit: 10 });
+
+      expect(result.data[0]).toMatchObject({ pendingTicketCount: 3 });
+      expect(mockPrisma.project.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            _count: { select: { tickets: { where: { status: "DRAFT" } } } },
+          }),
+        }),
+      );
+    });
+
+    it("falls back to 0 when _count.tickets is missing", async () => {
+      mockPrisma.project.findMany.mockResolvedValue([{ ...mockProject }]);
+      mockPrisma.project.count.mockResolvedValue(1);
+
+      const result = await service.findAll(userId, { page: 1, limit: 10 });
+
+      expect(result.data[0]).toMatchObject({ pendingTicketCount: 0 });
     });
   });
 

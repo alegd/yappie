@@ -1,27 +1,22 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@/hooks/use-query";
+import { PROJECTS_LIST } from "@/lib/constants/endpoints";
 import {
-  ANALYTICS_PAGE,
-  AUDIOS_PAGE,
   AUTH_PAGE,
-  PROJECTS_PAGE,
+  DASHBOARD_PAGE,
+  NEW_PROJECT_PAGE,
   SETTINGS_PAGE,
-  TICKETS_PAGE,
+  projectDetailPage,
 } from "@/lib/constants/pages";
 import { cn } from "@/lib/utils";
-import { BarChart3, FileText, FolderOpen, LogOut, Menu, Mic, Settings, X } from "lucide-react";
+import { FolderOpen, Home, LogOut, Menu, Plus, Settings, X } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-
-const navItems = [
-  { href: AUDIOS_PAGE, label: "Audios", icon: Mic },
-  { href: TICKETS_PAGE, label: "Tickets", icon: FileText },
-  { href: PROJECTS_PAGE, label: "Projects", icon: FolderOpen },
-  { href: ANALYTICS_PAGE, label: "Analytics", icon: BarChart3 },
-  { href: SETTINGS_PAGE, label: "Settings", icon: Settings },
-];
+import type { ProjectListResponse } from "@/features/projects/types";
 
 interface SidebarProps {
   user: { name: string; email: string } | null;
@@ -31,13 +26,25 @@ export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
+  const { data: projectsData } = useQuery<ProjectListResponse>(PROJECTS_LIST);
+
+  const projects = (projectsData?.data ?? []).slice().sort((a, b) => a.name.localeCompare(b.name));
+
   const handleLogout = () => {
     signOut({ redirectTo: AUTH_PAGE });
   };
 
+  const isProjectActive = (id: string): boolean => {
+    if (!pathname.startsWith(`/dashboard/projects/${id}`)) return false;
+    if (pathname.endsWith("/edit")) return false;
+    return true;
+  };
+
+  const isHomeActive = pathname === DASHBOARD_PAGE;
+  const isSettingsActive = pathname === SETTINGS_PAGE || pathname.startsWith(SETTINGS_PAGE + "/");
+
   return (
     <>
-      {/* Mobile toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="md:hidden top-4 left-4 z-50 fixed bg-surface-hover p-2 rounded-lg"
@@ -46,7 +53,6 @@ export function Sidebar({ user }: SidebarProps) {
         {isOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
-      {/* Overlay */}
       {isOpen && (
         <div
           className="md:hidden z-40 fixed inset-0 bg-black/50"
@@ -66,30 +72,75 @@ export function Sidebar({ user }: SidebarProps) {
         )}
       >
         <div className="p-4 border-border border-b">
-          <Link href={AUDIOS_PAGE} className="font-bold text-lg tracking-tight">
+          <Link href={DASHBOARD_PAGE} className="font-bold text-lg tracking-tight">
             Yappie
           </Link>
         </div>
 
-        <nav className="flex-1 space-y-1 p-3">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+        <nav className="flex-1 space-y-1 p-3 overflow-y-auto">
+          <Link
+            href={DASHBOARD_PAGE}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition",
+              isHomeActive
+                ? "bg-accent-surface text-accent"
+                : "text-foreground/75 hover:text-foreground hover:bg-surface-hover/50",
+            )}
+          >
+            <Home size={18} />
+            Home
+          </Link>
+
+          <div className="pt-3 pb-1 px-3 text-foreground/50 text-xs uppercase tracking-wider">
+            Projects
+          </div>
+
+          {projects.map((project) => {
+            const active = isProjectActive(project.id);
+            const count = project.pendingTicketCount ?? 0;
             return (
               <Link
-                key={item.href}
-                href={item.href}
+                key={project.id}
+                href={projectDetailPage(project.id)}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition",
-                  isActive
+                  active
                     ? "bg-accent-surface text-accent"
                     : "text-foreground/75 hover:text-foreground hover:bg-surface-hover/50",
                 )}
               >
-                <item.icon size={18} />
-                {item.label}
+                <FolderOpen size={18} />
+                <span className="flex-1 truncate">{project.name}</span>
+                {count > 0 && (
+                  <Badge variant="default" className="text-xs ml-2">
+                    {count}
+                  </Badge>
+                )}
               </Link>
             );
           })}
+
+          <Link
+            href={NEW_PROJECT_PAGE}
+            className="flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition text-foreground/75 hover:text-foreground hover:bg-surface-hover/50"
+          >
+            <Plus size={18} />+ New project
+          </Link>
+
+          <div className="pt-3" />
+
+          <Link
+            href={SETTINGS_PAGE}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition",
+              isSettingsActive
+                ? "bg-accent-surface text-accent"
+                : "text-foreground/75 hover:text-foreground hover:bg-surface-hover/50",
+            )}
+          >
+            <Settings size={18} />
+            Settings
+          </Link>
         </nav>
 
         <div className="p-3 border-border border-t">
@@ -104,6 +155,7 @@ export function Sidebar({ user }: SidebarProps) {
             <button
               onClick={handleLogout}
               className="text-muted-foreground hover:text-foreground transition"
+              aria-label="Log out"
             >
               <LogOut size={16} />
             </button>

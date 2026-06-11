@@ -2,42 +2,13 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { SettingsPage } from "./settings-page";
 
-vi.mock("./quota-usage", () => ({
-  QuotaUsage: () => <div data-testid="quota-usage" />,
-}));
-
-vi.mock("./appearance-section", () => ({
-  AppearanceSection: () => <div data-testid="appearance-section" />,
-}));
-
-vi.mock("./integrations-section", () => ({
-  IntegrationsSection: () => <div data-testid="integrations-section" />,
-}));
-
-vi.mock("./billing-section", () => ({
-  BillingSection: () => <div data-testid="billing-section" />,
-}));
-
-vi.mock("./templates-section", () => ({
-  TemplatesSection: () => <div data-testid="templates-section" />,
+vi.mock("./settings-tabs", () => ({
+  SettingsTabs: () => <div data-testid="settings-tabs" />,
 }));
 
 describe("SettingsPage", () => {
-  it("should render page title", () => {
+  it("should render the settings tabs container", () => {
     render(<SettingsPage />);
-    expect(screen.getByText("Settings")).toBeInTheDocument();
-  });
-
-  it("should render quota usage", () => {
-    render(<SettingsPage />);
-    expect(screen.getByTestId("quota-usage")).toBeInTheDocument();
-  });
-
-  it("should render all sections", () => {
-    render(<SettingsPage />);
-    expect(screen.getByTestId("appearance-section")).toBeInTheDocument();
-    expect(screen.getByTestId("integrations-section")).toBeInTheDocument();
-    expect(screen.getByTestId("templates-section")).toBeInTheDocument();
-    expect(screen.getByTestId("billing-section")).toBeInTheDocument();
+    expect(screen.getByTestId("settings-tabs")).toBeInTheDocument();
   });
 });

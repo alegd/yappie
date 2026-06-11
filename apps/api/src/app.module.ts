@@ -4,6 +4,7 @@ import { ConfigModule } from "@nestjs/config";
 import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { SentryModule } from "@sentry/nestjs/setup";
+import { ActivityModule } from "./activity/activity.module.js";
 import { AnalyticsModule } from "./analytics/analytics.module.js";
 import { BillingModule } from "./billing/billing.module.js";
 import { AppController } from "./app.controller.js";
@@ -55,6 +56,7 @@ import { UsersModule } from "./users/users.module.js";
     ProjectsModule,
     IntegrationsModule,
     AnalyticsModule,
+    ActivityModule,
     UsersModule,
     TemplatesModule,
     QuotasModule,
