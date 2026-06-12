@@ -12,6 +12,7 @@ const TicketSchema = z.object({
   title: z.string(),
   description: z.string(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]),
+  sourceQuote: z.string().optional(),
 });
 
 const DECOMPOSE_PROMPT = `You are a task decomposition assistant for a software project management tool called Yappie.
@@ -36,10 +37,11 @@ Rules:
 - Title: concise, action-oriented, max 80 characters
 - Description: detailed with acceptance criteria in markdown format
 - Priority: assess based on urgency and impact (LOW, MEDIUM, HIGH, CRITICAL)
+- Source quote: include a verbatim quote from the original transcript that supports this ticket. Omit the field if not applicable.
 - Each ticket should be independently implementable
 
 You MUST respond with a JSON object containing an "items" array:
-{"items": [{"title": "...", "description": "...", "priority": "HIGH"}, ...]}`;
+{"items": [{"title": "...", "description": "...", "priority": "HIGH", "sourceQuote": "..."}, ...]}`;
 
 @Injectable()
 export class AIService {
@@ -94,7 +96,9 @@ export class AIService {
   async generateTickets(
     tasks: Array<{ title: string; description: string }>,
     projectContext?: string,
-  ): Promise<Array<{ title: string; description: string; priority: string }>> {
+  ): Promise<
+    Array<{ title: string; description: string; priority: string; sourceQuote?: string }>
+  > {
     const systemPrompt = projectContext
       ? `${GENERATE_PROMPT}\n\nProject context:\n${projectContext}`
       : GENERATE_PROMPT;

@@ -15,6 +15,7 @@ interface AudioAccordionContentProps {
   selection: Set<string>;
   onSelectionChange: (next: Set<string>) => void;
   jiraConnected: boolean;
+  onTicketClick: (ticketId: string) => void;
 }
 
 const inFlightLabel: Partial<Record<AudioRecording["status"], string>> = {
@@ -30,6 +31,7 @@ export function AudioAccordionContent({
   selection,
   onSelectionChange,
   jiraConnected,
+  onTicketClick,
 }: AudioAccordionContentProps) {
   const { data, isLoading } = useQuery<AudioRecording>(audioDetail(audioId), {
     revalidateIfStale: isOpen,
@@ -98,6 +100,7 @@ export function AudioAccordionContent({
                 ticket={ticket}
                 isSelected={selection.has(ticket.id)}
                 onToggle={toggle}
+                onTitleClick={onTicketClick}
               />
             ))}
           </div>

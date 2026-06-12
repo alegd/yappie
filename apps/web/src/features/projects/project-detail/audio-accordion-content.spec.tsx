@@ -22,13 +22,20 @@ vi.mock("./ticket-row", () => ({
   TicketRow: ({
     ticket,
     onToggle,
+    onTitleClick,
   }: {
     ticket: { id: string; title: string };
     onToggle: (id: string) => void;
+    onTitleClick: (id: string) => void;
   }) => (
-    <button data-testid={`row-${ticket.id}`} onClick={() => onToggle(ticket.id)}>
-      {ticket.title}
-    </button>
+    <div>
+      <button data-testid={`row-${ticket.id}`} onClick={() => onToggle(ticket.id)}>
+        {ticket.title}
+      </button>
+      <button data-testid={`title-${ticket.id}`} onClick={() => onTitleClick(ticket.id)}>
+        title
+      </button>
+    </div>
   ),
 }));
 
@@ -64,6 +71,7 @@ describe("AudioAccordionContent", () => {
         selection={new Set()}
         onSelectionChange={vi.fn()}
         jiraConnected={true}
+        onTicketClick={vi.fn()}
       />,
     );
     expect(mockUseQuery).toHaveBeenCalledWith(
@@ -88,6 +96,7 @@ describe("AudioAccordionContent", () => {
         selection={new Set()}
         onSelectionChange={vi.fn()}
         jiraConnected={true}
+        onTicketClick={vi.fn()}
       />,
     );
     expect(screen.getByText(/transcribing/i)).toBeInTheDocument();
@@ -109,6 +118,7 @@ describe("AudioAccordionContent", () => {
         selection={new Set()}
         onSelectionChange={vi.fn()}
         jiraConnected={true}
+        onTicketClick={vi.fn()}
       />,
     );
     expect(screen.getByText(/processing failed/i)).toBeInTheDocument();
@@ -130,6 +140,7 @@ describe("AudioAccordionContent", () => {
         selection={new Set()}
         onSelectionChange={vi.fn()}
         jiraConnected={true}
+        onTicketClick={vi.fn()}
       />,
     );
     expect(screen.getByLabelText(/loading/i)).toBeInTheDocument();
@@ -150,6 +161,7 @@ describe("AudioAccordionContent", () => {
         selection={new Set(["t-1"])}
         onSelectionChange={vi.fn()}
         jiraConnected={true}
+        onTicketClick={vi.fn()}
       />,
     );
     expect(screen.getByText(/hello world/i)).toBeInTheDocument();
@@ -175,6 +187,7 @@ describe("AudioAccordionContent", () => {
         selection={new Set()}
         onSelectionChange={onSelectionChange}
         jiraConnected={true}
+        onTicketClick={vi.fn()}
       />,
     );
     await user.click(screen.getByTestId("row-t-1"));
@@ -198,9 +211,34 @@ describe("AudioAccordionContent", () => {
         selection={new Set(["t-1"])}
         onSelectionChange={onSelectionChange}
         jiraConnected={true}
+        onTicketClick={vi.fn()}
       />,
     );
     await user.click(screen.getByTestId("row-t-1"));
     expect(onSelectionChange).toHaveBeenCalledWith(new Set());
+  });
+
+  it("propagates title clicks via onTicketClick prop", async () => {
+    const onTicketClick = vi.fn();
+    const userE = userEvent.setup();
+    mockUseQuery.mockReturnValue({
+      data: audioBase,
+      isLoading: false,
+      error: undefined,
+      mutate: vi.fn(),
+    });
+    render(
+      <AudioAccordionContent
+        audioId="a-1"
+        audioStatus="COMPLETED"
+        isOpen={true}
+        selection={new Set()}
+        onSelectionChange={vi.fn()}
+        jiraConnected={true}
+        onTicketClick={onTicketClick}
+      />,
+    );
+    await userE.click(screen.getByTestId("title-t-1"));
+    expect(onTicketClick).toHaveBeenCalledWith("t-1");
   });
 });

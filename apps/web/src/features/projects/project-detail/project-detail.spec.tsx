@@ -34,20 +34,34 @@ vi.mock("./empty-state", () => ({
 // Capture the most recent `isOpen` per audio so we can assert auto-expand.
 const recordedOpen: Record<string, boolean> = {};
 
+let lastAccordionOnTicketClick: ((id: string) => void) | undefined;
 vi.mock("./audio-accordion", () => ({
   AudioAccordion: ({
     audio,
     isOpen,
+    onTicketClick,
   }: {
     audio: { id: string; fileName: string };
     isOpen: boolean;
+    onTicketClick: (id: string) => void;
   }) => {
     recordedOpen[audio.id] = isOpen;
+    lastAccordionOnTicketClick = onTicketClick;
     return (
       <div data-testid={`accordion-${audio.id}`} data-open={String(isOpen)}>
         {audio.fileName}
       </div>
     );
+  },
+}));
+
+let _lastDrawerTicketId: string | null = null;
+let lastDrawerOnClose: (() => void) | undefined;
+vi.mock("./ticket-detail-drawer", () => ({
+  TicketDetailDrawer: ({ ticketId, onClose }: { ticketId: string | null; onClose: () => void }) => {
+    _lastDrawerTicketId = ticketId;
+    lastDrawerOnClose = onClose;
+    return ticketId ? <div data-testid="ticket-drawer">{ticketId}</div> : null;
   },
 }));
 
@@ -180,5 +194,46 @@ describe("ProjectDetail", () => {
     });
 
     expect(recordedOpen["a-1"]).toBe(false);
+  });
+
+  it("does not render the drawer initially", () => {
+    setupQueries({
+      project,
+      audios: [{ id: "a-1", fileName: "rec1.webm" }],
+    });
+    render(<ProjectDetail id="p-1" />);
+    expect(screen.queryByTestId("ticket-drawer")).not.toBeInTheDocument();
+  });
+
+  it("opens the drawer when AudioAccordion fires onTicketClick", () => {
+    setupQueries({
+      project,
+      audios: [{ id: "a-1", fileName: "rec1.webm" }],
+    });
+    render(<ProjectDetail id="p-1" />);
+
+    act(() => {
+      lastAccordionOnTicketClick?.("t-99");
+    });
+
+    expect(screen.getByTestId("ticket-drawer")).toHaveTextContent("t-99");
+  });
+
+  it("closes the drawer when onClose fires", () => {
+    setupQueries({
+      project,
+      audios: [{ id: "a-1", fileName: "rec1.webm" }],
+    });
+    render(<ProjectDetail id="p-1" />);
+
+    act(() => {
+      lastAccordionOnTicketClick?.("t-99");
+    });
+    expect(screen.getByTestId("ticket-drawer")).toBeInTheDocument();
+
+    act(() => {
+      lastDrawerOnClose?.();
+    });
+    expect(screen.queryByTestId("ticket-drawer")).not.toBeInTheDocument();
   });
 });

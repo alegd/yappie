@@ -118,6 +118,56 @@ describe("AIService", () => {
       expect(result[0]).toHaveProperty("description");
       expect(result[0]).toHaveProperty("priority");
     });
+
+    it("should include sourceQuote in the returned tickets when present", async () => {
+      mockOpenAI.chat.completions.create.mockResolvedValue({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                items: [
+                  {
+                    title: "Implement JWT auth",
+                    description: "Add login endpoint",
+                    priority: "HIGH",
+                    sourceQuote: "...we need to add user authentication...",
+                  },
+                ],
+              }),
+            },
+          },
+        ],
+      });
+
+      const result = await service.generateTickets([
+        { title: "Implement user authentication", description: "Add JWT-based auth flow" },
+      ]);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        title: "Implement JWT auth",
+        sourceQuote: "...we need to add user authentication...",
+      });
+    });
+
+    it("should default sourceQuote to undefined when missing from response", async () => {
+      mockOpenAI.chat.completions.create.mockResolvedValue({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                items: [{ title: "T", description: "D", priority: "MEDIUM" }],
+              }),
+            },
+          },
+        ],
+      });
+
+      const result = await service.generateTickets([{ title: "t", description: "d" }]);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].sourceQuote).toBeUndefined();
+    });
   });
 
   describe("parseJsonArray edge cases", () => {

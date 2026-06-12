@@ -8,6 +8,7 @@ interface CreateTicketData {
   audioRecordingId: string;
   projectId?: string;
   userId: string;
+  sourceTranscript?: string | null;
 }
 
 interface FindAllOptions {
@@ -32,6 +33,7 @@ export class TicketsService {
         audioRecordingId: data.audioRecordingId,
         projectId: data.projectId,
         userId: data.userId,
+        sourceTranscript: data.sourceTranscript ?? null,
       },
     });
   }
@@ -58,7 +60,10 @@ export class TicketsService {
   }
 
   async findOne(id: string, userId: string) {
-    const ticket = await this.prisma.ticket.findUnique({ where: { id } });
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id },
+      include: { audioRecording: { select: { id: true, fileName: true } } },
+    });
 
     if (!ticket) {
       throw new NotFoundException("Ticket not found");
