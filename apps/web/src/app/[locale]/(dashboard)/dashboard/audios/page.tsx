@@ -1,5 +1,5 @@
-import { AudioList } from "@/features/audio/audio-list";
+import { redirect } from "next/navigation";
 
-export default function DashboardPage() {
-  return <AudioList />;
+export default function LegacyAudiosRedirect() {
+  redirect("/dashboard");
 }
