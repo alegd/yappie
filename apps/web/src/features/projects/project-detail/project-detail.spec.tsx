@@ -8,9 +8,19 @@ const { mockUseQuery } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
 }));
 
+const { mockUseSearchParams, mockRouterReplace } = vi.hoisted(() => ({
+  mockUseSearchParams: vi.fn(() => new URLSearchParams()),
+  mockRouterReplace: vi.fn(),
+}));
+
 vi.mock("@/hooks/use-query", () => ({
   useQuery: mockUseQuery,
   invalidateQuery: vi.fn(),
+}));
+
+vi.mock("next/navigation", () => ({
+  useSearchParams: mockUseSearchParams,
+  useRouter: () => ({ replace: mockRouterReplace }),
 }));
 
 vi.mock("./project-header", () => ({
@@ -124,6 +134,7 @@ function setupQueries(opts: {
 describe("ProjectDetail", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseSearchParams.mockReturnValue(new URLSearchParams());
     for (const k of Object.keys(recordedOpen)) delete recordedOpen[k];
     useSocketEvents.setState({ lastAudioCompleted: null });
   });
@@ -235,5 +246,48 @@ describe("ProjectDetail", () => {
       lastDrawerOnClose?.();
     });
     expect(screen.queryByTestId("ticket-drawer")).not.toBeInTheDocument();
+  });
+
+  it("opens the drawer with the ticket id from the ?ticket= query param", () => {
+    setupQueries({
+      project,
+      audios: [
+        { id: "a-1", fileName: "rec1.webm", tickets: [{ id: "t-1" }] },
+        { id: "a-2", fileName: "rec2.webm" },
+      ],
+    });
+    mockUseSearchParams.mockReturnValue(new URLSearchParams("ticket=t-1"));
+
+    render(<ProjectDetail id="p-1" />);
+
+    expect(screen.getByTestId("ticket-drawer")).toHaveTextContent("t-1");
+  });
+
+  it("opens the drawer even when the audio that owns the ticket is not loaded yet", () => {
+    setupQueries({
+      project,
+      audios: [{ id: "a-1", fileName: "rec1.webm", tickets: [] }],
+    });
+    mockUseSearchParams.mockReturnValue(new URLSearchParams("ticket=t-99"));
+
+    render(<ProjectDetail id="p-1" />);
+
+    expect(screen.getByTestId("ticket-drawer")).toHaveTextContent("t-99");
+  });
+
+  it("calls router.replace to strip the ticket param when the drawer closes", () => {
+    setupQueries({
+      project,
+      audios: [{ id: "a-1", fileName: "rec1.webm", tickets: [{ id: "t-1" }] }],
+    });
+    mockUseSearchParams.mockReturnValue(new URLSearchParams("ticket=t-1"));
+
+    render(<ProjectDetail id="p-1" />);
+
+    act(() => {
+      lastDrawerOnClose?.();
+    });
+
+    expect(mockRouterReplace).toHaveBeenCalledWith("/dashboard/projects/p-1", { scroll: false });
   });
 });
