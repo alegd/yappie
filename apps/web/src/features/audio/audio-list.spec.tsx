@@ -194,8 +194,8 @@ describe("AudioList", () => {
     render(<AudioList />);
 
     const links = screen.getAllByRole("link");
-    expect(links[0]).toHaveAttribute("href", "/dashboard/audios/a-1");
-    expect(links[1]).toHaveAttribute("href", "/dashboard/audios/a-2");
+    expect(links[0]).toHaveAttribute("href", "/dashboard/audio/a-1");
+    expect(links[1]).toHaveAttribute("href", "/dashboard/audio/a-2");
   });
 
   it("should show project filter dropdown", () => {
