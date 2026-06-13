@@ -3,45 +3,31 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { QuickRecord } from "./quick-record";
 import type { Project } from "@/features/projects/types";
 
-const { mockInvalidateQuery } = vi.hoisted(() => ({
-  mockInvalidateQuery: vi.fn(),
+const { mockOpen } = vi.hoisted(() => ({
+  mockOpen: vi.fn(),
 }));
 
-vi.mock("@/hooks/use-query", () => ({
-  invalidateQuery: mockInvalidateQuery,
-}));
-
-let lastUploadProjectId: string | undefined;
-
-vi.mock("@/features/audio/audio-upload", () => ({
-  AudioUpload: ({ projectId, disabled }: { projectId: string; disabled?: boolean }) => {
-    lastUploadProjectId = projectId;
-    return (
-      <div data-testid="audio-upload" data-disabled={String(!!disabled)} data-pid={projectId} />
-    );
+vi.mock("@/features/recording/recording-modal-store", () => ({
+  useRecordingModalStore: (selector?: (s: any) => any) => {
+    if (!selector) return mockStore;
+    return selector(mockStore);
   },
 }));
 
-vi.mock("@/components/ui/app-select", () => ({
-  AppSelect: ({
-    value,
-    onChange,
-    options,
-  }: {
-    value: string;
-    onChange: (v: string) => void;
-    options: Array<{ value: string; label: string }>;
-  }) => (
-    <select aria-label="Project" value={value} onChange={(e) => onChange(e.target.value)}>
-      <option value="">All</option>
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
-        </option>
-      ))}
-    </select>
-  ),
-}));
+const mockStore = {
+  isOpen: false,
+  projectId: null,
+  open: mockOpen,
+  close: vi.fn(),
+  setState: vi.fn(function (updates: any) {
+    if (typeof updates === "function") {
+      updates(mockStore);
+    } else {
+      Object.assign(mockStore, updates);
+    }
+  }),
+  getState: vi.fn(() => mockStore),
+};
 
 const projects: Project[] = [
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,27 +39,27 @@ const projects: Project[] = [
 describe("QuickRecord", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    lastUploadProjectId = undefined;
+    mockStore.isOpen = false;
+    mockStore.projectId = null;
   });
 
-  it("auto-selects the first project on mount", () => {
+  it("renders a Record button when there are projects", () => {
     render(<QuickRecord projects={projects} />);
-    expect((screen.getByLabelText("Project") as HTMLSelectElement).value).toBe("p-1");
-    expect(lastUploadProjectId).toBe("p-1");
+    const button = screen.getByRole("button", { name: /record/i });
+    expect(button).toBeInTheDocument();
+    expect(button).not.toBeDisabled();
   });
 
-  it("changes AudioUpload projectId when selection changes", async () => {
-    const { rerender } = render(<QuickRecord projects={projects} />);
-    const select = screen.getByLabelText("Project") as HTMLSelectElement;
-    select.value = "p-2";
-    select.dispatchEvent(new Event("change", { bubbles: true }));
-    rerender(<QuickRecord projects={projects} />);
-    expect(lastUploadProjectId).toBe("p-2");
+  it("clicking Record opens the modal with no projectId", () => {
+    render(<QuickRecord projects={projects} />);
+    screen.getByRole("button", { name: /record/i }).click();
+    expect(mockOpen).toHaveBeenCalledWith();
   });
 
-  it("renders empty state hint when no projects", () => {
+  it("disables the Record button and shows hint when no projects exist", () => {
     render(<QuickRecord projects={[]} />);
+    const button = screen.getByRole("button", { name: /record/i });
+    expect(button).toBeDisabled();
     expect(screen.getByText(/create a project first/i)).toBeInTheDocument();
-    expect(screen.queryByTestId("audio-upload")).not.toBeInTheDocument();
   });
 });
