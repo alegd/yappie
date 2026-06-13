@@ -53,7 +53,7 @@ const mockAudio = {
   filePath: "user-1/standup.mp3",
   duration: null,
   errorMessage: null,
-  projectId: null,
+  projectId: "proj-9",
   tickets: [
     { id: "t-1", title: "Fix Safari login bug", status: "DRAFT", priority: "HIGH" },
     { id: "t-2", title: "Update button design", status: "APPROVED", priority: "MEDIUM" },
@@ -116,7 +116,7 @@ describe("AudioDetail", () => {
       expect(screen.getByRole("button", { name: /delete/i })).toBeInTheDocument();
     });
 
-    it("should call the delete endpoint and redirect to audios list on confirm", async () => {
+    it("should call the delete endpoint and redirect to the project view on confirm", async () => {
       const user = userEvent.setup();
       vi.spyOn(window, "confirm").mockReturnValue(true);
       mockApiFetcher.mockResolvedValue(undefined);
@@ -127,8 +127,31 @@ describe("AudioDetail", () => {
 
       await waitFor(() => {
         expect(mockApiFetcher).toHaveBeenCalledWith("/v1/audio/audio-1", { method: "DELETE" });
-        expect(mockRouterPush).toHaveBeenCalledWith("/dashboard/audios");
+        expect(mockRouterPush).toHaveBeenCalledWith("/dashboard/projects/proj-9");
       });
+    });
+
+    it("should fall back to /dashboard when the audio has no projectId", async () => {
+      const user = userEvent.setup();
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+      mockApiFetcher.mockResolvedValue(undefined);
+      mockUseQuery.mockReturnValue(queryResult({ ...mockAudio, projectId: null }));
+
+      render(<AudioDetail audioId="audio-1" />);
+      await user.click(screen.getByRole("button", { name: /delete/i }));
+
+      await waitFor(() => {
+        expect(mockRouterPush).toHaveBeenCalledWith("/dashboard");
+      });
+    });
+
+    it("renders a back link to the project view", () => {
+      mockUseQuery.mockReturnValue(queryResult(mockAudio));
+      render(<AudioDetail audioId="audio-1" />);
+      const backLinks = screen
+        .getAllByRole("link")
+        .filter((link) => link.getAttribute("href") === "/dashboard/projects/proj-9");
+      expect(backLinks.length).toBeGreaterThanOrEqual(1);
     });
 
     it("should not delete when confirm is cancelled", async () => {

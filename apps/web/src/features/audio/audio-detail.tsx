@@ -7,7 +7,7 @@ import { invalidateQuery, useQuery } from "@/hooks/use-query";
 import { apiFetcher } from "@/lib/api-fetcher";
 import { AUDIO_LIST, audioDetail } from "@/lib/constants/endpoints";
 import { DELETE } from "@/lib/constants/http";
-import { AUDIOS_PAGE } from "@/lib/constants/pages";
+import { DASHBOARD_PAGE, projectDetailPage } from "@/lib/constants/pages";
 import { AlertCircle, ArrowLeft, FileText, Loader2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -36,7 +36,8 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
     try {
       await apiFetcher(audioDetail(audioId), { method: DELETE });
       invalidateQuery(AUDIO_LIST);
-      router.push(AUDIOS_PAGE);
+      const destination = audio?.projectId ? projectDetailPage(audio.projectId) : DASHBOARD_PAGE;
+      router.push(destination);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
       setDeleting(false);
@@ -58,10 +59,10 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
         <AlertCircle size={48} className="opacity-50 mx-auto mb-4 text-red-400" />
         <p className="text-red-400">{fetchError?.message || "Not found"}</p>
         <Link
-          href={AUDIOS_PAGE}
+          href={DASHBOARD_PAGE}
           className="inline-block mt-4 text-accent hover:text-accent text-sm"
         >
-          Back to audios
+          Back to dashboard
         </Link>
       </div>
     );
@@ -73,7 +74,10 @@ export function AudioDetail({ audioId }: AudioDetailProps) {
     <div>
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Link href={AUDIOS_PAGE} className="text-muted-foreground hover:text-foreground transition">
+        <Link
+          href={audio.projectId ? projectDetailPage(audio.projectId) : DASHBOARD_PAGE}
+          className="text-muted-foreground hover:text-foreground transition"
+        >
           <ArrowLeft size={20} />
         </Link>
         <div className="flex-1">
