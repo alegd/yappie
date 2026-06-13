@@ -3,7 +3,7 @@
 import * as Accordion from "@radix-ui/react-accordion";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useQuery, invalidateQuery } from "@/hooks/use-query";
+import { useQuery } from "@/hooks/use-query";
 import { useSocketEvents } from "@/hooks/use-socket-events";
 import { audioByProject, JIRA_STATUS, projectDetail } from "@/lib/constants/endpoints";
 import type { AudioListResponse, AudioRecording } from "@/features/audio/types";
@@ -51,10 +51,6 @@ export function ProjectDetail({ id }: ProjectDetailProps) {
     );
   }, [lastCompleted, audios]);
 
-  const handleUploaded = () => {
-    invalidateQuery(audioByProject(id));
-  };
-
   const handleToggle = (audioId: string) => {
     setOpenValues((prev) =>
       prev.includes(audioId) ? prev.filter((v) => v !== audioId) : [...prev, audioId],
@@ -84,10 +80,10 @@ export function ProjectDetail({ id }: ProjectDetailProps) {
 
   return (
     <div>
-      <ProjectHeader project={project} onUploaded={handleUploaded} />
+      <ProjectHeader project={project} />
 
       {audios.length === 0 ? (
-        <EmptyState projectId={id} onUploaded={handleUploaded} />
+        <EmptyState projectId={id} />
       ) : (
         <Accordion.Root type="multiple" value={openValues} onValueChange={setOpenValues}>
           {audios.map((audio) => (

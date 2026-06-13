@@ -1,21 +1,23 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { EmptyState } from "./empty-state";
-
-vi.mock("@/features/audio/audio-upload", () => ({
-  AudioUpload: ({ projectId }: { projectId: string }) => (
-    <div data-testid="audio-upload">audio-upload:{projectId}</div>
-  ),
-}));
+import { useRecordingModalStore } from "@/features/recording/recording-modal-store";
 
 describe("EmptyState", () => {
+  beforeEach(() => {
+    useRecordingModalStore.setState({ isOpen: false, projectId: null });
+  });
+
   it("renders a heading prompting the user to record their first audio", () => {
-    render(<EmptyState projectId="p-1" onUploaded={vi.fn()} />);
+    render(<EmptyState projectId="p-1" />);
     expect(screen.getByText(/record your first audio/i)).toBeInTheDocument();
   });
 
-  it("renders AudioUpload bound to the project id", () => {
-    render(<EmptyState projectId="p-1" onUploaded={vi.fn()} />);
-    expect(screen.getByTestId("audio-upload")).toHaveTextContent("audio-upload:p-1");
+  it("clicking Record opens the modal with the project preselected", () => {
+    render(<EmptyState projectId="p-1" />);
+    screen.getByRole("button", { name: /record/i }).click();
+    const state = useRecordingModalStore.getState();
+    expect(state.isOpen).toBe(true);
+    expect(state.projectId).toBe("p-1");
   });
 });

@@ -62,6 +62,10 @@ export function useSocket({ token }: UseSocketOptions) {
           id: `progress-${data.audioId}`,
         });
         globalMutate(isAudioOrProjectsOrActivityKey);
+        useSocketEvents.getState().emitAudioFailed({
+          audioId: data.audioId,
+          error: data.error,
+        });
       });
     }
 

@@ -1,15 +1,16 @@
 "use client";
 
-import { FileAudio } from "lucide-react";
-import { AudioUpload } from "@/features/audio/audio-upload";
-import { AudioRecording } from "@/features/audio/types";
+import { FileAudio, Mic } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useRecordingModalStore } from "@/features/recording/recording-modal-store";
 
 interface EmptyStateProps {
   projectId: string;
-  onUploaded: (recording: AudioRecording) => void;
 }
 
-export function EmptyState({ projectId, onUploaded }: EmptyStateProps) {
+export function EmptyState({ projectId }: EmptyStateProps) {
+  const open = useRecordingModalStore((s) => s.open);
+
   return (
     <div className="py-16 text-center">
       <FileAudio size={48} className="opacity-50 mx-auto mb-4 text-muted-foreground" />
@@ -17,9 +18,10 @@ export function EmptyState({ projectId, onUploaded }: EmptyStateProps) {
       <p className="text-muted-foreground text-sm mb-6">
         Yappie will transcribe it and generate Jira tickets automatically.
       </p>
-      <div className="inline-block">
-        <AudioUpload projectId={projectId} onUploaded={onUploaded} />
-      </div>
+      <Button onClick={() => open(projectId)} aria-label="Record">
+        <Mic size={16} />
+        Record
+      </Button>
     </div>
   );
 }

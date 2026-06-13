@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { RecordingModal } from "@/features/recording/recording-modal";
 import { useSocket } from "@/hooks/use-socket";
 import { QuotaBanner } from "./quota-banner";
 import { Sidebar } from "./sidebar";
@@ -21,6 +22,7 @@ export function DashboardContent({ user, children }: DashboardContentProps) {
         <QuotaBanner />
         {children}
       </main>
+      <RecordingModal />
     </div>
   );
 }

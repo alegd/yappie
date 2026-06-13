@@ -1,12 +1,9 @@
 "use client";
 
-import { AppSelect } from "@/components/ui/app-select";
+import { Mic } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card/Card";
-import { AudioUpload } from "@/features/audio/audio-upload";
-import type { AudioRecording } from "@/features/audio/types";
-import { invalidateQuery } from "@/hooks/use-query";
-import { ACTIVITY_FEED, audioByProject } from "@/lib/constants/endpoints";
-import { useState } from "react";
+import { useRecordingModalStore } from "@/features/recording/recording-modal-store";
 import type { Project } from "@/features/projects/types";
 
 interface QuickRecordProps {
@@ -14,33 +11,24 @@ interface QuickRecordProps {
 }
 
 export function QuickRecord({ projects }: QuickRecordProps) {
-  const [selected, setSelected] = useState<string>(projects[0]?.id ?? "");
-
-  if (projects.length === 0) {
-    return (
-      <Card className="p-4">
-        <p className="text-sm">Create a project first to start recording.</p>
-      </Card>
-    );
-  }
-
-  const handleUploaded = (_: AudioRecording) => {
-    if (selected) invalidateQuery(audioByProject(selected));
-    invalidateQuery(ACTIVITY_FEED);
-  };
+  const open = useRecordingModalStore((s) => s.open);
+  const hasProjects = projects.length > 0;
 
   return (
     <Card className="p-4">
-      <h2 className="font-semibold text-sm mb-3">Quick record</h2>
-      <div className="flex items-center gap-3">
-        <AppSelect
-          value={selected}
-          onChange={setSelected}
-          options={projects.map((p) => ({ value: p.id, label: p.name }))}
-          placeholder="Select project"
-          ariaLabel="Project"
-        />
-        <AudioUpload projectId={selected} onUploaded={handleUploaded} disabled={!selected} />
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-semibold text-sm">Quick record</h2>
+          <p className="text-xs text-foreground/50">
+            {hasProjects
+              ? "Capture audio for a project"
+              : "Create a project first to start recording"}
+          </p>
+        </div>
+        <Button onClick={() => open()} disabled={!hasProjects} aria-label="Record">
+          <Mic size={16} />
+          Record
+        </Button>
       </div>
     </Card>
   );

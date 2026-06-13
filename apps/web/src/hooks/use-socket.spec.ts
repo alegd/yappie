@@ -5,14 +5,19 @@ import { useSocket } from "./use-socket";
 const mockOn = vi.fn();
 const mockDisconnect = vi.fn();
 
-const { mockIo, mockGlobalMutate, mockEmitAudioCompleted, mockInvalidateQuery } = vi.hoisted(
-  () => ({
-    mockIo: vi.fn(),
-    mockGlobalMutate: vi.fn(),
-    mockEmitAudioCompleted: vi.fn(),
-    mockInvalidateQuery: vi.fn(),
-  }),
-);
+const {
+  mockIo,
+  mockGlobalMutate,
+  mockEmitAudioCompleted,
+  mockEmitAudioFailed,
+  mockInvalidateQuery,
+} = vi.hoisted(() => ({
+  mockIo: vi.fn(),
+  mockGlobalMutate: vi.fn(),
+  mockEmitAudioCompleted: vi.fn(),
+  mockEmitAudioFailed: vi.fn(),
+  mockInvalidateQuery: vi.fn(),
+}));
 
 vi.mock("socket.io-client", () => ({
   io: mockIo,
@@ -32,7 +37,10 @@ vi.mock("./use-query", () => ({
 
 vi.mock("./use-socket-events", () => ({
   useSocketEvents: {
-    getState: () => ({ emitAudioCompleted: mockEmitAudioCompleted }),
+    getState: () => ({
+      emitAudioCompleted: mockEmitAudioCompleted,
+      emitAudioFailed: mockEmitAudioFailed,
+    }),
   },
 }));
 
@@ -120,7 +128,7 @@ describe("useSocket", () => {
     expect(mockEmitAudioCompleted).toHaveBeenCalledWith({ audioId: "a-9", ticketCount: 4 });
   });
 
-  it("audio:failed invalidates audio keys", async () => {
+  it("audio:failed invalidates audio keys and emits to useSocketEvents", async () => {
     await act(async () => {
       renderHook(() => useSocket({ token: "jwt-123" }));
     });
@@ -128,6 +136,7 @@ describe("useSocket", () => {
     handler({ audioId: "a-2", error: "boom" });
 
     expect(mockGlobalMutate).toHaveBeenCalled();
+    expect(mockEmitAudioFailed).toHaveBeenCalledWith({ audioId: "a-2", error: "boom" });
   });
 
   it("should disconnect on unmount", async () => {
