@@ -75,7 +75,7 @@ describe("PublicNavbar", () => {
 
       const dashboardLink = screen.getByText("Go to Dashboard");
       expect(dashboardLink).toBeInTheDocument();
-      expect(dashboardLink.closest("a")).toHaveAttribute("href", "/dashboard/audios");
+      expect(dashboardLink.closest("a")).toHaveAttribute("href", "/dashboard");
     });
 
     it("should not show login/register links", async () => {
