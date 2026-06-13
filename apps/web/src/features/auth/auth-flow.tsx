@@ -8,7 +8,7 @@ import {
   AUTH_VERIFY_OTP,
   AUTH_COMPLETE_REGISTER,
 } from "@/lib/constants/endpoints";
-import { AUDIOS_PAGE } from "@/lib/constants/pages";
+import { DASHBOARD_PAGE } from "@/lib/constants/pages";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -110,7 +110,7 @@ export function AuthFlow() {
           userId: response.user.id,
           email: response.user.email,
           name: response.user.name,
-          redirectTo: AUDIOS_PAGE,
+          redirectTo: DASHBOARD_PAGE,
         });
       } else {
         setStep(STEP.NAME);
@@ -201,7 +201,7 @@ export function AuthFlow() {
         userId: response.user.id,
         email: response.user.email,
         name: response.user.name,
-        redirectTo: AUDIOS_PAGE,
+        redirectTo: DASHBOARD_PAGE,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create account");
