@@ -31,6 +31,10 @@ vi.mock("./sidebar", () => ({
   ),
 }));
 
+vi.mock("@/features/recording/recording-modal", () => ({
+  RecordingModal: () => <div data-testid="recording-modal" />,
+}));
+
 const defaultProps = {
   user: { name: "Jane Doe", email: "jane@example.com" },
 };
@@ -79,5 +83,14 @@ describe("DashboardContent", () => {
       </DashboardContent>,
     );
     expect(mockUseSocket).toHaveBeenCalledWith({ token: null });
+  });
+
+  it("mounts the global RecordingModal", () => {
+    render(
+      <DashboardContent {...defaultProps}>
+        <div>Content</div>
+      </DashboardContent>,
+    );
+    expect(screen.getByTestId("recording-modal")).toBeInTheDocument();
   });
 });
