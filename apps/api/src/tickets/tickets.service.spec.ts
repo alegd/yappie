@@ -138,20 +138,20 @@ describe("TicketsService", () => {
       await expect(service.findOne("ticket-1", "other-user")).rejects.toThrow(ForbiddenException);
     });
 
-    it("should include audioRecording { id, fileName } in the response", async () => {
+    it("should include audioRecording { id, fileName, projectId } in the response", async () => {
       mockPrisma.ticket.findUnique.mockResolvedValue({
         ...mockTicket,
-        audioRecording: { id: "audio-1", fileName: "rec.webm" },
+        audioRecording: { id: "audio-1", fileName: "rec.webm", projectId: "proj-1" },
       });
 
       const result = await service.findOne("ticket-1", "user-1");
 
       expect(result).toMatchObject({
-        audioRecording: { id: "audio-1", fileName: "rec.webm" },
+        audioRecording: { id: "audio-1", fileName: "rec.webm", projectId: "proj-1" },
       });
       expect(mockPrisma.ticket.findUnique).toHaveBeenCalledWith({
         where: { id: "ticket-1" },
-        include: { audioRecording: { select: { id: true, fileName: true } } },
+        include: { audioRecording: { select: { id: true, fileName: true, projectId: true } } },
       });
     });
   });

@@ -62,7 +62,7 @@ export class TicketsService {
   async findOne(id: string, userId: string) {
     const ticket = await this.prisma.ticket.findUnique({
       where: { id },
-      include: { audioRecording: { select: { id: true, fileName: true } } },
+      include: { audioRecording: { select: { id: true, fileName: true, projectId: true } } },
     });
 
     if (!ticket) {
