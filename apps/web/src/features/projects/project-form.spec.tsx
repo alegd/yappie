@@ -87,25 +87,25 @@ describe("ProjectForm", () => {
     expect(screen.getByRole("button", { name: "Create project" })).toBeInTheDocument();
   });
 
-  it("should have cancel link to /dashboard/projects", () => {
+  it("should have cancel link to /dashboard", () => {
     render(<ProjectForm />);
 
     const cancelLink = screen.getByRole("link", { name: "Cancel" });
-    expect(cancelLink).toHaveAttribute("href", "/dashboard/projects");
+    expect(cancelLink).toHaveAttribute("href", "/dashboard");
   });
 
-  it("should have back arrow link to /dashboard/projects", () => {
+  it("should have back arrow link to /dashboard", () => {
     render(<ProjectForm />);
 
     const links = screen
       .getAllByRole("link")
-      .filter((link) => link.getAttribute("href") === "/dashboard/projects");
+      .filter((link) => link.getAttribute("href") === "/dashboard");
     expect(links.length).toBeGreaterThanOrEqual(2);
   });
 
-  it("should call createProject on submit in create mode", async () => {
+  it("should call createProject on submit and push to the new project detail page in create mode", async () => {
     const user = userEvent.setup();
-    mockCreateProject.mockResolvedValue({});
+    mockCreateProject.mockResolvedValue({ id: "proj-new", name: "New Project" });
 
     render(<ProjectForm />);
 
@@ -121,7 +121,30 @@ describe("ProjectForm", () => {
       });
     });
 
-    expect(mockPush).toHaveBeenCalledWith("/dashboard/projects");
+    expect(mockPush).toHaveBeenCalledWith("/dashboard/projects/proj-new");
+  });
+
+  it("should push to the project detail page after edit save", async () => {
+    const user = userEvent.setup();
+    mockUpdateProject.mockResolvedValue({ id: "proj-1", name: "Renamed" });
+    mockUseQuery.mockReturnValue({
+      data: { name: "Existing", description: "Desc", context: "Ctx" },
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    });
+
+    render(<ProjectForm projectId="proj-1" />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Name")).toHaveValue("Existing");
+    });
+
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith("/dashboard/projects/proj-1");
+    });
   });
 
   it("should fetch project data in edit mode", async () => {
