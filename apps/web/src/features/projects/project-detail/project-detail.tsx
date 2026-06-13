@@ -84,7 +84,7 @@ export function ProjectDetail({ id }: ProjectDetailProps) {
 
   return (
     <div>
-      <ProjectHeader project={project} onUploaded={handleUploaded} />
+      <ProjectHeader project={project} />
 
       {audios.length === 0 ? (
         <EmptyState projectId={id} onUploaded={handleUploaded} />
