@@ -26,7 +26,7 @@ export function OnboardingChecklist({
   const handleConnectJira = async () => {
     setConnecting(true);
     try {
-      const data = await apiFetcher(`${JIRA_AUTH}?returnPath=/dashboard/audios`);
+      const data = await apiFetcher(`${JIRA_AUTH}?returnPath=/dashboard`);
       window.location.href = data.url;
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
