@@ -19,8 +19,10 @@ export function DashboardContent({ user, children }: DashboardContentProps) {
     <div className="flex bg-surface/40 h-screen">
       <Sidebar user={user} />
       <main className="flex-1 p-6 overflow-auto">
-        <QuotaBanner />
-        {children}
+        <div className="mx-auto max-w-6xl">
+          <QuotaBanner />
+          {children}
+        </div>
       </main>
       <RecordingModal />
     </div>

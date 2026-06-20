@@ -17,7 +17,7 @@ export function ActivityFeed() {
   };
 
   return (
-    <Card className="p-4">
+    <Card className="p-3">
       <div className="flex items-center justify-between mb-2">
         <h2 className="font-semibold text-sm">Recent activity</h2>
         <button

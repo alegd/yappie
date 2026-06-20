@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import type { ProjectListResponse } from "@/features/projects/types";
 import { useQuery } from "@/hooks/use-query";
 import { PROJECTS_LIST } from "@/lib/constants/endpoints";
 import {
@@ -11,12 +12,11 @@ import {
   projectDetailPage,
 } from "@/lib/constants/pages";
 import { cn } from "@/lib/utils";
-import { FolderOpen, Home, LogOut, Menu, Plus, Settings, X } from "lucide-react";
+import { FolderOpen, Home, LogOut, Menu, PlusCircle, Settings, X } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import type { ProjectListResponse } from "@/features/projects/types";
 
 interface SidebarProps {
   user: { name: string; email: string } | null;
@@ -77,7 +77,7 @@ export function Sidebar({ user }: SidebarProps) {
           </Link>
         </div>
 
-        <nav className="flex-1 space-y-1 p-3 overflow-y-auto">
+        <nav className="flex-1 space-y-0.5 p-3 overflow-y-auto">
           <Link
             href={DASHBOARD_PAGE}
             className={cn(
@@ -91,7 +91,7 @@ export function Sidebar({ user }: SidebarProps) {
             Home
           </Link>
 
-          <div className="pt-3 pb-1 px-3 text-foreground/50 text-xs uppercase tracking-wider">
+          <div className="pt-4 pb-1 px-3 text-foreground/50 text-xs uppercase tracking-wider">
             Projects
           </div>
 
@@ -122,12 +122,13 @@ export function Sidebar({ user }: SidebarProps) {
 
           <Link
             href={NEW_PROJECT_PAGE}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition text-foreground/75 hover:text-foreground hover:bg-surface-hover/50"
+            className="flex items-center gap-2 mt-1 px-3 py-2 rounded-lg font-medium text-xs uppercase tracking-wider transition border border-dashed border-border-hover text-accent hover:bg-accent-surface"
           >
-            <Plus size={18} />+ New project
+            <PlusCircle size={14} />
+            New project
           </Link>
 
-          <div className="pt-3" />
+          <div className="border-border border-t my-2" />
 
           <Link
             href={SETTINGS_PAGE}

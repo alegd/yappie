@@ -15,7 +15,7 @@ export function QuickRecord({ projects }: QuickRecordProps) {
   const hasProjects = projects.length > 0;
 
   return (
-    <Card className="p-4">
+    <Card className="p-3">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-semibold text-sm">Quick record</h2>
