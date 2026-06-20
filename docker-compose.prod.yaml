@@ -29,7 +29,7 @@ services:
       timeout: 5s
       retries: 5
 
-  api:
+  yappie-api:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
