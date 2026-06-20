@@ -120,7 +120,7 @@ export function TicketDetailDrawer({
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <Dialog.Content
           aria-label="Ticket detail"
-          className="fixed right-0 top-0 z-50 h-full w-full md:w-[60vw] bg-background border-l border-border overflow-y-auto p-6 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right"
+          className="fixed right-0 top-0 z-50 h-full w-full md:w-[60vw] bg-surface border-l border-border overflow-y-auto p-6 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right"
         >
           <Dialog.Close
             aria-label="Close drawer"

@@ -40,7 +40,7 @@ export function AudioAccordion({
   return (
     <Accordion.Item
       value={audio.id}
-      className="bg-background border border-border rounded-lg overflow-hidden mb-2"
+      className="bg-surface border border-border rounded-lg overflow-hidden mb-2"
     >
       <Accordion.Header>
         <Accordion.Trigger

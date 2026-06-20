@@ -66,7 +66,7 @@ export function Sidebar({ user }: SidebarProps) {
 
       <aside
         className={cn(
-          "flex flex-col bg-background border-border border-r w-60",
+          "flex flex-col bg-surface border-border border-r w-60",
           "fixed md:static inset-y-0 left-0 z-40 transition-transform md:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}

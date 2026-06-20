@@ -95,7 +95,7 @@ export function RecordingModal() {
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
         <Dialog.Content
           aria-label="Recording"
-          className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl bg-background border border-border p-6"
+          className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl bg-surface border border-border p-6"
         >
           <div className="flex items-center justify-between mb-4">
             <Dialog.Title className="font-bold text-lg">Record</Dialog.Title>

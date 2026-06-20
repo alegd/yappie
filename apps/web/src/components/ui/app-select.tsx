@@ -51,7 +51,7 @@ export function AppSelect({
           position="popper"
           sideOffset={4}
           className={cn(
-            "z-50 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-border-hover bg-background shadow-lg",
+            "z-50 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-border-hover bg-surface shadow-lg",
             "animate-in fade-in-0 zoom-in-95",
           )}
         >
