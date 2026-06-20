@@ -16,7 +16,7 @@ export function Card({ className, ref, ...props }: CardBaseProps) {
   return (
     <div
       ref={ref}
-      className={cn("bg-background border border-border rounded-lg text-foreground", className)}
+      className={cn("bg-surface border border-border rounded-lg text-foreground", className)}
       {...props}
     />
   );

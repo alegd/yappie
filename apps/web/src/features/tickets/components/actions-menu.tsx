@@ -48,7 +48,7 @@ export function ActionsMenu({
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-1 w-40 bg-background border border-border rounded-md shadow-lg py-1">
+        <div className="absolute right-0 z-50 mt-1 w-40 bg-surface border border-border rounded-md shadow-lg py-1">
           {ticket.status === "DRAFT" && (
             <button
               onClick={(e) => {
