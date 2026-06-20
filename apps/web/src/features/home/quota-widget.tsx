@@ -17,7 +17,7 @@ export function QuotaWidget() {
   const planLabel = status?.plan === "PRO" ? "Pro" : "Free";
 
   return (
-    <Card className="p-4">
+    <Card className="p-3">
       <div className="flex justify-between items-center mb-2">
         <span className="text-sm font-medium">Usage</span>
         <span className="text-sm text-muted-foreground">
