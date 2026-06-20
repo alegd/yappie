@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@/hooks/use-query";
 import { JIRA_STATUS, projectDetail } from "@/lib/constants/endpoints";
-import { PROJECTS_PAGE } from "@/lib/constants/pages";
+import { DASHBOARD_PAGE, projectDetailPage } from "@/lib/constants/pages";
 import { JiraProjectSelect } from "@/features/tickets/components/jira-project-select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -81,11 +81,11 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
 
     if (isEditing) {
       await updateProject(body);
+      router.push(projectDetailPage(projectId!));
     } else {
-      await createProject(body);
+      const created = (await createProject(body)) as Project | undefined;
+      router.push(created?.id ? projectDetailPage(created.id) : DASHBOARD_PAGE);
     }
-
-    router.push(PROJECTS_PAGE);
   };
 
   if (isLoading) {
@@ -101,7 +101,7 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
     <div className="max-w-2xl mx-auto">
       <div className="flex items-center gap-4 mb-6">
         <Link
-          href={PROJECTS_PAGE}
+          href={DASHBOARD_PAGE}
           className="text-muted-foreground hover:text-foreground transition"
         >
           <ArrowLeft size={20} />
@@ -164,7 +164,7 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
             {saving ? "Saving..." : isEditing ? "Save changes" : "Create project"}
           </Button>
           <Link
-            href={PROJECTS_PAGE}
+            href={DASHBOARD_PAGE}
             className="bg-surface-hover hover:bg-surface-hover px-6 py-2 rounded-lg font-medium transition"
           >
             Cancel

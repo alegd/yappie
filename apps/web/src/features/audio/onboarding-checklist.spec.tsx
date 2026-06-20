@@ -109,7 +109,7 @@ describe("OnboardingChecklist", () => {
 
       await waitFor(() => {
         expect(mockApiFetcher).toHaveBeenCalledWith(
-          "/v1/integrations/jira/auth?returnPath=/dashboard/audios",
+          "/v1/integrations/jira/auth?returnPath=/dashboard",
         );
         expect(window.location.href).toBe("https://jira.example.com/oauth");
       });

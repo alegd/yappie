@@ -1,5 +1,5 @@
 import { auth } from "@/config/auth.config";
-import { AUDIOS_PAGE, AUTH_PAGE, HOME_PAGE } from "@/lib/constants/pages";
+import { AUTH_PAGE, DASHBOARD_PAGE, HOME_PAGE } from "@/lib/constants/pages";
 import { Github } from "lucide-react";
 import Link from "next/link";
 
@@ -32,7 +32,7 @@ export async function PublicNavbar() {
           </div>
           {session?.user ? (
             <Link
-              href={AUDIOS_PAGE}
+              href={DASHBOARD_PAGE}
               className="rounded-lg bg-primary px-4 py-2 font-medium text-white transition hover:bg-primary-hover"
             >
               Go to Dashboard

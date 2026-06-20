@@ -1,5 +1,5 @@
-import { TicketList } from "@/features/tickets/ticket-list";
+import { redirect } from "next/navigation";
 
-export default function TicketsPage() {
-  return <TicketList />;
+export default function LegacyTicketsRedirect() {
+  redirect("/dashboard");
 }

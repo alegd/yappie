@@ -11,7 +11,7 @@ export interface Ticket {
   createdAt: string;
   updatedAt: string;
   sourceTranscript?: string | null;
-  audioRecording?: { id: string; fileName: string };
+  audioRecording?: { id: string; fileName: string; projectId: string };
 }
 
 export interface TicketListResponse {

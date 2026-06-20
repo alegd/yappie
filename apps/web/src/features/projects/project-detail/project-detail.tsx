@@ -3,9 +3,11 @@
 import * as Accordion from "@radix-ui/react-accordion";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@/hooks/use-query";
 import { useSocketEvents } from "@/hooks/use-socket-events";
 import { audioByProject, JIRA_STATUS, projectDetail } from "@/lib/constants/endpoints";
+import { projectDetailPage } from "@/lib/constants/pages";
 import type { AudioListResponse, AudioRecording } from "@/features/audio/types";
 import type { Project } from "@/features/projects/types";
 import { AudioAccordion } from "./audio-accordion";
@@ -35,6 +37,9 @@ export function ProjectDetail({ id }: ProjectDetailProps) {
   const audios: AudioRecording[] = audioData?.data ?? [];
   const jiraConnected = jiraStatus?.connected ?? false;
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [openValues, setOpenValues] = useState<string[]>([]);
   const [selectionByAudio, setSelectionByAudio] = useState<Record<string, Set<string>>>({});
   const [openTicketId, setOpenTicketId] = useState<string | null>(null);
@@ -50,6 +55,14 @@ export function ProjectDetail({ id }: ProjectDetailProps) {
       prev.includes(lastCompleted.audioId) ? prev : [...prev, lastCompleted.audioId],
     );
   }, [lastCompleted, audios]);
+
+  useEffect(() => {
+    const ticketFromUrl = searchParams.get("ticket");
+    if (!ticketFromUrl) return;
+    setOpenTicketId(ticketFromUrl);
+    const owningAudio = audios.find((a) => a.tickets?.some((t) => t.id === ticketFromUrl));
+    if (owningAudio) setOpenTicketAudioId(owningAudio.id);
+  }, [searchParams, audios]);
 
   const handleToggle = (audioId: string) => {
     setOpenValues((prev) =>
@@ -109,7 +122,10 @@ export function ProjectDetail({ id }: ProjectDetailProps) {
         ticketId={openTicketId}
         audioId={openTicketAudioId}
         jiraConnected={jiraConnected}
-        onClose={() => setOpenTicketId(null)}
+        onClose={() => {
+          setOpenTicketId(null);
+          router.replace(projectDetailPage(id), { scroll: false });
+        }}
       />
     </div>
   );

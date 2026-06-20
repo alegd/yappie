@@ -144,7 +144,7 @@ describe("AuthFlow", () => {
         userId: "u1",
         email: "test@example.com",
         name: "Test User",
-        redirectTo: "/dashboard/audios",
+        redirectTo: "/dashboard",
       });
     });
   });
@@ -229,7 +229,7 @@ describe("AuthFlow", () => {
         userId: "u2",
         email: "new@example.com",
         name: "New User",
-        redirectTo: "/dashboard/audios",
+        redirectTo: "/dashboard",
       });
     });
   });

@@ -1,5 +1,5 @@
-import { ProjectList } from "@/features/projects/project-list";
+import { redirect } from "next/navigation";
 
-export default function ProjectsPage() {
-  return <ProjectList />;
+export default function LegacyProjectsRedirect() {
+  redirect("/dashboard");
 }
