@@ -55,10 +55,10 @@ describe("Sidebar", () => {
     });
   });
 
-  it("renders Home / + New project / Settings as fixed nav items", () => {
+  it("renders Home / New project / Settings as fixed nav items", () => {
     render(<Sidebar user={user} />);
     expect(screen.getByRole("link", { name: /home/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /\+ new project/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /new project/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /settings/i })).toBeInTheDocument();
   });
 
@@ -113,9 +113,9 @@ describe("Sidebar", () => {
     expect(screen.getByRole("link", { name: /home/i })).toHaveAttribute("href", "/dashboard");
   });
 
-  it("+ New project link points to /dashboard/projects/new", () => {
+  it("New project link points to /dashboard/projects/new", () => {
     render(<Sidebar user={user} />);
-    expect(screen.getByRole("link", { name: /\+ new project/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /new project/i })).toHaveAttribute(
       "href",
       "/dashboard/projects/new",
     );
