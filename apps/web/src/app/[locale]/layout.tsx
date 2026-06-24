@@ -44,7 +44,6 @@ export const metadata: Metadata = {
     ? new URL(process.env.NEXT_PUBLIC_HOST_URL)
     : undefined,
   robots: { index: true, follow: true },
-  icons: { icon: "/favicon.ico" },
   twitter: {
     card: "summary_large_image",
     title: "Yappie — Audio to Jira Tickets with AI",
