@@ -22,4 +22,7 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
   };
 }
 
-export const env = loadEnv();
+export const env = loadEnv({
+  EXPO_PUBLIC_API_URL: process.env.EXPO_PUBLIC_API_URL,
+  EXPO_PUBLIC_SENTRY_DSN: process.env.EXPO_PUBLIC_SENTRY_DSN,
+});
