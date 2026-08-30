@@ -6,7 +6,11 @@ import { FakeAIService } from "./fake-ai.service.js";
 describe("AIModule provider swap", () => {
   const prev = process.env.E2E_MOCK_AI;
   afterEach(() => {
-    process.env.E2E_MOCK_AI = prev;
+    if (prev === undefined) {
+      delete process.env.E2E_MOCK_AI;
+    } else {
+      process.env.E2E_MOCK_AI = prev;
+    }
   });
 
   it("provides FakeAIService for the AIService token when E2E_MOCK_AI=true", async () => {
