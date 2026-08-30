@@ -1,63 +1,89 @@
 import { z } from "zod";
 
-const envSchema = z.object({
-  // Server
-  NODE_ENV: z.enum(["development", "production", "test"]),
-  PORT: z.coerce.number(),
+const boolFromEnv = z
+  .enum(["true", "false"])
+  .default("false")
+  .transform((v) => v === "true");
 
-  // Database
-  DB_HOST: z.string().min(1),
-  DB_PORT: z.coerce.number(),
-  DB_USER: z.string().min(1),
-  DB_PASSWORD: z.string().min(1),
-  DB_NAME: z.string().min(1),
+export function e2eFlagsSafe(input: {
+  NODE_ENV: string;
+  E2E_TEST_ENDPOINTS: boolean;
+  E2E_MOCK_AI: boolean;
+}): boolean {
+  return !(input.NODE_ENV === "production" && (input.E2E_TEST_ENDPOINTS || input.E2E_MOCK_AI));
+}
 
-  // Redis
-  REDIS_URL: z.string().min(1),
+const envSchema = z
+  .object({
+    // Server
+    NODE_ENV: z.enum(["development", "production", "test"]),
+    PORT: z.coerce.number(),
 
-  // JWT
-  JWT_SECRET: z.string().min(1),
-  JWT_EXPIRATION: z.string().min(1),
-  JWT_REFRESH_EXPIRATION: z.string().min(1),
+    // Database
+    DB_HOST: z.string().min(1),
+    DB_PORT: z.coerce.number(),
+    DB_USER: z.string().min(1),
+    DB_PASSWORD: z.string().min(1),
+    DB_NAME: z.string().min(1),
 
-  // OpenAI
-  OPENAI_API_KEY: z.string().min(1),
-  AI_TRANSCRIPTION_MODEL: z.string().min(1),
-  AI_DECOMPOSITION_MODEL: z.string().min(1),
-  AI_GENERATION_MODEL: z.string().min(1),
+    // Redis
+    REDIS_URL: z.string().min(1),
 
-  // Storage
-  UPLOAD_PATH: z.string().min(1),
+    // JWT
+    JWT_SECRET: z.string().min(1),
+    JWT_EXPIRATION: z.string().min(1),
+    JWT_REFRESH_EXPIRATION: z.string().min(1),
 
-  // Frontend
-  FRONTEND_URL: z.string().min(1),
+    // OpenAI
+    OPENAI_API_KEY: z.string().min(1),
+    AI_TRANSCRIPTION_MODEL: z.string().min(1),
+    AI_DECOMPOSITION_MODEL: z.string().min(1),
+    AI_GENERATION_MODEL: z.string().min(1),
 
-  // Jira OAuth
-  JIRA_CLIENT_ID: z.string().optional(),
-  JIRA_CLIENT_SECRET: z.string().optional(),
-  JIRA_CALLBACK_URL: z.string().optional(),
+    // Storage
+    UPLOAD_PATH: z.string().min(1),
 
-  // Sentry (optional — disabled in dev if not set)
-  SENTRY_DSN: z.string().optional(),
+    // Frontend
+    FRONTEND_URL: z.string().min(1),
 
-  // Encryption
-  ENCRYPTION_KEY: z.string().min(32),
+    // Jira OAuth
+    JIRA_CLIENT_ID: z.string().optional(),
+    JIRA_CLIENT_SECRET: z.string().optional(),
+    JIRA_CALLBACK_URL: z.string().optional(),
 
-  // Email
-  RESEND_API_KEY: z.string().min(1),
-  EMAIL_FROM: z.string().min(1),
+    // Sentry (optional — disabled in dev if not set)
+    SENTRY_DSN: z.string().optional(),
 
-  // Quotas
-  QUOTA_FREE_MINUTES: z.coerce.number(),
-  QUOTA_PRO_MINUTES: z.coerce.number(),
+    // Encryption
+    ENCRYPTION_KEY: z.string().min(32),
 
-  // Stripe (optional — billing is a post-MVP feature)
-  STRIPE_SECRET_KEY: z.string().optional(),
-  STRIPE_WEBHOOK_SECRET: z.string().optional(),
-  STRIPE_PRO_PRICE_ID: z.string().optional(),
-  STRIPE_SUCCESS_URL: z.string().optional(),
-  STRIPE_CANCEL_URL: z.string().optional(),
-});
+    // Email
+    RESEND_API_KEY: z.string().min(1),
+    EMAIL_FROM: z.string().min(1),
+
+    // Quotas
+    QUOTA_FREE_MINUTES: z.coerce.number(),
+    QUOTA_PRO_MINUTES: z.coerce.number(),
+
+    // Stripe (optional — billing is a post-MVP feature)
+    STRIPE_SECRET_KEY: z.string().optional(),
+    STRIPE_WEBHOOK_SECRET: z.string().optional(),
+    STRIPE_PRO_PRICE_ID: z.string().optional(),
+    STRIPE_SUCCESS_URL: z.string().optional(),
+    STRIPE_CANCEL_URL: z.string().optional(),
+
+    // E2E Testing (optional — only for test/dev environments)
+    E2E_TEST_ENDPOINTS: boolFromEnv,
+    E2E_MOCK_AI: boolFromEnv,
+  })
+  .superRefine((env, ctx) => {
+    if (!e2eFlagsSafe(env)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "E2E_TEST_ENDPOINTS and E2E_MOCK_AI must be false when NODE_ENV=production",
+      });
+    }
+  });
 
 export type Env = z.infer<typeof envSchema>;
 
