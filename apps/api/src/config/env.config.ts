@@ -72,7 +72,6 @@ const envSchema = z
     STRIPE_SUCCESS_URL: z.string().optional(),
     STRIPE_CANCEL_URL: z.string().optional(),
 
-    // E2E Testing (optional — only for test/dev environments)
     E2E_TEST_ENDPOINTS: boolFromEnv,
     E2E_MOCK_AI: boolFromEnv,
   })

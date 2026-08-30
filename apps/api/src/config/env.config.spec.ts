@@ -1,12 +1,101 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import { e2eFlagsSafe } from "./env.config.js";
+import { buildDatabaseUrl, validateEnv, e2eFlagsSafe } from "./env.config.js";
 
-const boolFromEnv = z
-  .enum(["true", "false"])
-  .default("false")
-  .transform((v) => v === "true");
+describe("validateEnv", () => {
+  const validEnv: Record<string, string> = {
+    NODE_ENV: "development",
+    PORT: "3001",
+    DB_HOST: "localhost",
+    DB_PORT: "5432",
+    DB_USER: "yappie",
+    DB_PASSWORD: "yappie_dev",
+    DB_NAME: "yappie",
+    REDIS_URL: "redis://localhost:6379",
+    JWT_SECRET: "test-secret",
+    JWT_EXPIRATION: "15m",
+    JWT_REFRESH_EXPIRATION: "7d",
+    OPENAI_API_KEY: "sk-test-key",
+    AI_TRANSCRIPTION_MODEL: "whisper-1",
+    AI_DECOMPOSITION_MODEL: "gpt-4o-mini",
+    AI_GENERATION_MODEL: "gpt-4o-mini",
+    UPLOAD_PATH: "./uploads",
+    FRONTEND_URL: "http://localhost:3000",
+    ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    RESEND_API_KEY: "re_test_key",
+    EMAIL_FROM: "Yappie <noreply@test.com>",
+    QUOTA_FREE_MINUTES: "20",
+    QUOTA_PRO_MINUTES: "300",
+    STRIPE_SECRET_KEY: "sk_test_abc",
+    STRIPE_WEBHOOK_SECRET: "whsec_test_abc",
+    STRIPE_PRO_PRICE_ID: "price_test_abc",
+    STRIPE_SUCCESS_URL: "http://localhost:3000/dashboard?upgraded=true",
+    STRIPE_CANCEL_URL: "http://localhost:3000/dashboard",
+  };
+
+  beforeEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("should parse valid environment variables", () => {
+    for (const [key, value] of Object.entries(validEnv)) {
+      vi.stubEnv(key, value);
+    }
+
+    const env = validateEnv();
+
+    expect(env.NODE_ENV).toBe("development");
+    expect(env.PORT).toBe(3001);
+    expect(env.DB_HOST).toBe("localhost");
+    expect(env.DB_NAME).toBe("yappie");
+    expect(env.AI_GENERATION_MODEL).toBe("gpt-4o-mini");
+  });
+
+  it("should exit with code 1 when required vars are missing", () => {
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    validateEnv();
+
+    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(errorSpy).toHaveBeenCalled();
+
+    exitSpy.mockRestore();
+    errorSpy.mockRestore();
+  });
+
+  it("should coerce PORT to number", () => {
+    for (const [key, value] of Object.entries({ ...validEnv, PORT: "8080" })) {
+      vi.stubEnv(key, value);
+    }
+
+    const env = validateEnv();
+    expect(env.PORT).toBe(8080);
+  });
+});
+
+describe("buildDatabaseUrl", () => {
+  it("should build a postgresql connection string from DB_* vars", () => {
+    const env = {
+      DB_HOST: "myhost",
+      DB_PORT: 5433,
+      DB_USER: "admin",
+      DB_PASSWORD: "secret",
+      DB_NAME: "mydb",
+    };
+
+    const url = buildDatabaseUrl(env as never);
+
+    expect(url).toBe("postgresql://admin:secret@myhost:5433/mydb");
+  });
+});
 
 describe("e2e env flags", () => {
+  const boolFromEnv = z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((v) => v === "true");
+
   it("parses 'true'/'false' env strings into booleans", () => {
     const schema = z.object({ E2E_MOCK_AI: boolFromEnv });
     expect(schema.parse({ E2E_MOCK_AI: "true" }).E2E_MOCK_AI).toBe(true);
