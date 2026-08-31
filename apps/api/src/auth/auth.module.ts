@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { APP_GUARD } from "@nestjs/core";
 import { JwtModule } from "@nestjs/jwt";
 import { AuthController } from "./auth.controller.js";
+import { E2eOtpController } from "./e2e-otp.controller.js";
 import { AuthService } from "./auth.service.js";
 import { OtpService } from "./otp.service.js";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard.js";
@@ -13,7 +14,7 @@ import { JwtAuthGuard } from "./guards/jwt-auth.guard.js";
       signOptions: { expiresIn: "15m" },
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, E2eOtpController],
   providers: [
     AuthService,
     OtpService,

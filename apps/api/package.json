@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "dotenv -e .env.e2e -- vitest run --config vitest.e2e.config.ts",
     "type-check": "prisma generate && tsc --noEmit -p tsconfig.build.json",
     "clean": "rm -rf dist",
     "db:seed": "tsx prisma/seed.ts"
@@ -55,7 +56,10 @@
     "@types/multer": "^2.1.0",
     "@types/passport-jwt": "^4.0.1",
     "@types/pg": "^8.18.0",
+    "@types/supertest": "^7.2.1",
     "@yappie/config": "workspace:*",
+    "dotenv-cli": "^11.0.0",
+    "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5"
