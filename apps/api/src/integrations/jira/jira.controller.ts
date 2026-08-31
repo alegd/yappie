@@ -13,7 +13,7 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
-import { Response } from "express";
+import type { Response } from "express";
 import { JiraService } from "./jira.service.js";
 import { ExportService } from "./export.service.js";
 import { Public } from "../../auth/decorators/public.decorator.js";
