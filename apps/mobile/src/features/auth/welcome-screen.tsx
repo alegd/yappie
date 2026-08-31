@@ -12,7 +12,11 @@ export function WelcomeScreen() {
         <Text style={styles.subhead}>Turn voice notes into Jira tickets in seconds.</Text>
       </View>
 
-      <Button label="Get started" onPress={() => router.push("/email")} />
+      <Button
+        label="Get started"
+        onPress={() => router.push("/email")}
+        testID="welcome-get-started"
+      />
     </View>
   );
 }

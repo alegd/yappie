@@ -37,4 +37,10 @@ describe("WelcomeScreen", () => {
 
     expect(mockRouter.push).toHaveBeenCalledWith("/email");
   });
+
+  it("exposes a testID on the get started button", () => {
+    const { getByTestId } = render(<WelcomeScreen />);
+
+    expect(getByTestId("welcome-get-started")).toBeTruthy();
+  });
 });

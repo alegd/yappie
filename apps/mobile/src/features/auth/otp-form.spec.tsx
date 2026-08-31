@@ -117,4 +117,11 @@ describe("OtpForm", () => {
     );
     await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith("/(tabs)"));
   });
+
+  it("exposes testIDs on the code field and submit button", () => {
+    const { getByTestId } = renderForm();
+
+    expect(getByTestId("otp-input")).toBeTruthy();
+    expect(getByTestId("otp-submit")).toBeTruthy();
+  });
 });
