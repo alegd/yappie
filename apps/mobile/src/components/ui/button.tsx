@@ -7,6 +7,7 @@ interface ButtonProps {
   disabled?: boolean;
   loading?: boolean;
   variant?: "primary" | "secondary" | "danger";
+  testID?: string;
 }
 
 const containerByVariant = {
@@ -21,7 +22,14 @@ const labelByVariant = {
   danger: "labelPrimary",
 } as const;
 
-export function Button({ label, onPress, disabled, loading, variant = "primary" }: ButtonProps) {
+export function Button({
+  label,
+  onPress,
+  disabled,
+  loading,
+  variant = "primary",
+  testID,
+}: ButtonProps) {
   const isDisabled = disabled || loading;
   const containerStyles = [
     styles.base,
@@ -31,6 +39,7 @@ export function Button({ label, onPress, disabled, loading, variant = "primary" 
   const labelStyle = styles[labelByVariant[variant]];
   return (
     <Pressable
+      testID={testID}
       onPress={onPress}
       disabled={isDisabled}
       accessibilityRole="button"
