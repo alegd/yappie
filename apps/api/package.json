@@ -14,7 +14,9 @@
     "type-check": "prisma generate && tsc --noEmit -p tsconfig.build.json",
     "clean": "rm -rf dist",
     "db:seed": "tsx prisma/seed.ts",
-    "verify:prisma": "prisma generate && node scripts/verify-prisma-resolution.mjs"
+    "verify:prisma": "prisma generate && node scripts/verify-prisma-resolution.mjs",
+    "e2e:seed:ui": "prisma generate && dotenv -e .env.e2e -- tsx scripts/e2e-seed-ui.ts",
+    "start:e2e": "prisma generate && dotenv -e .env.e2e -- tsx src/main.ts"
   },
   "dependencies": {
     "@nestjs/bullmq": "^11.0.4",
