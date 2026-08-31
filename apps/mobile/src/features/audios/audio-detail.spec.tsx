@@ -125,6 +125,12 @@ describe("AudioDetail", () => {
     expect(await findByText(/no tickets/i)).toBeTruthy();
   });
 
+  it("exposes a testID on the tickets header", async () => {
+    getAudioMock.mockResolvedValueOnce(buildAudio({ tickets: [] }));
+    const { findByTestId } = renderWithClient(<AudioDetail />);
+    expect(await findByTestId("tickets-header")).toBeTruthy();
+  });
+
   describe("bulk export", () => {
     it("calls exportTicketsBulk with the selected ids and exits select mode on success", async () => {
       getAudioMock.mockResolvedValueOnce(

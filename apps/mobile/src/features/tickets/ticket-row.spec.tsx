@@ -63,4 +63,9 @@ describe("TicketRow", () => {
       checked: true,
     });
   });
+
+  it("exposes a testID on the row", () => {
+    const { getByTestId } = render(<TicketRow ticket={buildTicket()} onPress={() => {}} />);
+    expect(getByTestId("ticket-row")).toBeTruthy();
+  });
 });

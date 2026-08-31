@@ -60,4 +60,9 @@ describe("AudioRow", () => {
     fireEvent.press(getByText("standup-notes.m4a"));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
+
+  it("exposes a testID on the row", () => {
+    const { getByTestId } = render(<AudioRow audio={buildAudio()} onPress={() => {}} />);
+    expect(getByTestId("audio-row")).toBeTruthy();
+  });
 });
