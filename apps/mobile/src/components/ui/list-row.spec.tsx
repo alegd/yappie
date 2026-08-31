@@ -25,4 +25,12 @@ describe("ListRow", () => {
     fireEvent.press(getByText("Tap"));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
+
+  it("forwards testID to the pressable", () => {
+    const { getByTestId } = render(
+      <ListRow title="E2E Project" onPress={() => {}} testID="project-picker-row" />,
+    );
+
+    expect(getByTestId("project-picker-row")).toBeTruthy();
+  });
 });

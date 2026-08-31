@@ -17,9 +17,16 @@ interface FloatingFabProps {
   iconName: React.ComponentProps<typeof Ionicons>["name"];
   accessibilityLabel: string;
   onPress: () => void;
+  testID?: string;
 }
 
-export function FloatingFab({ side, iconName, accessibilityLabel, onPress }: FloatingFabProps) {
+export function FloatingFab({
+  side,
+  iconName,
+  accessibilityLabel,
+  onPress,
+  testID,
+}: FloatingFabProps) {
   const insets = useSafeAreaInsets();
   const positionStyle: ViewStyle =
     side === "left"
@@ -32,6 +39,7 @@ export function FloatingFab({ side, iconName, accessibilityLabel, onPress }: Flo
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       style={({ pressed }) => [styles.position, positionStyle, pressed && styles.pressed]}
+      testID={testID}
     >
       <GlassView style={styles.fab} glassEffectStyle="regular" colorScheme="dark">
         <Ionicons name={iconName} size={iconSize.xl} color={colors.text} />

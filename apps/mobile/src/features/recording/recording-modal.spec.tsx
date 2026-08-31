@@ -161,6 +161,18 @@ describe("RecordingModal", () => {
     });
   });
 
+  it("exposes a testID on the start recording button", async () => {
+    mockParams = { projectId: "project-1" };
+    listProjectsMock.mockResolvedValueOnce({
+      data: [buildProject({ id: "project-1" })],
+      total: 1,
+      page: 1,
+      limit: 50,
+    });
+    const { findByTestId } = renderWithClient(<RecordingModal />);
+    expect(await findByTestId("record-start")).toBeTruthy();
+  });
+
   it("dismisses the modal when the close button is pressed in idle state", async () => {
     mockParams = { projectId: "p1" };
     listProjectsMock.mockResolvedValueOnce({

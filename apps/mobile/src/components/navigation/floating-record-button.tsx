@@ -28,6 +28,7 @@ export function FloatingRecordButton() {
       iconName="mic-outline"
       accessibilityLabel="Record audio"
       onPress={handlePress}
+      testID="record-fab"
     />
   );
 }

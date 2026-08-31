@@ -235,6 +235,7 @@ export function RecordingModal() {
                 title={item.name}
                 subtitle={item.description ?? undefined}
                 onPress={() => handleSelectProject(item)}
+                testID="project-picker-row"
               />
             )}
           />
@@ -252,6 +253,7 @@ export function RecordingModal() {
             accessibilityLabel="Start recording"
             onPress={handleStartRecording}
             style={({ pressed }) => [styles.recordButton, pressed && styles.pressed]}
+            testID="record-start"
           >
             <Text style={styles.recordButtonLabel}>Record</Text>
           </Pressable>
@@ -267,6 +269,7 @@ export function RecordingModal() {
             accessibilityLabel="Stop recording"
             onPress={handleStop}
             style={({ pressed }) => [styles.stopButton, pressed && styles.pressed]}
+            testID="record-stop"
           >
             <Text style={styles.stopButtonLabel}>Stop</Text>
           </Pressable>
