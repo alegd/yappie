@@ -71,6 +71,11 @@ describe("audio → ticket pipeline", () => {
 
     await poll(async () => {
       const { body } = await auth(request(http).get(`/api/v1/audio/${recording.id}`)).expect(200);
+      if (body.status === "FAILED") {
+        throw new Error(
+          `audio processing failed: status=${body.status} errorMessage=${body.errorMessage}`,
+        );
+      }
       return body.status === "COMPLETED" ? body : undefined;
     });
 

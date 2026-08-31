@@ -15,7 +15,7 @@ import { OPENAI_CLIENT } from "./ai.constants.js";
     },
     {
       provide: AIService,
-      useFactory: (openaiClient) => {
+      useFactory: (openaiClient: OpenAI) => {
         if (process.env.E2E_MOCK_AI === "true") {
           return new FakeAIService();
         }
