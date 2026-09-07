@@ -21,6 +21,9 @@
     "type-check": {
       "dependsOn": ["^build"]
     },
+    "verify:prisma": {
+      "dependsOn": ["^build"]
+    },
     "clean": {
       "cache": false
     }

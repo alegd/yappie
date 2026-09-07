@@ -13,6 +13,7 @@
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
     "type-check": "turbo run type-check",
+    "verify:prisma": "turbo run verify:prisma",
     "e2e": "pnpm --filter api test:e2e",
     "clean": "turbo run clean && rm -rf node_modules"
   },
