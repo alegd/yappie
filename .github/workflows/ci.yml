@@ -67,6 +67,9 @@ jobs:
       - name: Type-check
         run: pnpm type-check
 
+      - name: Verify Prisma client resolution
+        run: pnpm verify:prisma
+
       - name: Test with coverage
         run: pnpm test:coverage
 

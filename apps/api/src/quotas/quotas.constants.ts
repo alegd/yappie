@@ -1,4 +1,4 @@
-import type { Plan } from ".prisma/client";
+import type { Plan } from "@prisma/client";
 
 export const PLAN_LIMITS: Record<Plan, string> = {
   FREE: "QUOTA_FREE_MINUTES",

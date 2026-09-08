@@ -14,8 +14,7 @@ COPY packages/config/ packages/config/
 # Install dependencies and build
 RUN pnpm install --shamefully-hoist \
     && pnpm --filter @yappie/api exec prisma generate \
-    && pnpm --filter @yappie/api exec nest build \
-    && cp -r /app/apps/api/node_modules/.prisma /app/node_modules/.prisma
+    && pnpm --filter @yappie/api exec nest build
 
 # Entrypoint
 COPY apps/api/docker-entrypoint.sh /app/docker-entrypoint.sh
