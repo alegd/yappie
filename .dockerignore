@@ -6,9 +6,9 @@ dist
 .next
 .expo
 *.md
-.env
-.env.local
-.env.*.local
+**/.env
+**/.env.*
+**/.e2e-uploads
 apps/web
 apps/mobile
 docs

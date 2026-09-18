@@ -16,9 +16,11 @@ out/
 
 # Environment
 .env
-.env.local
-.env.*.local
-.env.sentry-build-plugin
+.env.*
+!.env.example
+
+# E2E artifacts
+.e2e-uploads/
 
 # IDE
 .vscode/
