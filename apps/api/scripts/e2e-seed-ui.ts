@@ -1,8 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaService } from "../src/prisma/prisma.service.js";
 import { seedUiE2e } from "../test/e2e/helpers/seed-ui.js";
 
 async function main(): Promise<void> {
-  const prisma = new PrismaClient();
+  const prisma = new PrismaService();
   try {
     const result = await seedUiE2e(prisma);
     console.log(`seeded e2e ui fixtures: ${JSON.stringify(result)}`);
