@@ -66,6 +66,7 @@ export function RecordingModal() {
     initialProjectId ? "idle" : "selecting_project",
   );
   const [durationSeconds, setDurationSeconds] = useState(0);
+  const [recordError, setRecordError] = useState<Error | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const projectsQuery = useQuery({
@@ -117,8 +118,14 @@ export function RecordingModal() {
       const result = await requestPermission();
       if (!result.granted) return;
     }
-    await recorder.prepareToRecordAsync();
-    recorder.record();
+    try {
+      await recorder.prepareToRecordAsync();
+      recorder.record();
+    } catch (error) {
+      setRecordError(error instanceof Error ? error : new Error(String(error)));
+      return;
+    }
+    setRecordError(null);
     setDurationSeconds(0);
     timerRef.current = setInterval(() => {
       setDurationSeconds((s) => s + 1);
@@ -144,7 +151,6 @@ export function RecordingModal() {
   const handleRequestPermission = async () => {
     const result = await requestPermission();
     if (!result.granted && !result.canAskAgain) {
-      // user must enable from settings
       return;
     }
   };
@@ -158,6 +164,10 @@ export function RecordingModal() {
     }
     router.dismiss();
   };
+
+  const recordErrorMessage = recordError
+    ? `Couldn't start recording: ${recordError.message}`
+    : null;
 
   const uploadErrorMessage = (() => {
     const err = uploadMutation.error;
@@ -247,16 +257,27 @@ export function RecordingModal() {
           <View style={styles.micCircle}>
             <Ionicons name="mic-outline" size={iconSize.display} color={colors.text} />
           </View>
-          <Text style={styles.hint}>Tap to record</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Start recording"
-            onPress={handleStartRecording}
-            style={({ pressed }) => [styles.recordButton, pressed && styles.pressed]}
-            testID="record-start"
-          >
-            <Text style={styles.recordButtonLabel}>Record</Text>
-          </Pressable>
+          {recordError ? (
+            <>
+              <Text style={styles.errorMessage} testID="record-error">
+                {recordErrorMessage}
+              </Text>
+              <Button label="Retry" onPress={handleStartRecording} />
+            </>
+          ) : (
+            <>
+              <Text style={styles.hint}>Tap to record</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Start recording"
+                onPress={handleStartRecording}
+                style={({ pressed }) => [styles.recordButton, pressed && styles.pressed]}
+                testID="record-start"
+              >
+                <Text style={styles.recordButtonLabel}>Record</Text>
+              </Pressable>
+            </>
+          )}
         </View>
       ) : null}
 

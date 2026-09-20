@@ -241,6 +241,27 @@ describe("RecordingModal", () => {
       });
     });
 
+    it("shows a start-recording error and stays out of the recording state when prepareToRecordAsync rejects", async () => {
+      mockRecorderHandle.prepareToRecordAsync.mockRejectedValueOnce(
+        new Error("Audio session unavailable"),
+      );
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText, findByTestId, queryByText } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      const errorMessage = await findByTestId("record-error");
+      expect(errorMessage.props.children).toEqual(
+        expect.stringContaining("Audio session unavailable"),
+      );
+      expect(queryByText("Stop")).toBeNull();
+      expect(mockRecorderHandle.record).not.toHaveBeenCalled();
+    });
+
     it("calls recorder.stop when Stop is pressed", async () => {
       mockParams = { projectId: "p1" };
       listProjectsMock.mockResolvedValueOnce({
