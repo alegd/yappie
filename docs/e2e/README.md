@@ -103,7 +103,7 @@ screenshot to be written to `apps/mobile/`.
   hit a 429 and the flow fails at `"Enter code"`. This is expected — wait out
   the window or restart the API; do not touch the throttle config.
 - **Maestro text selectors are full-match regex.** React Native merges an
-  element's accessible children with `", "`, so a bare `assertVisible: "Some
-Text"` selector can fail to match text that visually looks identical.
-  Bare text selectors generally need a `.*` suffix; prefer asserting on a
-  `testID` when one exists, since it does not have this problem.
+  element's accessible children with `", "`, so a bare text selector can fail
+  to match text that visually looks identical. Bare text selectors generally
+  need a `.*` suffix; prefer asserting on a `testID` when one exists, since
+  it does not have this problem.
