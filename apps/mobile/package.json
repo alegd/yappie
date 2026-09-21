@@ -13,6 +13,7 @@
     "test:ci": "jest --ci",
     "test:coverage": "jest --coverage",
     "web": "expo start --web",
+    "e2e:ui": "maestro test .maestro/smoke.yaml",
     "prebuild": "expo prebuild --clean",
     "build:android:preview": "expo prebuild --clean && eas build -p android --local --profile preview",
     "build:android:staging": "expo prebuild --clean && eas build -p android --local --profile staging",

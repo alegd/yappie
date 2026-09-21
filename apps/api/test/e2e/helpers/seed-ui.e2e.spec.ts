@@ -9,11 +9,19 @@ function createMockPrisma() {
   };
 }
 
+function createMockRedis() {
+  return {
+    flushdb: vi.fn().mockResolvedValue("OK"),
+  };
+}
+
 describe("seedUiE2e", () => {
   let mockPrisma: ReturnType<typeof createMockPrisma>;
+  let mockRedis: ReturnType<typeof createMockRedis>;
 
   beforeEach(() => {
     mockPrisma = createMockPrisma();
+    mockRedis = createMockRedis();
     vi.stubEnv("NODE_ENV", "test");
     vi.stubEnv("DB_NAME", "yappie_e2e");
   });
@@ -21,23 +29,30 @@ describe("seedUiE2e", () => {
   it("refuses to run when NODE_ENV is not test", async () => {
     vi.stubEnv("NODE_ENV", "production");
 
-    await expect(seedUiE2e(mockPrisma as never)).rejects.toThrow(/unsafe target/);
+    await expect(seedUiE2e(mockPrisma as never, mockRedis as never)).rejects.toThrow(
+      /unsafe target/,
+    );
     expect(mockPrisma.$executeRawUnsafe).not.toHaveBeenCalled();
+    expect(mockRedis.flushdb).not.toHaveBeenCalled();
   });
 
   it("refuses to run when DB_NAME is not an e2e database", async () => {
     vi.stubEnv("DB_NAME", "yappie");
 
-    await expect(seedUiE2e(mockPrisma as never)).rejects.toThrow(/unsafe target/);
+    await expect(seedUiE2e(mockPrisma as never, mockRedis as never)).rejects.toThrow(
+      /unsafe target/,
+    );
     expect(mockPrisma.$executeRawUnsafe).not.toHaveBeenCalled();
+    expect(mockRedis.flushdb).not.toHaveBeenCalled();
   });
 
-  it("truncates users and seeds the ui user with one project", async () => {
-    const result = await seedUiE2e(mockPrisma as never);
+  it("truncates users, flushes redis, and seeds the ui user with one project", async () => {
+    const result = await seedUiE2e(mockPrisma as never, mockRedis as never);
 
     expect(mockPrisma.$executeRawUnsafe).toHaveBeenCalledWith(
       'TRUNCATE TABLE "users" RESTART IDENTITY CASCADE',
     );
+    expect(mockRedis.flushdb).toHaveBeenCalledOnce();
     expect(mockPrisma.user.create).toHaveBeenCalledWith({
       data: { email: E2E_UI_EMAIL, name: "E2E UI User" },
     });

@@ -1,0 +1,94 @@
+appId: com.gueden.yappie
+env:
+  API_URL: http://192.168.1.234:3011
+  EMAIL: e2e-ui@example.com
+  PROJECT_NAME: E2E Project
+---
+- clearKeychain
+- launchApp:
+    clearState: true
+    permissions:
+      microphone: allow
+
+- extendedWaitUntil:
+    visible: "Not Now"
+    timeout: 15000
+    optional: true
+- tapOn:
+    text: "Not Now"
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: "welcome-get-started"
+    timeout: 30000
+- tapOn:
+    id: "welcome-get-started"
+
+- tapOn:
+    id: "email-input"
+- inputText: ${EMAIL}
+- tapOn:
+    id: "email-submit"
+
+- assertVisible: "Enter code.*"
+- runScript:
+    file: fetch-otp.js
+    env:
+      API_URL: ${API_URL}
+      EMAIL: ${EMAIL}
+- tapOn:
+    id: "otp-input"
+- inputText: ${output.otp}
+- tapOn:
+    id: "otp-submit"
+
+- extendedWaitUntil:
+    visible: "${PROJECT_NAME}.*"
+    timeout: 25000
+
+- tapOn:
+    id: "record-fab"
+- assertVisible: "Choose a project.*"
+- tapOn:
+    id: "project-picker-row"
+    index: 0
+
+- extendedWaitUntil:
+    visible:
+      id: "record-start"
+    timeout: 10000
+- tapOn:
+    id: "record-start"
+- extendedWaitUntil:
+    visible:
+      id: "record-stop"
+    timeout: 10000
+- tapOn:
+    id: "record-stop"
+
+- extendedWaitUntil:
+    notVisible:
+      id: "record-stop"
+    timeout: 60000
+
+- tapOn:
+    id: "pill-tab-home"
+- extendedWaitUntil:
+    visible:
+      id: "audio-row"
+    timeout: 25000
+- tapOn:
+    id: "audio-row"
+    index: 0
+
+- extendedWaitUntil:
+    visible:
+      id: "ticket-row"
+    timeout: 90000
+- assertVisible:
+    id: "tickets-header"
+    text: "Tickets \\(2\\).*"
+- assertVisible: "Add login button.*"
+- assertVisible: "Fix header layout.*"
+- takeScreenshot: smoke-ticket-generated
