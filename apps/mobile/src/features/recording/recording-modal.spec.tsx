@@ -319,6 +319,28 @@ describe("RecordingModal", () => {
         expect(mockRecorderHandle.stop).toHaveBeenCalled();
       });
     });
+
+    it("resets the audio session to disallow recording after Stop is pressed", async () => {
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText, findByText } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      fireEvent.press(await findByText("Stop"));
+      await waitFor(() => {
+        expect(mockSetAudioModeAsync).toHaveBeenCalledWith({ allowsRecording: false });
+      });
+      const stopOrder = mockRecorderHandle.stop.mock.invocationCallOrder[0];
+      const resetCallIndex = mockSetAudioModeAsync.mock.calls.findIndex(
+        ([arg]) => arg?.allowsRecording === false,
+      );
+      const resetOrder = mockSetAudioModeAsync.mock.invocationCallOrder[resetCallIndex];
+      expect(resetOrder).toBeGreaterThan(stopOrder);
+    });
   });
 
   describe("upload flow", () => {
@@ -419,6 +441,28 @@ describe("RecordingModal", () => {
       fireEvent.press(await findByLabelText("Close recorder"));
       expect(uploadAudioMock).not.toHaveBeenCalled();
       expect(mockDismiss).toHaveBeenCalled();
+    });
+
+    it("resets the audio session when closing while recording", async () => {
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      fireEvent.press(await findByLabelText("Close recorder"));
+      await waitFor(() => {
+        expect(mockSetAudioModeAsync).toHaveBeenCalledWith({ allowsRecording: false });
+      });
+      const stopOrder = mockRecorderHandle.stop.mock.invocationCallOrder[0];
+      const resetCallIndex = mockSetAudioModeAsync.mock.calls.findIndex(
+        ([arg]) => arg?.allowsRecording === false,
+      );
+      const resetOrder = mockSetAudioModeAsync.mock.invocationCallOrder[resetCallIndex];
+      expect(resetOrder).toBeGreaterThan(stopOrder);
     });
   });
 });
