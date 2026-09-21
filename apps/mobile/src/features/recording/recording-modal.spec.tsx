@@ -257,7 +257,10 @@ describe("RecordingModal", () => {
       await waitFor(() => {
         expect(mockRecorderHandle.prepareToRecordAsync).toHaveBeenCalled();
       });
-      expect(mockSetAudioModeAsync).toHaveBeenCalledWith({ allowsRecording: true });
+      expect(mockSetAudioModeAsync).toHaveBeenCalledWith({
+        allowsRecording: true,
+        playsInSilentMode: true,
+      });
       const setAudioModeOrder = mockSetAudioModeAsync.mock.invocationCallOrder[0];
       const prepareOrder = mockRecorderHandle.prepareToRecordAsync.mock.invocationCallOrder[0];
       expect(setAudioModeOrder).toBeLessThan(prepareOrder);

@@ -120,7 +120,7 @@ export function RecordingModal() {
       if (!result.granted) return;
     }
     try {
-      await setAudioModeAsync({ allowsRecording: true });
+      await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
       await recorder.prepareToRecordAsync();
       recorder.record();
     } catch (error) {
