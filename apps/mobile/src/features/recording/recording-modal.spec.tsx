@@ -305,6 +305,29 @@ describe("RecordingModal", () => {
       );
       expect(queryByText("Stop")).toBeNull();
       expect(mockRecorderHandle.record).not.toHaveBeenCalled();
+      await waitFor(() => {
+        expect(mockSetAudioModeAsync).toHaveBeenCalledWith({ allowsRecording: false });
+      });
+    });
+
+    it("surfaces a stop error, resets the audio session, and returns to idle without uploading when recorder.stop rejects", async () => {
+      mockRecorderHandle.stop.mockReset().mockRejectedValueOnce(new Error("Recorder busy"));
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText, findByText, findByTestId } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      fireEvent.press(await findByText("Stop"));
+      const errorMessage = await findByTestId("record-error");
+      expect(errorMessage.props.children).toEqual(expect.stringContaining("Recorder busy"));
+      await waitFor(() => {
+        expect(mockSetAudioModeAsync).toHaveBeenCalledWith({ allowsRecording: false });
+      });
+      expect(uploadAudioMock).not.toHaveBeenCalled();
     });
 
     it("calls recorder.stop when Stop is pressed", async () => {

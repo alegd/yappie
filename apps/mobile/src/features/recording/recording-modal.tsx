@@ -68,6 +68,7 @@ export function RecordingModal() {
   );
   const [durationSeconds, setDurationSeconds] = useState(0);
   const [recordError, setRecordError] = useState<Error | null>(null);
+  const [recordErrorContext, setRecordErrorContext] = useState<"start" | "stop" | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const projectsQuery = useQuery({
@@ -124,10 +125,13 @@ export function RecordingModal() {
       await recorder.prepareToRecordAsync();
       recorder.record();
     } catch (error) {
+      setAudioModeAsync({ allowsRecording: false }).catch(() => undefined);
+      setRecordErrorContext("start");
       setRecordError(error instanceof Error ? error : new Error(String(error)));
       return;
     }
     setRecordError(null);
+    setRecordErrorContext(null);
     setDurationSeconds(0);
     timerRef.current = setInterval(() => {
       setDurationSeconds((s) => s + 1);
@@ -140,7 +144,15 @@ export function RecordingModal() {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    await recorder.stop();
+    try {
+      await recorder.stop();
+    } catch (error) {
+      setAudioModeAsync({ allowsRecording: false }).catch(() => undefined);
+      setRecordErrorContext("stop");
+      setRecordError(error instanceof Error ? error : new Error(String(error)));
+      setState("idle");
+      return;
+    }
     setAudioModeAsync({ allowsRecording: false }).catch(() => undefined);
     setState("uploading");
     uploadMutation.mutate();
@@ -170,7 +182,9 @@ export function RecordingModal() {
   };
 
   const recordErrorMessage = recordError
-    ? `Couldn't start recording: ${recordError.message}`
+    ? recordErrorContext === "stop"
+      ? `Couldn't stop recording: ${recordError.message}`
+      : `Couldn't start recording: ${recordError.message}`
     : null;
 
   const uploadErrorMessage = (() => {
