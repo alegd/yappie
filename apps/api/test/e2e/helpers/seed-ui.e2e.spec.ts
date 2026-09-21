@@ -24,6 +24,7 @@ describe("seedUiE2e", () => {
     mockRedis = createMockRedis();
     vi.stubEnv("NODE_ENV", "test");
     vi.stubEnv("DB_NAME", "yappie_e2e");
+    vi.stubEnv("REDIS_URL", "redis://localhost:6379/15");
   });
 
   it("refuses to run when NODE_ENV is not test", async () => {
@@ -38,6 +39,36 @@ describe("seedUiE2e", () => {
 
   it("refuses to run when DB_NAME is not an e2e database", async () => {
     vi.stubEnv("DB_NAME", "yappie");
+
+    await expect(seedUiE2e(mockPrisma as never, mockRedis as never)).rejects.toThrow(
+      /unsafe target/,
+    );
+    expect(mockPrisma.$executeRawUnsafe).not.toHaveBeenCalled();
+    expect(mockRedis.flushdb).not.toHaveBeenCalled();
+  });
+
+  it("refuses to run when REDIS_URL is not set", async () => {
+    vi.stubEnv("REDIS_URL", "");
+
+    await expect(seedUiE2e(mockPrisma as never, mockRedis as never)).rejects.toThrow(
+      /unsafe target/,
+    );
+    expect(mockPrisma.$executeRawUnsafe).not.toHaveBeenCalled();
+    expect(mockRedis.flushdb).not.toHaveBeenCalled();
+  });
+
+  it("refuses to run when REDIS_URL has no explicit database index", async () => {
+    vi.stubEnv("REDIS_URL", "redis://localhost:6379");
+
+    await expect(seedUiE2e(mockPrisma as never, mockRedis as never)).rejects.toThrow(
+      /unsafe target/,
+    );
+    expect(mockPrisma.$executeRawUnsafe).not.toHaveBeenCalled();
+    expect(mockRedis.flushdb).not.toHaveBeenCalled();
+  });
+
+  it("refuses to run when REDIS_URL targets the default database index 0", async () => {
+    vi.stubEnv("REDIS_URL", "redis://localhost:6379/0");
 
     await expect(seedUiE2e(mockPrisma as never, mockRedis as never)).rejects.toThrow(
       /unsafe target/,
