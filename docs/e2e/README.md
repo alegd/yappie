@@ -92,6 +92,19 @@ screenshot to be written to `apps/mobile/`.
   `.env.e2e` (3011), not the default dev port. `smoke.yaml`'s `API_URL` and
   the build's `EXPO_PUBLIC_API_URL` must both point at `:3011` or OTP fetch
   and every API call in the flow fail.
+- **The LAN IP baked into `smoke.yaml` will go stale.** `env.API_URL` in
+  `apps/mobile/.maestro/smoke.yaml` is pinned to whatever IP was current when
+  the flow was written; DHCP can reassign it at any time, and nothing points
+  this out when it drifts — the flow just fails opaquely at the OTP fetch
+  step. `maestro test` overrides a flow's `env` values with `-e KEY=VALUE`,
+  so re-derive the current IP (`ipconfig getifaddr en0`) and pass it through
+  without editing the file:
+  `cd apps/mobile && npm run e2e:ui -- -e API_URL=http://<LAN_IP>:3011`. This
+  must match the `EXPO_PUBLIC_API_URL` the Release build was compiled with
+  (step 3 above) — if the two IPs differ, the OTP fetch fails even though the
+  app itself boots fine. Running `npm run e2e:ui` with no extra args falls
+  back to the IP hardcoded in `smoke.yaml`, so keep it updated when it's
+  known to be current, and always override it when in doubt.
 - **Release build is mandatory.** Dev mode (Metro/JS bundler) is broken on
   this stack for this flow — always build with `--configuration Release`.
 - **Kill by port, not by PID.** `nest start` forks a child; `kill $!` after
