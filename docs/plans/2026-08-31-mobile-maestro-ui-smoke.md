@@ -907,5 +907,13 @@ Use superpowers:finishing-a-development-branch. Push and open a PR against `main
 
 - Fix the `recording-modal.tsx` conditional so `needsPermission` gates the `idle`/`recording`/`uploading` blocks.
 - Wire a React Query `focusManager` + AppState bridge so `refetchOnWindowFocus` actually works on React Native.
+
+`recording-modal.tsx` error handling itself is no longer deferred: commits
+`9cfea59`, `cd164aa`, and `08488d1` implemented it mid-execution (user
+explicitly authorized this) — `handleStartRecording` now catches
+`prepareToRecordAsync`/`record` failures, enables the iOS audio session
+before recording, and pairs `allowsRecording` with `playsInSilentMode` to
+avoid the native "Impossible audio mode" throw.
+
 - Carried over from PR #94: create `apps/api/.env.e2e.example`; add `E2E_TEST_ENDPOINTS=false` / `E2E_MOCK_AI=false` to `.env.example`; fix the `ENCRYPTION_KEY` Zod `.min(32)` (chars) vs `CryptoService` needing 64 hex.
 - Android UI e2e, real-AI e2e runs, CI wiring, multi-scenario UI matrix (spec §Out of scope).
