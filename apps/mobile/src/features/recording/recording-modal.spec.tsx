@@ -30,11 +30,13 @@ let mockPermissionState: { granted: boolean; canAskAgain: boolean; status: strin
   status: "granted",
 };
 const mockRequestPermission = jest.fn();
+const mockSetAudioModeAsync = jest.fn().mockResolvedValue(undefined);
 
 jest.mock("expo-audio", () => ({
   useAudioRecorder: () => mockRecorderHandle,
   getRecordingPermissionsAsync: jest.fn(async () => mockPermissionState),
   requestRecordingPermissionsAsync: () => mockRequestPermission(),
+  setAudioModeAsync: (...args: unknown[]) => mockSetAudioModeAsync(...args),
   RecordingPresets: { HIGH_QUALITY: {} },
 }));
 
@@ -88,6 +90,7 @@ describe("RecordingModal", () => {
     mockRecorderHandle.stop.mockReset().mockResolvedValue(undefined);
     mockRecorderHandle.uri = "file:///tmp/test.m4a";
     mockRequestPermission.mockReset();
+    mockSetAudioModeAsync.mockReset().mockResolvedValue(undefined);
     mockPermissionState = { granted: true, canAskAgain: true, status: "granted" };
   });
 
@@ -239,6 +242,45 @@ describe("RecordingModal", () => {
       await waitFor(() => {
         expect(mockRecorderHandle.record).toHaveBeenCalled();
       });
+    });
+
+    it("configures the iOS audio session to allow recording before preparing the recorder", async () => {
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      await waitFor(() => {
+        expect(mockRecorderHandle.prepareToRecordAsync).toHaveBeenCalled();
+      });
+      expect(mockSetAudioModeAsync).toHaveBeenCalledWith({ allowsRecording: true });
+      const setAudioModeOrder = mockSetAudioModeAsync.mock.invocationCallOrder[0];
+      const prepareOrder = mockRecorderHandle.prepareToRecordAsync.mock.invocationCallOrder[0];
+      expect(setAudioModeOrder).toBeLessThan(prepareOrder);
+    });
+
+    it("shows a start-recording error and stays out of the recording state when setAudioModeAsync rejects", async () => {
+      mockSetAudioModeAsync.mockRejectedValueOnce(new Error("Recording not allowed on iOS"));
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText, findByTestId, queryByText } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      const errorMessage = await findByTestId("record-error");
+      expect(errorMessage.props.children).toEqual(
+        expect.stringContaining("Recording not allowed on iOS"),
+      );
+      expect(queryByText("Stop")).toBeNull();
+      expect(mockRecorderHandle.prepareToRecordAsync).not.toHaveBeenCalled();
+      expect(mockRecorderHandle.record).not.toHaveBeenCalled();
     });
 
     it("shows a start-recording error and stays out of the recording state when prepareToRecordAsync rejects", async () => {

@@ -8,6 +8,7 @@ import {
   RecordingPresets,
   getRecordingPermissionsAsync,
   requestRecordingPermissionsAsync,
+  setAudioModeAsync,
   type PermissionResponse,
 } from "expo-audio";
 import { Button } from "@/components/ui/button";
@@ -119,6 +120,7 @@ export function RecordingModal() {
       if (!result.granted) return;
     }
     try {
+      await setAudioModeAsync({ allowsRecording: true });
       await recorder.prepareToRecordAsync();
       recorder.record();
     } catch (error) {
@@ -139,6 +141,7 @@ export function RecordingModal() {
       timerRef.current = null;
     }
     await recorder.stop();
+    setAudioModeAsync({ allowsRecording: false }).catch(() => undefined);
     setState("uploading");
     uploadMutation.mutate();
   };
@@ -161,6 +164,7 @@ export function RecordingModal() {
     if (timerRef.current) clearInterval(timerRef.current);
     if (state === "recording") {
       recorder.stop().catch(() => undefined);
+      setAudioModeAsync({ allowsRecording: false }).catch(() => undefined);
     }
     router.dismiss();
   };
