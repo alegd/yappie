@@ -72,6 +72,39 @@ describe("validateEnv", () => {
     const env = validateEnv();
     expect(env.PORT).toBe(8080);
   });
+
+  it("should exit with code 1 when ENCRYPTION_KEY is 32 characters instead of 32 bytes", () => {
+    for (const [key, value] of Object.entries({
+      ...validEnv,
+      ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef",
+    })) {
+      vi.stubEnv(key, value);
+    }
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    validateEnv();
+
+    expect(exitSpy).toHaveBeenCalledWith(1);
+
+    exitSpy.mockRestore();
+    errorSpy.mockRestore();
+  });
+
+  it("should exit with code 1 when ENCRYPTION_KEY is 64 characters but not hexadecimal", () => {
+    for (const [key, value] of Object.entries({ ...validEnv, ENCRYPTION_KEY: "z".repeat(64) })) {
+      vi.stubEnv(key, value);
+    }
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    validateEnv();
+
+    expect(exitSpy).toHaveBeenCalledWith(1);
+
+    exitSpy.mockRestore();
+    errorSpy.mockRestore();
+  });
 });
 
 describe("buildDatabaseUrl", () => {
