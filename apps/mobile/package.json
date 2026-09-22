@@ -10,7 +10,7 @@
     "reset-project": "node ./scripts/reset-project.js",
     "start": "expo start",
     "test": "jest --watchAll",
-    "test:ci": "jest --ci",
+    "test:ci": "jest --ci --forceExit",
     "test:coverage": "jest --coverage",
     "web": "expo start --web",
     "e2e:ui": "maestro test .maestro/smoke.yaml",
