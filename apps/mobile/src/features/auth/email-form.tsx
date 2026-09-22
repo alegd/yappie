@@ -53,6 +53,7 @@ export function EmailForm() {
         autoCapitalize="none"
         autoComplete="email"
         error={validationError}
+        testID="email-input"
       />
 
       <Button
@@ -60,6 +61,7 @@ export function EmailForm() {
         onPress={handleSubmit}
         loading={requestOtp.isPending}
         disabled={requestOtp.isPending}
+        testID="email-submit"
       />
 
       {submitError ? <Text style={styles.error}>{submitError}</Text> : null}

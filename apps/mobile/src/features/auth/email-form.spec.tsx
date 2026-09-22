@@ -93,4 +93,11 @@ describe("EmailForm", () => {
     fireEvent.press(getByText("Continue"));
     expect(await findByText(/wait a minute/i)).toBeTruthy();
   });
+
+  it("exposes testIDs on the email field and submit button", () => {
+    const { getByTestId } = renderForm();
+
+    expect(getByTestId("email-input")).toBeTruthy();
+    expect(getByTestId("email-submit")).toBeTruthy();
+  });
 });

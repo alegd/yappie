@@ -8,6 +8,7 @@ import {
   RecordingPresets,
   getRecordingPermissionsAsync,
   requestRecordingPermissionsAsync,
+  setAudioModeAsync,
   type PermissionResponse,
 } from "expo-audio";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,8 @@ export function RecordingModal() {
     initialProjectId ? "idle" : "selecting_project",
   );
   const [durationSeconds, setDurationSeconds] = useState(0);
+  const [recordError, setRecordError] = useState<Error | null>(null);
+  const [recordErrorContext, setRecordErrorContext] = useState<"start" | "stop" | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const projectsQuery = useQuery({
@@ -117,8 +120,18 @@ export function RecordingModal() {
       const result = await requestPermission();
       if (!result.granted) return;
     }
-    await recorder.prepareToRecordAsync();
-    recorder.record();
+    try {
+      await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
+      await recorder.prepareToRecordAsync();
+      recorder.record();
+    } catch (error) {
+      setAudioModeAsync({ allowsRecording: false }).catch(() => undefined);
+      setRecordErrorContext("start");
+      setRecordError(error instanceof Error ? error : new Error(String(error)));
+      return;
+    }
+    setRecordError(null);
+    setRecordErrorContext(null);
     setDurationSeconds(0);
     timerRef.current = setInterval(() => {
       setDurationSeconds((s) => s + 1);
@@ -131,7 +144,16 @@ export function RecordingModal() {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    await recorder.stop();
+    try {
+      await recorder.stop();
+    } catch (error) {
+      setAudioModeAsync({ allowsRecording: false }).catch(() => undefined);
+      setRecordErrorContext("stop");
+      setRecordError(error instanceof Error ? error : new Error(String(error)));
+      setState("idle");
+      return;
+    }
+    setAudioModeAsync({ allowsRecording: false }).catch(() => undefined);
     setState("uploading");
     uploadMutation.mutate();
   };
@@ -144,7 +166,6 @@ export function RecordingModal() {
   const handleRequestPermission = async () => {
     const result = await requestPermission();
     if (!result.granted && !result.canAskAgain) {
-      // user must enable from settings
       return;
     }
   };
@@ -155,9 +176,16 @@ export function RecordingModal() {
     if (timerRef.current) clearInterval(timerRef.current);
     if (state === "recording") {
       recorder.stop().catch(() => undefined);
+      setAudioModeAsync({ allowsRecording: false }).catch(() => undefined);
     }
     router.dismiss();
   };
+
+  const recordErrorMessage = recordError
+    ? recordErrorContext === "stop"
+      ? `Couldn't stop recording: ${recordError.message}`
+      : `Couldn't start recording: ${recordError.message}`
+    : null;
 
   const uploadErrorMessage = (() => {
     const err = uploadMutation.error;
@@ -235,6 +263,7 @@ export function RecordingModal() {
                 title={item.name}
                 subtitle={item.description ?? undefined}
                 onPress={() => handleSelectProject(item)}
+                testID="project-picker-row"
               />
             )}
           />
@@ -246,15 +275,27 @@ export function RecordingModal() {
           <View style={styles.micCircle}>
             <Ionicons name="mic-outline" size={iconSize.display} color={colors.text} />
           </View>
-          <Text style={styles.hint}>Tap to record</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Start recording"
-            onPress={handleStartRecording}
-            style={({ pressed }) => [styles.recordButton, pressed && styles.pressed]}
-          >
-            <Text style={styles.recordButtonLabel}>Record</Text>
-          </Pressable>
+          {recordError ? (
+            <>
+              <Text style={styles.errorMessage} testID="record-error">
+                {recordErrorMessage}
+              </Text>
+              <Button label="Retry" onPress={handleStartRecording} />
+            </>
+          ) : (
+            <>
+              <Text style={styles.hint}>Tap to record</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Start recording"
+                onPress={handleStartRecording}
+                style={({ pressed }) => [styles.recordButton, pressed && styles.pressed]}
+                testID="record-start"
+              >
+                <Text style={styles.recordButtonLabel}>Record</Text>
+              </Pressable>
+            </>
+          )}
         </View>
       ) : null}
 
@@ -267,6 +308,7 @@ export function RecordingModal() {
             accessibilityLabel="Stop recording"
             onPress={handleStop}
             style={({ pressed }) => [styles.stopButton, pressed && styles.pressed]}
+            testID="record-stop"
           >
             <Text style={styles.stopButtonLabel}>Stop</Text>
           </Pressable>

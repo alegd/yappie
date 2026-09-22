@@ -33,6 +33,7 @@ export function AudioRow({ audio, onPress }: AudioRowProps) {
       onPress={onPress}
       accessibilityRole="button"
       style={({ pressed }) => [styles.container, pressed && styles.pressed]}
+      testID="audio-row"
     >
       <View style={styles.textBlock}>
         <Text style={styles.title} numberOfLines={1}>

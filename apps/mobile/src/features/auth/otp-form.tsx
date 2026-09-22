@@ -70,6 +70,7 @@ export function OtpForm({ email }: OtpFormProps) {
         autoComplete="one-time-code"
         maxLength={OTP_LENGTH}
         error={error}
+        testID="otp-input"
       />
 
       {needsRegister ? (
@@ -86,6 +87,7 @@ export function OtpForm({ email }: OtpFormProps) {
         onPress={handleSubmit}
         loading={isPending}
         disabled={isPending || !codeIsComplete || !nameIsValid}
+        testID="otp-submit"
       />
     </View>
   );

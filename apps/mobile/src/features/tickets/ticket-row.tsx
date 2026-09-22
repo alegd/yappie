@@ -41,6 +41,7 @@ export function TicketRow({ ticket, onPress, selectable, selected }: TicketRowPr
       onPress={onPress}
       accessibilityRole="button"
       style={({ pressed }) => [styles.container, pressed && styles.pressed]}
+      testID="ticket-row"
     >
       {selectable ? (
         <View

@@ -30,11 +30,13 @@ let mockPermissionState: { granted: boolean; canAskAgain: boolean; status: strin
   status: "granted",
 };
 const mockRequestPermission = jest.fn();
+const mockSetAudioModeAsync = jest.fn().mockResolvedValue(undefined);
 
 jest.mock("expo-audio", () => ({
   useAudioRecorder: () => mockRecorderHandle,
   getRecordingPermissionsAsync: jest.fn(async () => mockPermissionState),
   requestRecordingPermissionsAsync: () => mockRequestPermission(),
+  setAudioModeAsync: (...args: unknown[]) => mockSetAudioModeAsync(...args),
   RecordingPresets: { HIGH_QUALITY: {} },
 }));
 
@@ -88,6 +90,7 @@ describe("RecordingModal", () => {
     mockRecorderHandle.stop.mockReset().mockResolvedValue(undefined);
     mockRecorderHandle.uri = "file:///tmp/test.m4a";
     mockRequestPermission.mockReset();
+    mockSetAudioModeAsync.mockReset().mockResolvedValue(undefined);
     mockPermissionState = { granted: true, canAskAgain: true, status: "granted" };
   });
 
@@ -161,6 +164,18 @@ describe("RecordingModal", () => {
     });
   });
 
+  it("exposes a testID on the start recording button", async () => {
+    mockParams = { projectId: "project-1" };
+    listProjectsMock.mockResolvedValueOnce({
+      data: [buildProject({ id: "project-1" })],
+      total: 1,
+      page: 1,
+      limit: 50,
+    });
+    const { findByTestId } = renderWithClient(<RecordingModal />);
+    expect(await findByTestId("record-start")).toBeTruthy();
+  });
+
   it("dismisses the modal when the close button is pressed in idle state", async () => {
     mockParams = { projectId: "p1" };
     listProjectsMock.mockResolvedValueOnce({
@@ -229,6 +244,92 @@ describe("RecordingModal", () => {
       });
     });
 
+    it("configures the iOS audio session to allow recording before preparing the recorder", async () => {
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      await waitFor(() => {
+        expect(mockRecorderHandle.prepareToRecordAsync).toHaveBeenCalled();
+      });
+      expect(mockSetAudioModeAsync).toHaveBeenCalledWith({
+        allowsRecording: true,
+        playsInSilentMode: true,
+      });
+      const setAudioModeOrder = mockSetAudioModeAsync.mock.invocationCallOrder[0];
+      const prepareOrder = mockRecorderHandle.prepareToRecordAsync.mock.invocationCallOrder[0];
+      expect(setAudioModeOrder).toBeLessThan(prepareOrder);
+    });
+
+    it("shows a start-recording error and stays out of the recording state when setAudioModeAsync rejects", async () => {
+      mockSetAudioModeAsync.mockRejectedValueOnce(new Error("Recording not allowed on iOS"));
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText, findByTestId, queryByText } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      const errorMessage = await findByTestId("record-error");
+      expect(errorMessage.props.children).toEqual(
+        expect.stringContaining("Recording not allowed on iOS"),
+      );
+      expect(queryByText("Stop")).toBeNull();
+      expect(mockRecorderHandle.prepareToRecordAsync).not.toHaveBeenCalled();
+      expect(mockRecorderHandle.record).not.toHaveBeenCalled();
+    });
+
+    it("shows a start-recording error and stays out of the recording state when prepareToRecordAsync rejects", async () => {
+      mockRecorderHandle.prepareToRecordAsync.mockRejectedValueOnce(
+        new Error("Audio session unavailable"),
+      );
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText, findByTestId, queryByText } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      const errorMessage = await findByTestId("record-error");
+      expect(errorMessage.props.children).toEqual(
+        expect.stringContaining("Audio session unavailable"),
+      );
+      expect(queryByText("Stop")).toBeNull();
+      expect(mockRecorderHandle.record).not.toHaveBeenCalled();
+      await waitFor(() => {
+        expect(mockSetAudioModeAsync).toHaveBeenCalledWith({ allowsRecording: false });
+      });
+    });
+
+    it("surfaces a stop error, resets the audio session, and returns to idle without uploading when recorder.stop rejects", async () => {
+      mockRecorderHandle.stop.mockReset().mockRejectedValueOnce(new Error("Recorder busy"));
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText, findByText, findByTestId } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      fireEvent.press(await findByText("Stop"));
+      const errorMessage = await findByTestId("record-error");
+      expect(errorMessage.props.children).toEqual(expect.stringContaining("Recorder busy"));
+      await waitFor(() => {
+        expect(mockSetAudioModeAsync).toHaveBeenCalledWith({ allowsRecording: false });
+      });
+      expect(uploadAudioMock).not.toHaveBeenCalled();
+    });
+
     it("calls recorder.stop when Stop is pressed", async () => {
       mockParams = { projectId: "p1" };
       listProjectsMock.mockResolvedValueOnce({
@@ -243,6 +344,28 @@ describe("RecordingModal", () => {
       await waitFor(() => {
         expect(mockRecorderHandle.stop).toHaveBeenCalled();
       });
+    });
+
+    it("resets the audio session to disallow recording after Stop is pressed", async () => {
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText, findByText } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      fireEvent.press(await findByText("Stop"));
+      await waitFor(() => {
+        expect(mockSetAudioModeAsync).toHaveBeenCalledWith({ allowsRecording: false });
+      });
+      const stopOrder = mockRecorderHandle.stop.mock.invocationCallOrder[0];
+      const resetCallIndex = mockSetAudioModeAsync.mock.calls.findIndex(
+        ([arg]) => arg?.allowsRecording === false,
+      );
+      const resetOrder = mockSetAudioModeAsync.mock.invocationCallOrder[resetCallIndex];
+      expect(resetOrder).toBeGreaterThan(stopOrder);
     });
   });
 
@@ -344,6 +467,28 @@ describe("RecordingModal", () => {
       fireEvent.press(await findByLabelText("Close recorder"));
       expect(uploadAudioMock).not.toHaveBeenCalled();
       expect(mockDismiss).toHaveBeenCalled();
+    });
+
+    it("resets the audio session when closing while recording", async () => {
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByLabelText } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      fireEvent.press(await findByLabelText("Close recorder"));
+      await waitFor(() => {
+        expect(mockSetAudioModeAsync).toHaveBeenCalledWith({ allowsRecording: false });
+      });
+      const stopOrder = mockRecorderHandle.stop.mock.invocationCallOrder[0];
+      const resetCallIndex = mockSetAudioModeAsync.mock.calls.findIndex(
+        ([arg]) => arg?.allowsRecording === false,
+      );
+      const resetOrder = mockSetAudioModeAsync.mock.invocationCallOrder[resetCallIndex];
+      expect(resetOrder).toBeGreaterThan(stopOrder);
     });
   });
 });

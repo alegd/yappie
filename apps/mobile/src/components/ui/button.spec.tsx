@@ -32,4 +32,12 @@ describe("Button", () => {
     const { getByText } = render(<Button label="Send" onPress={() => {}} loading />);
     expect(getByText(/Loading/)).toBeTruthy();
   });
+
+  it("forwards testID to the pressable", () => {
+    const { getByTestId } = render(
+      <Button label="Continue" onPress={() => {}} testID="email-submit" />,
+    );
+
+    expect(getByTestId("email-submit")).toBeTruthy();
+  });
 });

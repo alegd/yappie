@@ -15,14 +15,16 @@ interface ListRowProps {
   title: string;
   subtitle?: string;
   onPress: () => void;
+  testID?: string;
 }
 
-export function ListRow({ title, subtitle, onPress }: ListRowProps) {
+export function ListRow({ title, subtitle, onPress, testID }: ListRowProps) {
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [styles.container, pressed && styles.pressed]}
       accessibilityRole="button"
+      testID={testID}
     >
       <View style={styles.textBlock}>
         <Text style={styles.title} numberOfLines={1}>

@@ -64,4 +64,10 @@ describe("FloatingRecordButton", () => {
     fireEvent.press(getByLabelText("Record audio"));
     expect(mockPush).toHaveBeenCalledWith({ pathname: "/record", params: { projectId: "p1" } });
   });
+
+  it("exposes a testID on the record fab", () => {
+    mockSegments = ["(app)", "(tabs)", "home"];
+    const { getByTestId } = render(<FloatingRecordButton />);
+    expect(getByTestId("record-fab")).toBeTruthy();
+  });
 });

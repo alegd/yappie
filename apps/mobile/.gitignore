@@ -46,3 +46,6 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Maestro run artifacts
+smoke-ticket-generated.png
