@@ -1,5 +1,8 @@
 import React from "react";
 
+import { render, fireEvent, waitFor } from "@testing-library/react-native";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 const mockStorage = new Map<string, string>();
 
 jest.mock("expo-secure-store", () => ({
@@ -25,9 +28,6 @@ jest.mock("expo-router", () => ({
   router: mockRouter,
   useRouter: () => mockRouter,
 }));
-
-import { render, fireEvent, waitFor } from "@testing-library/react-native";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const api = require("@/lib/api/client") as typeof import("@/lib/api/client");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
