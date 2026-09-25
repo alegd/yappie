@@ -6,6 +6,7 @@ export default mergeConfig(
   defineConfig({
     test: {
       root: ".",
+      include: ["test/e2e/helpers/seed-ui.e2e.spec.ts"],
     },
   }),
 );

@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+const ENCRYPTION_KEY_HEX_LENGTH = 64;
+const HEX_PATTERN = /^[0-9a-f]+$/i;
+
 const boolFromEnv = z
   .enum(["true", "false"])
   .default("false")
@@ -55,7 +58,10 @@ const envSchema = z
     SENTRY_DSN: z.string().optional(),
 
     // Encryption
-    ENCRYPTION_KEY: z.string().min(32),
+    ENCRYPTION_KEY: z
+      .string()
+      .length(ENCRYPTION_KEY_HEX_LENGTH, "must be 64 hexadecimal characters (32 bytes)")
+      .regex(HEX_PATTERN, "must be hexadecimal"),
 
     // Email
     RESEND_API_KEY: z.string().min(1),
