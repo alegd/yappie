@@ -14,7 +14,7 @@ export function FloatingRecordButton() {
 
   const handlePress = () => {
     const isProjectDetail =
-      segments.includes(PROJECT_DETAIL_SEGMENT) && segments.some((s) => s === "[id]");
+      segments.some((s) => s === PROJECT_DETAIL_SEGMENT) && segments.some((s) => s === "[id]");
     if (isProjectDetail && params.id) {
       router.push({ pathname: "/record", params: { projectId: params.id } });
     } else {
