@@ -66,7 +66,7 @@ describe("OtpForm", () => {
     expect(await findByText(/incorrect or expired/i)).toBeTruthy();
   });
 
-  it("on 200 routes to (tabs)", async () => {
+  it("on 200 routes to the projects tab", async () => {
     apiFetchMock.mockResolvedValueOnce({
       accessToken: "at",
       refreshToken: "rt",
@@ -76,7 +76,7 @@ describe("OtpForm", () => {
     fireEvent.changeText(getByPlaceholderText("1234"), "1234");
     fireEvent.press(getByText("Verify"));
 
-    await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith("/(tabs)"));
+    await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith("/projects"));
   });
 
   it("on 404 reveals name field and switches button to 'Create account'", async () => {
@@ -115,7 +115,7 @@ describe("OtpForm", () => {
         expect.objectContaining({ method: "POST" }),
       ),
     );
-    await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith("/(tabs)"));
+    await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith("/projects"));
   });
 
   it("exposes testIDs on the code field and submit button", () => {
