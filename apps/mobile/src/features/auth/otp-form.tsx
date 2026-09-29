@@ -29,7 +29,7 @@ export function OtpForm({ email }: OtpFormProps) {
     if (needsRegister) {
       try {
         await completeRegister.mutateAsync({ email, code, name });
-        router.replace("/(tabs)");
+        router.replace("/projects");
       } catch {
         setError("Couldn't complete registration. Try again.");
       }
@@ -38,7 +38,7 @@ export function OtpForm({ email }: OtpFormProps) {
 
     try {
       await verifyOtp.mutateAsync({ email, code });
-      router.replace("/(tabs)");
+      router.replace("/projects");
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         if (err.status === 404) {

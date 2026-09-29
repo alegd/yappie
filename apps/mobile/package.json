@@ -12,6 +12,7 @@
     "test": "jest --watchAll",
     "test:ci": "jest --ci --forceExit",
     "test:coverage": "jest --coverage",
+    "type-check": "tsc --noEmit",
     "web": "expo start --web",
     "e2e:ui": "maestro test .maestro/smoke.yaml",
     "prebuild": "expo prebuild --clean",

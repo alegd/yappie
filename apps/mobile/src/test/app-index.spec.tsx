@@ -10,17 +10,16 @@ const { render } = require("@testing-library/react-native") as typeof import("@t
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { useAuthStore } = require("@/features/auth/auth-store") as typeof import("@/features/auth/auth-store");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const Index = require("./index").default as React.ComponentType;
+const Index = require("@/app/index").default as React.ComponentType;
 
 describe("app index route", () => {
   beforeEach(() => {
-    useAuthStore.setState({ accessToken: null, refreshToken: null, user: null, hydrated: true });
+    useAuthStore.setState({ accessToken: null, user: null, hydrated: true });
   });
 
   it("redirects to /projects when authenticated", () => {
     useAuthStore.setState({
       accessToken: "token-123",
-      refreshToken: "refresh-123",
       user: { id: "u1", email: "a@b.com", name: "Ale" },
       hydrated: true,
     });
