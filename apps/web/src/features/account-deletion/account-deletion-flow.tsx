@@ -17,11 +17,7 @@ interface AccountDeletionFlowProps {
 const CONFIRM_PHRASE = "DELETE";
 const OTP_LENGTH = 4;
 
-export function AccountDeletionFlow({
-  mode,
-  initialEmail,
-  onDeleted,
-}: AccountDeletionFlowProps) {
+export function AccountDeletionFlow({ mode, initialEmail, onDeleted }: AccountDeletionFlowProps) {
   const [step, setStep] = useState<Step>("request");
   const [email, setEmail] = useState(initialEmail ?? "");
   const [otp, setOtp] = useState<string[]>(Array.from({ length: OTP_LENGTH }, () => ""));
@@ -95,8 +91,8 @@ export function AccountDeletionFlow({
     <div className="mx-auto max-w-md">
       <h2 className="mb-2 text-2xl font-semibold text-foreground">Delete your account</h2>
       <p className="mb-6 text-sm text-foreground/70">
-        This permanently removes your account, projects, recordings, tickets and integrations.
-        This action cannot be undone.
+        This permanently removes your account, projects, recordings, tickets and integrations. This
+        action cannot be undone.
       </p>
 
       {error && (
@@ -168,7 +164,9 @@ export function AccountDeletionFlow({
           <Button
             variant="danger"
             className="w-full"
-            disabled={loading || confirmPhrase !== CONFIRM_PHRASE || otp.join("").length !== OTP_LENGTH}
+            disabled={
+              loading || confirmPhrase !== CONFIRM_PHRASE || otp.join("").length !== OTP_LENGTH
+            }
             onClick={handleConfirm}
           >
             {loading ? "Deleting..." : "Delete my account permanently"}

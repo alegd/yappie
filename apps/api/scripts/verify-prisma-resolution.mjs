@@ -39,7 +39,9 @@ async function verifyPrismaResolution() {
     assertGeneratedModels(Prisma.dmmf);
     assertGeneratedEnum(Plan);
 
-    console.log("✔ @prisma/client resolves and was generated from the current schema under plain Node");
+    console.log(
+      "✔ @prisma/client resolves and was generated from the current schema under plain Node",
+    );
     return 0;
   } catch (error) {
     console.error("✘ @prisma/client failed to resolve under plain Node");

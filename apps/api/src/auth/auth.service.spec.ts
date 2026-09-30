@@ -266,9 +266,9 @@ describe("AuthService", () => {
       mockOtp.verify.mockResolvedValue(false);
 
       // Act & Assert
-      await expect(
-        authService.confirmAccountDeletion("alice@example.com", "9999"),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(authService.confirmAccountDeletion("alice@example.com", "9999")).rejects.toThrow(
+        UnauthorizedException,
+      );
       expect(mockPrisma.user.delete).not.toHaveBeenCalled();
     });
 
@@ -283,11 +283,7 @@ describe("AuthService", () => {
       await authService.confirmAccountDeletion("alice@example.com", "4242");
 
       // Assert
-      expect(mockOtp.verify).toHaveBeenCalledWith(
-        "alice@example.com",
-        "4242",
-        "account-deletion",
-      );
+      expect(mockOtp.verify).toHaveBeenCalledWith("alice@example.com", "4242", "account-deletion");
     });
 
     it("should delete the user (cascade does the rest) when the OTP is valid", async () => {
@@ -315,10 +311,9 @@ describe("AuthService", () => {
       await authService.confirmAccountDeletion("alice@example.com", "4242");
 
       // Assert
-      expect(mockEmail.sendAccountDeletionConfirmation).toHaveBeenCalledWith(
-        "alice@example.com",
-        { hadJira: false },
-      );
+      expect(mockEmail.sendAccountDeletionConfirmation).toHaveBeenCalledWith("alice@example.com", {
+        hadJira: false,
+      });
     });
 
     it("should send a confirmation email with hadJira=true when the user had a Jira integration", async () => {
@@ -335,10 +330,9 @@ describe("AuthService", () => {
       await authService.confirmAccountDeletion("alice@example.com", "4242");
 
       // Assert
-      expect(mockEmail.sendAccountDeletionConfirmation).toHaveBeenCalledWith(
-        "alice@example.com",
-        { hadJira: true },
-      );
+      expect(mockEmail.sendAccountDeletionConfirmation).toHaveBeenCalledWith("alice@example.com", {
+        hadJira: true,
+      });
     });
 
     it("should clear the OTP after a successful deletion to prevent reuse", async () => {
@@ -383,9 +377,7 @@ describe("AuthService", () => {
       mockOtp.verify.mockResolvedValue(true);
       mockPrisma.user.findUnique.mockResolvedValue({ id: "user-1", email: "alice@example.com" });
       mockPrisma.integration.findUnique.mockResolvedValue(null);
-      mockPrisma.audioRecording.findMany.mockResolvedValue([
-        { filePath: "user-1/audio1.mp3" },
-      ]);
+      mockPrisma.audioRecording.findMany.mockResolvedValue([{ filePath: "user-1/audio1.mp3" }]);
       mockStorage.delete.mockRejectedValue(new Error("disk full"));
       mockPrisma.user.delete.mockResolvedValue(undefined);
 

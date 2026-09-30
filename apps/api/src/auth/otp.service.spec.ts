@@ -185,12 +185,7 @@ describe("OtpService", () => {
 
       const purposedKey = `otp:account-deletion:${email}`;
       expect(mockRedis.get).toHaveBeenCalledWith(purposedKey);
-      expect(mockRedis.set).toHaveBeenCalledWith(
-        purposedKey,
-        expect.any(String),
-        "EX",
-        300,
-      );
+      expect(mockRedis.set).toHaveBeenCalledWith(purposedKey, expect.any(String), "EX", 300);
     });
   });
 
