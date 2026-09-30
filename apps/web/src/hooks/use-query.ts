@@ -1,3 +1,4 @@
+import type { ApiFetcherData } from "@/lib/api-fetcher.types";
 /**
  * Data-fetching facade — single abstraction over the data-fetching library.
  *
@@ -34,7 +35,7 @@ type MutationOptions<T> = {
   method: MutationMethod;
   invalidateKeys?: string[];
   onSuccess?: (data: T) => void;
-  headers?: object;
+  headers?: Record<string, string>;
 };
 
 export function useMutation<T>({
@@ -51,7 +52,7 @@ export function useMutation<T>({
     async (_url, { arg }) => {
       const res = await apiFetcher(queryKey, {
         method,
-        data: arg,
+        data: arg as ApiFetcherData,
         ...(headers ? { headers } : undefined),
       });
 

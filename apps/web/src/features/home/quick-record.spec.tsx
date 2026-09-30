@@ -1,3 +1,4 @@
+import type { Mock } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { QuickRecord } from "./quick-record";
@@ -8,18 +9,29 @@ const { mockOpen } = vi.hoisted(() => ({
 }));
 
 vi.mock("@/features/recording/recording-modal-store", () => ({
-  useRecordingModalStore: (selector?: (s: any) => any) => {
+  useRecordingModalStore: (selector?: (s: RecordingModalStoreMock) => unknown) => {
     if (!selector) return mockStore;
     return selector(mockStore);
   },
 }));
 
-const mockStore = {
+type RecordingModalStoreMock = {
+  isOpen: boolean;
+  projectId: string | null;
+  open: Mock;
+  close: Mock;
+  setState: Mock;
+  getState: Mock;
+};
+
+const mockStore: RecordingModalStoreMock = {
   isOpen: false,
   projectId: null,
   open: mockOpen,
   close: vi.fn(),
-  setState: vi.fn(function (updates: any) {
+  setState: vi.fn(function (
+    updates: Partial<RecordingModalStoreMock> | ((s: RecordingModalStoreMock) => void),
+  ) {
     if (typeof updates === "function") {
       updates(mockStore);
     } else {

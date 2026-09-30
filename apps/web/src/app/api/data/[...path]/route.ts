@@ -56,11 +56,14 @@ async function handler(req: NextRequest) {
     }
 
     return new Response(null, { status: response.status });
-  } catch (error: any) {
+  } catch (error) {
     console.error("API Error:", error);
+    const { response } = (error ?? {}) as {
+      response?: { data?: unknown; status?: number };
+    };
     return NextResponse.json(
-      { error: error.response?.data ?? error },
-      { status: error.response?.status ?? 500 },
+      { error: response?.data ?? error },
+      { status: response?.status ?? 500 },
     );
   }
 }
