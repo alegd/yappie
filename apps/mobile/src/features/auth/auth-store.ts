@@ -1,10 +1,5 @@
 import { create } from "zustand";
-import {
-  clearTokens,
-  getAccessToken,
-  setAccessToken,
-  setRefreshToken,
-} from "@/lib/secure-store";
+import { clearTokens, getAccessToken, setAccessToken, setRefreshToken } from "@/lib/secure-store";
 
 export interface AuthUser {
   id: string;

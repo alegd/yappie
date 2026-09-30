@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const mockPush = jest.fn();
 const mockBack = jest.fn();
 let mockParams: Record<string, string> = { id: "a1" };
@@ -15,15 +16,12 @@ jest.mock("@/lib/api/jira", () => ({
   exportTicketsBulk: jest.fn(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render, fireEvent, waitFor } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { QueryClient, QueryClientProvider } = require("@tanstack/react-query") as typeof import("@tanstack/react-query");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { render, fireEvent, waitFor } =
+  require("@testing-library/react-native") as typeof import("@testing-library/react-native");
+const { QueryClient, QueryClientProvider } =
+  require("@tanstack/react-query") as typeof import("@tanstack/react-query");
 const audiosApi = require("@/lib/api/audios") as typeof import("@/lib/api/audios");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const jiraApi = require("@/lib/api/jira") as typeof import("@/lib/api/jira");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { AudioDetail } = require("./audio-detail") as typeof import("./audio-detail");
 
 const getAudioMock = audiosApi.getAudio as jest.Mock;
@@ -34,7 +32,14 @@ function renderWithClient(ui: React.ReactElement) {
   return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
 }
 
-function buildAudio(overrides: Partial<{ id: string; fileName: string; transcription: string | null; tickets: unknown[] }> = {}) {
+function buildAudio(
+  overrides: Partial<{
+    id: string;
+    fileName: string;
+    transcription: string | null;
+    tickets: unknown[];
+  }> = {},
+) {
   return {
     id: overrides.id ?? "a1",
     fileName: overrides.fileName ?? "standup.m4a",

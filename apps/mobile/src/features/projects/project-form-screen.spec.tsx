@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const mockBack = jest.fn();
 jest.mock("expo-router", () => ({
   useRouter: () => ({ back: mockBack, push: jest.fn() }),
@@ -13,16 +14,14 @@ jest.mock("@/lib/api/jira", () => ({
   getJiraProjects: jest.fn(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render, fireEvent, waitFor } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { QueryClient, QueryClientProvider } = require("@tanstack/react-query") as typeof import("@tanstack/react-query");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { render, fireEvent, waitFor } =
+  require("@testing-library/react-native") as typeof import("@testing-library/react-native");
+const { QueryClient, QueryClientProvider } =
+  require("@tanstack/react-query") as typeof import("@tanstack/react-query");
 const projectsApi = require("@/lib/api/projects") as typeof import("@/lib/api/projects");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const jiraApi = require("@/lib/api/jira") as typeof import("@/lib/api/jira");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { ProjectFormScreen } = require("./project-form-screen") as typeof import("./project-form-screen");
+const { ProjectFormScreen } =
+  require("./project-form-screen") as typeof import("./project-form-screen");
 
 const createProjectMock = projectsApi.createProject as jest.Mock;
 const updateProjectMock = projectsApi.updateProject as jest.Mock;
@@ -62,7 +61,9 @@ describe("ProjectFormScreen", () => {
 
   it("submits create with all four fields and navigates back", async () => {
     createProjectMock.mockResolvedValueOnce({ id: "p1", name: "Alpha" });
-    const { getByPlaceholderText, getByText } = renderWithClient(<ProjectFormScreen mode="create" />);
+    const { getByPlaceholderText, getByText } = renderWithClient(
+      <ProjectFormScreen mode="create" />,
+    );
     fireEvent.changeText(getByPlaceholderText("Project name"), "Alpha");
     fireEvent.changeText(getByPlaceholderText("Description (optional)"), "Hello");
     fireEvent.changeText(getByPlaceholderText("Context for the AI (optional)"), "Team context");

@@ -17,7 +17,6 @@ const TAB_LABELS: Record<string, string> = {
 };
 
 export function PillTabBar({ state, navigation, insets }: BottomTabBarProps) {
-
   return (
     <View
       style={[

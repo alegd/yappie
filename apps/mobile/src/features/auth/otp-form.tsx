@@ -60,7 +60,9 @@ export function OtpForm({ email }: OtpFormProps) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Enter code</Text>
-      <Text style={styles.subtitle}>We sent a {OTP_LENGTH}-digit code to {email}.</Text>
+      <Text style={styles.subtitle}>
+        We sent a {OTP_LENGTH}-digit code to {email}.
+      </Text>
 
       <Input
         value={code}
@@ -74,12 +76,7 @@ export function OtpForm({ email }: OtpFormProps) {
       />
 
       {needsRegister ? (
-        <Input
-          value={name}
-          onChangeText={setName}
-          placeholder="Your name"
-          autoCapitalize="words"
-        />
+        <Input value={name} onChangeText={setName} placeholder="Your name" autoCapitalize="words" />
       ) : null}
 
       <Button

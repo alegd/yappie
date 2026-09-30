@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const mockBack = jest.fn();
 let mockSegments: string[] = [];
 
@@ -6,10 +7,10 @@ jest.mock("expo-router", () => ({
   useSegments: () => mockSegments,
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render, fireEvent } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { FloatingBackButton } = require("./floating-back-button") as typeof import("./floating-back-button");
+const { render, fireEvent } =
+  require("@testing-library/react-native") as typeof import("@testing-library/react-native");
+const { FloatingBackButton } =
+  require("./floating-back-button") as typeof import("./floating-back-button");
 
 describe("FloatingBackButton", () => {
   beforeEach(() => {

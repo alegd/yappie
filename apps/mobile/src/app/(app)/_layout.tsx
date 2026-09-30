@@ -37,10 +37,7 @@ export default function AppLayout() {
           <Stack.Screen name="projects/[id]" options={{ headerShown: false }} />
           <Stack.Screen name="audios/[id]" options={{ headerShown: false }} />
           <Stack.Screen name="settings" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="record"
-            options={{ presentation: "modal", headerShown: false }}
-          />
+          <Stack.Screen name="record" options={{ presentation: "modal", headerShown: false }} />
           <Stack.Screen name="project-form" options={{ headerShown: false }} />
           <Stack.Screen name="account/delete" options={{ headerShown: false }} />
         </Stack>

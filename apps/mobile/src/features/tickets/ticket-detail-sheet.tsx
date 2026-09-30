@@ -79,7 +79,12 @@ export function TicketDetailSheet({ ticket, onClose }: TicketDetailSheetProps) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (input: { id: string; title: string; description: string; priority: TicketPriority }) =>
+    mutationFn: (input: {
+      id: string;
+      title: string;
+      description: string;
+      priority: TicketPriority;
+    }) =>
       updateTicket(input.id, {
         title: input.title,
         description: input.description,
@@ -99,14 +104,10 @@ export function TicketDetailSheet({ ticket, onClose }: TicketDetailSheetProps) {
     },
     onError: (err) => {
       if (err instanceof ApiError && err.status === 403) {
-        Alert.alert(
-          "Connect Jira first",
-          "Connect your Jira account before exporting tickets.",
-          [
-            { text: "Cancel", style: "cancel" },
-            { text: "Connect", onPress: () => router.push("/settings") },
-          ],
-        );
+        Alert.alert("Connect Jira first", "Connect your Jira account before exporting tickets.", [
+          { text: "Cancel", style: "cancel" },
+          { text: "Connect", onPress: () => router.push("/settings") },
+        ]);
         return;
       }
       const message = err instanceof Error ? err.message : "Failed to export";
@@ -202,7 +203,9 @@ export function TicketDetailSheet({ ticket, onClose }: TicketDetailSheetProps) {
                     onPress={() => setEditPriority(p)}
                     style={[styles.priorityChip, active && styles.priorityChipActive]}
                   >
-                    <Text style={[styles.priorityChipLabel, active && styles.priorityChipLabelActive]}>
+                    <Text
+                      style={[styles.priorityChipLabel, active && styles.priorityChipLabelActive]}
+                    >
                       {p}
                     </Text>
                   </Pressable>

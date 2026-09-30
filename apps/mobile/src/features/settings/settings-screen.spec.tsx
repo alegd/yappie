@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 jest.mock("@/lib/api/jira", () => ({
   getJiraStatus: jest.fn(),
   startJiraAuth: jest.fn(),
@@ -19,13 +20,11 @@ interface AlertButton {
   style?: "default" | "cancel" | "destructive";
 }
 const mockAlert = jest.fn();
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { Alert } = require("react-native") as typeof import("react-native");
-jest.spyOn(Alert, "alert").mockImplementation(((
-  title: string,
-  message?: string,
-  buttons?: AlertButton[],
-) => mockAlert(title, message, buttons)) as typeof Alert.alert);
+jest
+  .spyOn(Alert, "alert")
+  .mockImplementation(((title: string, message?: string, buttons?: AlertButton[]) =>
+    mockAlert(title, message, buttons)) as typeof Alert.alert);
 
 const mockLogout = jest.fn().mockResolvedValue(undefined);
 jest.mock("@/features/auth/use-auth", () => ({
@@ -34,17 +33,14 @@ jest.mock("@/features/auth/use-auth", () => ({
   }),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render, fireEvent, waitFor } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { QueryClient, QueryClientProvider } = require("@tanstack/react-query") as typeof import("@tanstack/react-query");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { render, fireEvent, waitFor } =
+  require("@testing-library/react-native") as typeof import("@testing-library/react-native");
+const { QueryClient, QueryClientProvider } =
+  require("@tanstack/react-query") as typeof import("@tanstack/react-query");
 const jiraApi = require("@/lib/api/jira") as typeof import("@/lib/api/jira");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const quotasApi = require("@/lib/api/quotas") as typeof import("@/lib/api/quotas");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { useAuthStore } = require("@/features/auth/auth-store") as typeof import("@/features/auth/auth-store");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { useAuthStore } =
+  require("@/features/auth/auth-store") as typeof import("@/features/auth/auth-store");
 const { SettingsScreen } = require("./settings-screen") as typeof import("./settings-screen");
 
 const getJiraStatusMock = jiraApi.getJiraStatus as jest.Mock;

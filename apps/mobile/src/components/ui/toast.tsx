@@ -61,10 +61,7 @@ export function ToastContainer() {
   return (
     <View pointerEvents="none" style={styles.container}>
       {entries.map((entry) => (
-        <View
-          key={entry.id}
-          style={[styles.toast, { borderColor: variantColor[entry.variant] }]}
-        >
+        <View key={entry.id} style={[styles.toast, { borderColor: variantColor[entry.variant] }]}>
           <Text style={[styles.message, { color: variantColor[entry.variant] }]}>
             {entry.message}
           </Text>

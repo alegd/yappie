@@ -26,7 +26,9 @@ describe("Input", () => {
   });
 
   it("does NOT render error region when error is undefined", () => {
-    const { queryByTestId } = render(<Input value="" onChangeText={() => {}} placeholder="Email" />);
+    const { queryByTestId } = render(
+      <Input value="" onChangeText={() => {}} placeholder="Email" />,
+    );
     expect(queryByTestId("input-error")).toBeNull();
   });
 });

@@ -100,8 +100,7 @@ export function RecordingModal() {
   });
 
   const projects = projectsQuery.data?.data ?? [];
-  const selectedProject =
-    projects.find((p) => p.id === selectedProjectId) ?? null;
+  const selectedProject = projects.find((p) => p.id === selectedProjectId) ?? null;
 
   useEffect(() => {
     return () => {
@@ -213,9 +212,7 @@ export function RecordingModal() {
           <Ionicons name="close" size={iconSize.lg} color={colors.text} />
         </Pressable>
         <Text style={styles.headerTitle}>
-          {state === "selecting_project"
-            ? "Choose a project"
-            : selectedProject?.name ?? ""}
+          {state === "selecting_project" ? "Choose a project" : (selectedProject?.name ?? "")}
         </Text>
         <View style={styles.headerSpacer} />
       </View>
@@ -321,7 +318,11 @@ export function RecordingModal() {
           {uploadMutation.isError ? (
             <>
               <Text style={styles.errorMessage}>{uploadErrorMessage}</Text>
-              <Button label="Retry" onPress={handleRetryUpload} loading={uploadMutation.isPending} />
+              <Button
+                label="Retry"
+                onPress={handleRetryUpload}
+                loading={uploadMutation.isPending}
+              />
             </>
           ) : (
             <Text style={styles.processingLabel}>Processing…</Text>
@@ -331,7 +332,6 @@ export function RecordingModal() {
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {

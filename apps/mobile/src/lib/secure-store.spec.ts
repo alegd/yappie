@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const mockStorage = new Map<string, string>();
 
 jest.mock("expo-secure-store", () => ({
@@ -10,7 +11,6 @@ jest.mock("expo-secure-store", () => ({
   }),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const tokenStorage = require("./secure-store") as typeof import("./secure-store");
 
 describe("tokenStorage", () => {
@@ -20,7 +20,6 @@ describe("tokenStorage", () => {
   });
 
   it("setAccessToken writes to SecureStore under yappie.accessToken", async () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const SecureStore = require("expo-secure-store");
     await tokenStorage.setAccessToken("abc");
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith("yappie.accessToken", "abc");

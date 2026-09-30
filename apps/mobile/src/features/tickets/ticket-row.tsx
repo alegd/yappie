@@ -67,7 +67,9 @@ export function TicketRow({ ticket, onPress, selectable, selected }: TicketRowPr
         </View>
       </View>
 
-      {!selectable ? <Ionicons name="chevron-forward" size={iconSize.sm} color={colors.textDim} /> : null}
+      {!selectable ? (
+        <Ionicons name="chevron-forward" size={iconSize.sm} color={colors.textDim} />
+      ) : null}
     </Pressable>
   );
 }

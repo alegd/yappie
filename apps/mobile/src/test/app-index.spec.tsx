@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 jest.mock("expo-router", () => ({
   Redirect: ({ href }: { href: string }) => {
     const { Text } = jest.requireActual("react-native");
@@ -5,11 +6,10 @@ jest.mock("expo-router", () => ({
   },
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { useAuthStore } = require("@/features/auth/auth-store") as typeof import("@/features/auth/auth-store");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { render } =
+  require("@testing-library/react-native") as typeof import("@testing-library/react-native");
+const { useAuthStore } =
+  require("@/features/auth/auth-store") as typeof import("@/features/auth/auth-store");
 const Index = require("@/app/index").default as React.ComponentType;
 
 describe("app index route", () => {

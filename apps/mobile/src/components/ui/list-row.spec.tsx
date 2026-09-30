@@ -8,9 +8,7 @@ describe("ListRow", () => {
   });
 
   it("renders the subtitle when provided", () => {
-    const { getByText } = render(
-      <ListRow title="Item" subtitle="extra info" onPress={() => {}} />,
-    );
+    const { getByText } = render(<ListRow title="Item" subtitle="extra info" onPress={() => {}} />);
     expect(getByText("extra info")).toBeTruthy();
   });
 

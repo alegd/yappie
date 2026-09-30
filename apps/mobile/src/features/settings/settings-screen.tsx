@@ -67,7 +67,9 @@ export function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: headerHeight + spacing.md }]}>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingTop: headerHeight + spacing.md }]}
+      >
         <Text style={styles.sectionLabel}>Account</Text>
         <Card>
           <Text style={styles.value}>{user?.name ?? "—"}</Text>
@@ -123,8 +125,8 @@ export function SettingsScreen() {
         <Card>
           <Text style={styles.value}>Delete account</Text>
           <Text style={styles.subtle}>
-            Permanently delete your account, recordings, projects, tickets and integrations.
-            This cannot be undone.
+            Permanently delete your account, recordings, projects, tickets and integrations. This
+            cannot be undone.
           </Text>
           <View style={styles.dangerActionWrap}>
             <Button

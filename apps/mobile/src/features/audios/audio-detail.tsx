@@ -54,14 +54,10 @@ export function AudioDetail() {
     },
     onError: (err) => {
       if (err instanceof ApiError && err.status === 403) {
-        Alert.alert(
-          "Connect Jira first",
-          "Connect your Jira account before exporting tickets.",
-          [
-            { text: "Cancel", style: "cancel" },
-            { text: "Connect", onPress: () => router.push("/settings") },
-          ],
-        );
+        Alert.alert("Connect Jira first", "Connect your Jira account before exporting tickets.", [
+          { text: "Cancel", style: "cancel" },
+          { text: "Connect", onPress: () => router.push("/settings") },
+        ]);
         return;
       }
       const message = err instanceof Error ? err.message : "Failed to export";
@@ -120,9 +116,7 @@ export function AudioDetail() {
             accessibilityRole="button"
             style={({ pressed }) => [styles.toggleButton, pressed && styles.toggleButtonPressed]}
           >
-            <Text style={styles.toggleLabel}>
-              {selectMode ? "Cancel" : "Select multiple"}
-            </Text>
+            <Text style={styles.toggleLabel}>{selectMode ? "Cancel" : "Select multiple"}</Text>
           </Pressable>
         ) : null}
       </View>

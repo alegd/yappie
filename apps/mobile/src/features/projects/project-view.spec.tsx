@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const mockPush = jest.fn();
 let mockParams: Record<string, string> = { id: "p1" };
 
@@ -14,15 +15,12 @@ jest.mock("@/lib/api/audios", () => ({
   listAudios: jest.fn(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render, fireEvent, waitFor } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { QueryClient, QueryClientProvider } = require("@tanstack/react-query") as typeof import("@tanstack/react-query");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { render, fireEvent, waitFor } =
+  require("@testing-library/react-native") as typeof import("@testing-library/react-native");
+const { QueryClient, QueryClientProvider } =
+  require("@tanstack/react-query") as typeof import("@tanstack/react-query");
 const projectsApi = require("@/lib/api/projects") as typeof import("@/lib/api/projects");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const audiosApi = require("@/lib/api/audios") as typeof import("@/lib/api/audios");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { ProjectView } = require("./project-view") as typeof import("./project-view");
 
 const getProjectMock = projectsApi.getProject as jest.Mock;
@@ -106,7 +104,10 @@ describe("ProjectView", () => {
     listAudiosMock.mockResolvedValueOnce({ data: [], total: 0, page: 1, limit: 20 });
     const { findByLabelText } = renderWithClient(<ProjectView />);
     fireEvent.press(await findByLabelText("Edit project"));
-    expect(mockPush).toHaveBeenCalledWith({ pathname: "/project-form", params: { mode: "edit", id: "p1" } });
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/project-form",
+      params: { mode: "edit", id: "p1" },
+    });
   });
 
   it("pushes /audios/<id> when an audio row is tapped", async () => {

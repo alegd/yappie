@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import React from "react";
 
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
@@ -28,9 +29,7 @@ jest.mock("expo-router", () => ({
   router: mockRouter,
   useRouter: () => mockRouter,
 }));
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const api = require("@/lib/api/client") as typeof import("@/lib/api/client");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { EmailForm } = require("./email-form") as typeof import("./email-form");
 
 const apiFetchMock = api.apiFetch as jest.Mock;
