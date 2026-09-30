@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
 
@@ -9,13 +10,11 @@ jest.mock("@/lib/api/projects", () => ({
   listProjects: jest.fn(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render, fireEvent, waitFor } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { QueryClient, QueryClientProvider } = require("@tanstack/react-query") as typeof import("@tanstack/react-query");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { render, fireEvent, waitFor } =
+  require("@testing-library/react-native") as typeof import("@testing-library/react-native");
+const { QueryClient, QueryClientProvider } =
+  require("@tanstack/react-query") as typeof import("@tanstack/react-query");
 const projectsApi = require("@/lib/api/projects") as typeof import("@/lib/api/projects");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { ProjectsList } = require("./projects-list") as typeof import("./projects-list");
 
 const listProjectsMock = projectsApi.listProjects as jest.Mock;
@@ -90,7 +89,10 @@ describe("ProjectsList", () => {
     const { findByLabelText } = renderWithClient(<ProjectsList />);
     const plus = await findByLabelText("Create project");
     fireEvent.press(plus);
-    expect(mockPush).toHaveBeenCalledWith({ pathname: "/project-form", params: { mode: "create" } });
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/project-form",
+      params: { mode: "create" },
+    });
   });
 
   it("renders the settings button", async () => {

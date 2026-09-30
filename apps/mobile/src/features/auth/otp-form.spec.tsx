@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import React from "react";
 
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
@@ -28,13 +29,9 @@ jest.mock("expo-router", () => ({
   router: mockRouter,
   useRouter: () => mockRouter,
 }));
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const api = require("@/lib/api/client") as typeof import("@/lib/api/client");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { useAuthStore } = require("./auth-store") as typeof import("./auth-store");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { ApiError } = require("@/lib/api-error") as typeof import("@/lib/api-error");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { OtpForm } = require("./otp-form") as typeof import("./otp-form");
 
 const apiFetchMock = api.apiFetch as jest.Mock;
@@ -80,9 +77,7 @@ describe("OtpForm", () => {
   });
 
   it("on 404 reveals name field and switches button to 'Create account'", async () => {
-    apiFetchMock.mockRejectedValueOnce(
-      new ApiError(404, { message: "not found" }, "not found"),
-    );
+    apiFetchMock.mockRejectedValueOnce(new ApiError(404, { message: "not found" }, "not found"));
     const { getByPlaceholderText, getByText, findByPlaceholderText, findByText } = renderForm();
     fireEvent.changeText(getByPlaceholderText("1234"), "1234");
     fireEvent.press(getByText("Verify"));

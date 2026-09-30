@@ -40,10 +40,7 @@ export function useAuth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
       });
-      await login(
-        { accessToken: data.accessToken, refreshToken: data.refreshToken },
-        data.user,
-      );
+      await login({ accessToken: data.accessToken, refreshToken: data.refreshToken }, data.user);
       return data;
     },
   });
@@ -55,10 +52,7 @@ export function useAuth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
       });
-      await login(
-        { accessToken: data.accessToken, refreshToken: data.refreshToken },
-        data.user,
-      );
+      await login({ accessToken: data.accessToken, refreshToken: data.refreshToken }, data.user);
       return data;
     },
   });

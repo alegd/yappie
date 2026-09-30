@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const mockPush = jest.fn();
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush }),
@@ -11,15 +12,12 @@ jest.mock("@/lib/api/quotas", () => ({
   getQuota: jest.fn(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render, fireEvent, waitFor } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { QueryClient, QueryClientProvider } = require("@tanstack/react-query") as typeof import("@tanstack/react-query");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { render, fireEvent, waitFor } =
+  require("@testing-library/react-native") as typeof import("@testing-library/react-native");
+const { QueryClient, QueryClientProvider } =
+  require("@tanstack/react-query") as typeof import("@tanstack/react-query");
 const audiosApi = require("@/lib/api/audios") as typeof import("@/lib/api/audios");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const quotasApi = require("@/lib/api/quotas") as typeof import("@/lib/api/quotas");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { HomeScreen } = require("./home-screen") as typeof import("./home-screen");
 
 const listRecentAudiosMock = audiosApi.listRecentAudios as jest.Mock;

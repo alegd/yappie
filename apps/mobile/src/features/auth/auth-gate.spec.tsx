@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import React from "react";
 
 import { render, waitFor } from "@testing-library/react-native";
@@ -14,11 +15,8 @@ jest.mock("expo-secure-store", () => ({
     mockStorage.delete(key);
   }),
 }));
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const tokenStorage = require("@/lib/secure-store") as typeof import("@/lib/secure-store");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { AuthGate } = require("./auth-gate") as typeof import("./auth-gate");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { useAuthStore } = require("./auth-store") as typeof import("./auth-store");
 
 function Child() {

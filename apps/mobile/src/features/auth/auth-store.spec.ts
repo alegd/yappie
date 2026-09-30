@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const mockStorage = new Map<string, string>();
 
 jest.mock("expo-secure-store", () => ({
@@ -10,14 +11,11 @@ jest.mock("expo-secure-store", () => ({
   }),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const tokenStorage = require("@/lib/secure-store") as typeof import("@/lib/secure-store");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { useAuthStore } = require("./auth-store") as typeof import("./auth-store");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { makeUser } = require("@/test/factories/user") as typeof import("@/test/factories/user");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { makeTokenPair } = require("@/test/factories/tokens") as typeof import("@/test/factories/tokens");
+const { makeTokenPair } =
+  require("@/test/factories/tokens") as typeof import("@/test/factories/tokens");
 
 describe("useAuthStore", () => {
   beforeEach(() => {

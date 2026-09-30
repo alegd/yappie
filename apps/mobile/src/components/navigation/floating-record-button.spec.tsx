@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const mockPush = jest.fn();
 let mockSegments: string[] = [];
 let mockParams: Record<string, string> = {};
@@ -8,10 +9,10 @@ jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockParams,
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render, fireEvent } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { FloatingRecordButton } = require("./floating-record-button") as typeof import("./floating-record-button");
+const { render, fireEvent } =
+  require("@testing-library/react-native") as typeof import("@testing-library/react-native");
+const { FloatingRecordButton } =
+  require("./floating-record-button") as typeof import("./floating-record-button");
 
 describe("FloatingRecordButton", () => {
   beforeEach(() => {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const mockBack = jest.fn();
 const mockDismiss = jest.fn();
 let mockParams: Record<string, string> = {};
@@ -44,17 +45,13 @@ jest.mock("react-native/Libraries/Linking/Linking", () => ({
   openSettings: jest.fn(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render, fireEvent, waitFor } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { QueryClient, QueryClientProvider } = require("@tanstack/react-query") as typeof import("@tanstack/react-query");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { render, fireEvent, waitFor } =
+  require("@testing-library/react-native") as typeof import("@testing-library/react-native");
+const { QueryClient, QueryClientProvider } =
+  require("@tanstack/react-query") as typeof import("@tanstack/react-query");
 const projectsApi = require("@/lib/api/projects") as typeof import("@/lib/api/projects");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const audiosApi = require("@/lib/api/audios") as typeof import("@/lib/api/audios");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { ApiError } = require("@/lib/api-error") as typeof import("@/lib/api-error");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { RecordingModal } = require("./recording-modal") as typeof import("./recording-modal");
 
 const listProjectsMock = projectsApi.listProjects as jest.Mock;
@@ -370,7 +367,10 @@ describe("RecordingModal", () => {
   });
 
   describe("upload flow", () => {
-    async function startThenStop(findByLabelText: ReturnType<typeof renderWithClient>["findByLabelText"], findByText: ReturnType<typeof renderWithClient>["findByText"]) {
+    async function startThenStop(
+      findByLabelText: ReturnType<typeof renderWithClient>["findByLabelText"],
+      findByText: ReturnType<typeof renderWithClient>["findByText"],
+    ) {
       fireEvent.press(await findByLabelText("Start recording"));
       fireEvent.press(await findByText("Stop"));
     }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const mockReplace = jest.fn();
 
 jest.mock("expo-router", () => ({
@@ -8,13 +9,11 @@ jest.mock("@/lib/api/projects", () => ({
   createProject: jest.fn(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render, fireEvent, waitFor } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { QueryClient, QueryClientProvider } = require("@tanstack/react-query") as typeof import("@tanstack/react-query");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { render, fireEvent, waitFor } =
+  require("@testing-library/react-native") as typeof import("@testing-library/react-native");
+const { QueryClient, QueryClientProvider } =
+  require("@tanstack/react-query") as typeof import("@tanstack/react-query");
 const projectsApi = require("@/lib/api/projects") as typeof import("@/lib/api/projects");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { OnboardingScreen } = require("./onboarding-screen") as typeof import("./onboarding-screen");
 
 const createProjectMock = projectsApi.createProject as jest.Mock;

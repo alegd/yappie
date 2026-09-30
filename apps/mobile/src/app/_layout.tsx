@@ -13,11 +13,7 @@ import {
   Sora_700Bold,
   Sora_800ExtraBold,
 } from "@expo-google-fonts/sora";
-import {
-  DMSans_400Regular,
-  DMSans_500Medium,
-  DMSans_700Bold,
-} from "@expo-google-fonts/dm-sans";
+import { DMSans_400Regular, DMSans_500Medium, DMSans_700Bold } from "@expo-google-fonts/dm-sans";
 import { createQueryClient } from "@/lib/query-client";
 import { initSentry } from "@/lib/sentry";
 import { env } from "@/lib/env";

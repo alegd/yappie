@@ -58,8 +58,8 @@ export function AccountDeletionScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Delete your account</Text>
       <Text style={styles.body}>
-        This permanently removes your account, projects, recordings, tickets and integrations.
-        This action cannot be undone.
+        This permanently removes your account, projects, recordings, tickets and integrations. This
+        action cannot be undone.
       </Text>
 
       {step === "request" && (

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import React from "react";
 
 const mockRouter = {
@@ -11,9 +12,8 @@ jest.mock("expo-router", () => ({
   useRouter: () => mockRouter,
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render, fireEvent } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { render, fireEvent } =
+  require("@testing-library/react-native") as typeof import("@testing-library/react-native");
 const { WelcomeScreen } = require("./welcome-screen") as typeof import("./welcome-screen");
 
 describe("WelcomeScreen", () => {

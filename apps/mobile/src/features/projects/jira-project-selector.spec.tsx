@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 jest.mock("@/lib/api/jira", () => ({
   getJiraStatus: jest.fn(),
   getJiraProjects: jest.fn(),
@@ -8,14 +9,13 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render, fireEvent, waitFor } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { QueryClient, QueryClientProvider } = require("@tanstack/react-query") as typeof import("@tanstack/react-query");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { render, fireEvent, waitFor } =
+  require("@testing-library/react-native") as typeof import("@testing-library/react-native");
+const { QueryClient, QueryClientProvider } =
+  require("@tanstack/react-query") as typeof import("@tanstack/react-query");
 const jiraApi = require("@/lib/api/jira") as typeof import("@/lib/api/jira");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { JiraProjectSelector } = require("./jira-project-selector") as typeof import("./jira-project-selector");
+const { JiraProjectSelector } =
+  require("./jira-project-selector") as typeof import("./jira-project-selector");
 
 const getJiraStatusMock = jiraApi.getJiraStatus as jest.Mock;
 const getJiraProjectsMock = jiraApi.getJiraProjects as jest.Mock;
@@ -34,9 +34,7 @@ describe("JiraProjectSelector", () => {
 
   it("renders nothing while the Jira status is loading", () => {
     getJiraStatusMock.mockReturnValue(new Promise(() => {}));
-    const { toJSON } = renderWithClient(
-      <JiraProjectSelector value={null} onChange={() => {}} />,
-    );
+    const { toJSON } = renderWithClient(<JiraProjectSelector value={null} onChange={() => {}} />);
     expect(toJSON()).toBeNull();
   });
 

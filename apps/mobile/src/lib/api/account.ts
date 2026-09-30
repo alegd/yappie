@@ -8,10 +8,7 @@ export function deleteAccountRequest(email: string): Promise<{ requested: boolea
   });
 }
 
-export function deleteAccountConfirm(
-  email: string,
-  code: string,
-): Promise<{ deleted: boolean }> {
+export function deleteAccountConfirm(email: string, code: string): Promise<{ deleted: boolean }> {
   return apiFetch<{ deleted: boolean }>("/auth/account/delete/confirm", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

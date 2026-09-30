@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 // Must be set before the module is loaded so the eager export const env = loadEnv() doesn't throw.
 process.env.EXPO_PUBLIC_API_URL = "https://api.example.test";
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { loadEnv } = require("./env") as typeof import("./env");
 
 describe("loadEnv", () => {

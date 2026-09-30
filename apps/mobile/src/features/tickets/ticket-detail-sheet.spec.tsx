@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 // @gorhom/bottom-sheet is mocked globally in jest-setup.js.
 import { Alert } from "react-native";
 
@@ -15,18 +16,15 @@ jest.mock("@/lib/api/jira", () => ({
   exportTicketToJira: jest.fn(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render, fireEvent, waitFor } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { QueryClient, QueryClientProvider } = require("@tanstack/react-query") as typeof import("@tanstack/react-query");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { render, fireEvent, waitFor } =
+  require("@testing-library/react-native") as typeof import("@testing-library/react-native");
+const { QueryClient, QueryClientProvider } =
+  require("@tanstack/react-query") as typeof import("@tanstack/react-query");
 const ticketsApi = require("@/lib/api/tickets") as typeof import("@/lib/api/tickets");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const jiraApi = require("@/lib/api/jira") as typeof import("@/lib/api/jira");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { ApiError } = require("@/lib/api-error") as typeof import("@/lib/api-error");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { TicketDetailSheet } = require("./ticket-detail-sheet") as typeof import("./ticket-detail-sheet");
+const { TicketDetailSheet } =
+  require("./ticket-detail-sheet") as typeof import("./ticket-detail-sheet");
 
 const updateTicketMock = ticketsApi.updateTicket as jest.Mock;
 const deleteTicketMock = ticketsApi.deleteTicket as jest.Mock;
@@ -40,7 +38,9 @@ function renderWithClient(ui: React.ReactElement) {
   };
 }
 
-function buildTicket(overrides: Partial<import("@/lib/api/types").Ticket> = {}): import("@/lib/api/types").Ticket {
+function buildTicket(
+  overrides: Partial<import("@/lib/api/types").Ticket> = {},
+): import("@/lib/api/types").Ticket {
   return {
     id: "t1",
     title: "Fix login bug in Safari",
@@ -200,7 +200,10 @@ describe("TicketDetailSheet", () => {
     });
 
     it("calls exportTicketToJira and invalidates audio cache on success", async () => {
-      exportToJiraMock.mockResolvedValueOnce({ jiraIssueKey: "TV-1", jiraIssueUrl: "https://j.io" });
+      exportToJiraMock.mockResolvedValueOnce({
+        jiraIssueKey: "TV-1",
+        jiraIssueUrl: "https://j.io",
+      });
       const { getByText } = renderWithClient(
         <TicketDetailSheet ticket={buildTicket()} onClose={() => {}} />,
       );

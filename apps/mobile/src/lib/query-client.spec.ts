@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { createQueryClient } = require("./query-client") as typeof import("./query-client");
 
 describe("createQueryClient", () => {

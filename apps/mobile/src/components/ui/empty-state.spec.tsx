@@ -3,9 +3,7 @@ import { EmptyState } from "./empty-state";
 
 describe("EmptyState", () => {
   it("renders the headline and body", () => {
-    const { getByText } = render(
-      <EmptyState headline="No projects" body="Create one to start." />,
-    );
+    const { getByText } = render(<EmptyState headline="No projects" body="Create one to start." />);
     expect(getByText("No projects")).toBeTruthy();
     expect(getByText("Create one to start.")).toBeTruthy();
   });
@@ -13,11 +11,7 @@ describe("EmptyState", () => {
   it("renders the action button when provided", () => {
     const onPress = jest.fn();
     const { getByText } = render(
-      <EmptyState
-        headline="Empty"
-        body="Nothing here."
-        action={{ label: "Create", onPress }}
-      />,
+      <EmptyState headline="Empty" body="Nothing here." action={{ label: "Create", onPress }} />,
     );
     fireEvent.press(getByText("Create"));
     expect(onPress).toHaveBeenCalledTimes(1);

@@ -1,10 +1,9 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 jest.mock("./client", () => ({
   apiFetch: jest.fn(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const client = require("./client") as typeof import("./client");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const audios = require("./audios") as typeof import("./audios");
 
 const apiFetchMock = client.apiFetch as jest.Mock;

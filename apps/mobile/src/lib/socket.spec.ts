@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 type Handler = (payload: { audioId: string }) => void;
 
 const mockSocketInstance = {
@@ -29,9 +30,7 @@ jest.mock("./secure-store", () => ({
   clearTokens: jest.fn(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { QueryClient } = require("@tanstack/react-query") as typeof import("@tanstack/react-query");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { connectSocket, disconnectSocket } = require("./socket") as typeof import("./socket");
 
 describe("socket client", () => {

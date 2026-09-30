@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import React from "react";
 
 jest.mock("@/lib/api/account", () => ({
@@ -10,16 +11,15 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({ replace: jest.fn(), back: jest.fn() }),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { render, fireEvent, waitFor } = require("@testing-library/react-native") as typeof import("@testing-library/react-native");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { QueryClient, QueryClientProvider } = require("@tanstack/react-query") as typeof import("@tanstack/react-query");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { render, fireEvent, waitFor } =
+  require("@testing-library/react-native") as typeof import("@testing-library/react-native");
+const { QueryClient, QueryClientProvider } =
+  require("@tanstack/react-query") as typeof import("@tanstack/react-query");
 const accountApi = require("@/lib/api/account") as typeof import("@/lib/api/account");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { useAuthStore } = require("@/features/auth/auth-store") as typeof import("@/features/auth/auth-store");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { AccountDeletionScreen } = require("./account-deletion-screen") as typeof import("./account-deletion-screen");
+const { useAuthStore } =
+  require("@/features/auth/auth-store") as typeof import("@/features/auth/auth-store");
+const { AccountDeletionScreen } =
+  require("./account-deletion-screen") as typeof import("./account-deletion-screen");
 
 const requestMock = accountApi.deleteAccountRequest as jest.Mock;
 const confirmMock = accountApi.deleteAccountConfirm as jest.Mock;

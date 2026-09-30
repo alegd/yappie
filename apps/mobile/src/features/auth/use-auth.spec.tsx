@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import React from "react";
 
 import { renderHook, act } from "@testing-library/react-native";
@@ -20,13 +21,9 @@ jest.mock("@/lib/env", () => ({ env: { apiUrl: "https://api.test" } }));
 jest.mock("@/lib/api/client", () => ({
   apiFetch: jest.fn(),
 }));
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const api = require("@/lib/api/client") as typeof import("@/lib/api/client");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { useAuthStore } = require("./auth-store") as typeof import("./auth-store");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { useAuth } = require("./use-auth") as typeof import("./use-auth");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { ApiError } = require("@/lib/api-error") as typeof import("@/lib/api-error");
 
 const apiFetchMock = api.apiFetch as jest.Mock;
@@ -121,10 +118,9 @@ describe("useAuth", () => {
   });
 
   it("logout posts to /auth/logout with refresh token and clears auth store", async () => {
-    await useAuthStore.getState().login(
-      { accessToken: "at", refreshToken: "rt" },
-      { id: "u1", email: "x@y.com", name: "x" },
-    );
+    await useAuthStore
+      .getState()
+      .login({ accessToken: "at", refreshToken: "rt" }, { id: "u1", email: "x@y.com", name: "x" });
 
     apiFetchMock.mockResolvedValueOnce({});
     const { result } = renderHook(() => useAuth(), { wrapper });
