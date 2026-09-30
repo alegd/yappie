@@ -5,9 +5,19 @@ export const E2E_UI_EMAIL = "e2e-ui@example.com";
 export const E2E_UI_USER_NAME = "E2E UI User";
 export const E2E_UI_PROJECT_NAME = "E2E Project";
 
+const REDIS_DB_INDEX_PATH = /^\/(\d+)\/?$/;
+
 function hasNonDefaultRedisDbIndex(redisUrl: string | undefined): boolean {
   if (!redisUrl) return false;
-  const match = /\/(\d+)\/?$/.exec(redisUrl);
+
+  let pathname: string;
+  try {
+    pathname = new URL(redisUrl).pathname;
+  } catch {
+    return false;
+  }
+
+  const match = REDIS_DB_INDEX_PATH.exec(pathname);
   if (!match) return false;
   return Number(match[1]) !== 0;
 }
