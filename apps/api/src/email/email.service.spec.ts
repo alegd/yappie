@@ -68,9 +68,9 @@ describe("EmailService", () => {
     it("should throw when Resend rejects", async () => {
       mockSend.mockRejectedValue(new Error("Network down"));
 
-      await expect(
-        service.sendAccountDeletionOtp("user@example.com", "1234"),
-      ).rejects.toThrow("Network down");
+      await expect(service.sendAccountDeletionOtp("user@example.com", "1234")).rejects.toThrow(
+        "Network down",
+      );
     });
   });
 

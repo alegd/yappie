@@ -14,7 +14,7 @@ export const base = [
       prettier: prettierPlugin,
     },
     rules: {
-      "prettier/prettier": "warn",
+      "prettier/prettier": "error",
       "@typescript-eslint/no-unused-vars": [
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },

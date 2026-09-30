@@ -21,9 +21,7 @@ describe("AccountDeletionFlow", () => {
       render(<AccountDeletionFlow mode="public" />);
 
       expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
-      expect(
-        screen.getByRole("button", { name: /send verification code/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /send verification code/i })).toBeInTheDocument();
     });
 
     it("should display the initialEmail read-only when mode is 'authenticated'", () => {
@@ -43,10 +41,9 @@ describe("AccountDeletionFlow", () => {
       await user.click(screen.getByRole("button", { name: /send verification code/i }));
 
       await waitFor(() => {
-        expect(mockPublicFetcher).toHaveBeenCalledWith(
-          "/v1/auth/account/delete/request",
-          { data: { email: "alice@example.com" } },
-        );
+        expect(mockPublicFetcher).toHaveBeenCalledWith("/v1/auth/account/delete/request", {
+          data: { email: "alice@example.com" },
+        });
       });
     });
 
@@ -74,9 +71,7 @@ describe("AccountDeletionFlow", () => {
       await user.click(screen.getByRole("button", { name: /send verification code/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByRole("button", { name: /delete my account/i }),
-        ).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /delete my account/i })).toBeInTheDocument();
       });
     });
   });
@@ -99,9 +94,7 @@ describe("AccountDeletionFlow", () => {
       await user.click(screen.getByRole("button", { name: /send verification code/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByRole("button", { name: /delete my account/i }),
-        ).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /delete my account/i })).toBeInTheDocument();
       });
 
       return user;
@@ -139,10 +132,9 @@ describe("AccountDeletionFlow", () => {
       await user.click(screen.getByRole("button", { name: /delete my account/i }));
 
       await waitFor(() => {
-        expect(mockPublicFetcher).toHaveBeenCalledWith(
-          "/v1/auth/account/delete/confirm",
-          { data: { email: "alice@example.com", code: "1234" } },
-        );
+        expect(mockPublicFetcher).toHaveBeenCalledWith("/v1/auth/account/delete/confirm", {
+          data: { email: "alice@example.com", code: "1234" },
+        });
       });
     });
 

@@ -14,8 +14,8 @@ export function AccountDeletionSection() {
           <div>
             <p className="font-medium">Delete account</p>
             <p className="mt-0.5 text-foreground/75 text-sm">
-              Permanently delete your account, recordings, projects, tickets and integrations.
-              This cannot be undone.
+              Permanently delete your account, recordings, projects, tickets and integrations. This
+              cannot be undone.
             </p>
           </div>
           <Link
