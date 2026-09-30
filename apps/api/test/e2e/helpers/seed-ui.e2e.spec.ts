@@ -77,6 +77,36 @@ describe("seedUiE2e", () => {
     expect(mockRedis.flushdb).not.toHaveBeenCalled();
   });
 
+  it("allows a REDIS_URL that carries query parameters", async () => {
+    vi.stubEnv("REDIS_URL", "redis://localhost:6379/15?family=6");
+
+    await expect(seedUiE2e(mockPrisma as never, mockRedis as never)).resolves.toEqual({
+      userId: "user-1",
+      projectId: "project-1",
+    });
+    expect(mockRedis.flushdb).toHaveBeenCalledOnce();
+  });
+
+  it("still refuses database index 0 when query parameters are present", async () => {
+    vi.stubEnv("REDIS_URL", "redis://localhost:6379/0?family=6");
+
+    await expect(seedUiE2e(mockPrisma as never, mockRedis as never)).rejects.toThrow(
+      /unsafe target/,
+    );
+    expect(mockPrisma.$executeRawUnsafe).not.toHaveBeenCalled();
+    expect(mockRedis.flushdb).not.toHaveBeenCalled();
+  });
+
+  it("still refuses a REDIS_URL with query parameters but no database index", async () => {
+    vi.stubEnv("REDIS_URL", "redis://localhost:6379?family=6");
+
+    await expect(seedUiE2e(mockPrisma as never, mockRedis as never)).rejects.toThrow(
+      /unsafe target/,
+    );
+    expect(mockPrisma.$executeRawUnsafe).not.toHaveBeenCalled();
+    expect(mockRedis.flushdb).not.toHaveBeenCalled();
+  });
+
   it("truncates users, flushes redis, and seeds the ui user with one project", async () => {
     const result = await seedUiE2e(mockPrisma as never, mockRedis as never);
 
