@@ -1,6 +1,5 @@
 appId: com.gueden.yappie
 env:
-  API_URL: http://192.168.1.234:3011
   EMAIL: e2e-ui@example.com
   PROJECT_NAME: E2E Project
 ---

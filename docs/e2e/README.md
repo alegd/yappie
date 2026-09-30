@@ -92,19 +92,22 @@ screenshot to be written to `apps/mobile/`.
   `.env.e2e` (3011), not the default dev port. `smoke.yaml`'s `API_URL` and
   the build's `EXPO_PUBLIC_API_URL` must both point at `:3011` or OTP fetch
   and every API call in the flow fail.
-- **The LAN IP baked into `smoke.yaml` will go stale.** `env.API_URL` in
-  `apps/mobile/.maestro/smoke.yaml` is pinned to whatever IP was current when
-  the flow was written; DHCP can reassign it at any time, and nothing points
-  this out when it drifts — the flow just fails opaquely at the OTP fetch
-  step. `maestro test` overrides a flow's `env` values with `-e KEY=VALUE`,
-  so re-derive the current IP (`ipconfig getifaddr en0`) and pass it through
-  without editing the file:
-  `cd apps/mobile && npm run e2e:ui -- -e API_URL=http://<LAN_IP>:3011`. This
-  must match the `EXPO_PUBLIC_API_URL` the Release build was compiled with
-  (step 3 above) — if the two IPs differ, the OTP fetch fails even though the
-  app itself boots fine. Running `npm run e2e:ui` with no extra args falls
-  back to the IP hardcoded in `smoke.yaml`, so keep it updated when it's
-  known to be current, and always override it when in doubt.
+- **`-e KEY=VALUE` does NOT override a value the flow already declares.** On
+  Maestro 2.1.0 the flow's own `env:` block wins over `-e` and over shell
+  variables alike. Verified with a probe flow that reports the value its
+  `runScript` received: `-e` after the flow file, `-e` before it, and an
+  exported shell variable all fail to take effect, while asserting the flow's
+  own hardcoded value succeeds _with `-e` pointing somewhere else_. `-e` works
+  only for keys the flow does not declare. This is why `smoke.yaml` no longer
+  declares `API_URL`, and why `npm run e2e:ui` supplies it instead — a pinned
+  default would silently shadow every override.
+- **The API URL is derived per run, not stored.** `e2e:ui` resolves it from
+  `ipconfig getifaddr en0` at invocation time, so it cannot go stale with a
+  DHCP lease. It must still match the `EXPO_PUBLIC_API_URL` the Release build
+  was compiled with (step 3 above) — the build bakes its value in, so a lease
+  change between building and running means rebuilding. To target something
+  else (a different interface, a tunnel), append your own value; the later
+  flag wins: `npm run e2e:ui -- -e API_URL=http://<HOST>:3011`.
 - **Release build is mandatory.** Dev mode (Metro/JS bundler) is broken on
   this stack for this flow — always build with `--configuration Release`.
 - **Kill by port, not by PID.** `nest start` forks a child; `kill $!` after

@@ -14,7 +14,7 @@
     "test:coverage": "jest --coverage",
     "type-check": "tsc --noEmit",
     "web": "expo start --web",
-    "e2e:ui": "maestro test .maestro/smoke.yaml",
+    "e2e:ui": "maestro test .maestro/smoke.yaml -e API_URL=http://$(ipconfig getifaddr en0):3011",
     "prebuild": "expo prebuild --clean",
     "build:android:preview": "expo prebuild --clean && eas build -p android --local --profile preview",
     "build:android:staging": "expo prebuild --clean && eas build -p android --local --profile staging",
