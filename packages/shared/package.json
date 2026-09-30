@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc --build",
     "clean": "rm -rf dist",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {

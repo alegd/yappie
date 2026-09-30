@@ -6,7 +6,7 @@
     "build": "prisma generate && nest build",
     "dev": "prisma generate && nest start --watch --tsc -p tsconfig.build.json",
     "start": "node dist/main",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

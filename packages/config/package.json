@@ -18,7 +18,7 @@
   "scripts": {
     "build": "echo 'config package - no build needed'",
     "clean": "echo 'nothing to clean'",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "type-check": "echo 'no type-check needed'"
   }
 }
