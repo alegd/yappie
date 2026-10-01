@@ -1,9 +1,10 @@
+import type { ComponentProps } from "react";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LandingPage } from "./landing-page";
 
 vi.mock("next/link", () => ({
-  default: ({ children, href, ...props }: any) => (
+  default: ({ children, href, ...props }: ComponentProps<"a">) => (
     <a href={href} {...props}>
       {children}
     </a>

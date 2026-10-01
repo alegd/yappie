@@ -1,3 +1,4 @@
+import type { ApiFetcherArgs } from "@/lib/api-fetcher.types";
 import { apiFetcher } from "@/lib/api-fetcher";
 import { showError } from "@/lib/error";
 import { ReactNode } from "react";
@@ -16,7 +17,7 @@ export function SwrConfig({
   return (
     <SWRConfig
       value={{
-        fetcher: async (url: string, args: unknown = {}) => {
+        fetcher: async (url: string, args: ApiFetcherArgs = {}) => {
           const response = await apiFetcher(url, args);
           if (response.success === false) {
             showError(response.error);
