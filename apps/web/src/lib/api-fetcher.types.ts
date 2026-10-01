@@ -12,6 +12,5 @@ export interface ApiFetcherArgs extends Omit<RequestInit, "headers"> {
 }
 
 export interface ApiErrorBody {
-  message?: string;
-  key?: string;
+  message?: string | string[];
 }
