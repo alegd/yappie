@@ -201,6 +201,20 @@ describe("RecordingModal", () => {
       expect(await findByText(/open settings/i)).toBeTruthy();
     });
 
+    it("hides the record button while mic permission is denied", async () => {
+      mockPermissionState = { granted: false, canAskAgain: false, status: "denied" };
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      const { findByText, queryByTestId } = renderWithClient(<RecordingModal />);
+      await findByText(/microphone access/i);
+      expect(queryByTestId("record-start")).toBeNull();
+    });
+
     it("requests permission and transitions to idle when granted on first record press", async () => {
       mockPermissionState = { granted: false, canAskAgain: true, status: "undetermined" };
       mockRequestPermission.mockResolvedValueOnce({

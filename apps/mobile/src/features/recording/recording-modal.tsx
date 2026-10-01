@@ -163,10 +163,7 @@ export function RecordingModal() {
   };
 
   const handleRequestPermission = async () => {
-    const result = await requestPermission();
-    if (!result.granted && !result.canAskAgain) {
-      return;
-    }
+    await requestPermission();
   };
 
   const needsPermission = permission ? !permission.granted : false;
@@ -244,91 +241,95 @@ export function RecordingModal() {
             </Pressable>
           )}
         </View>
-      ) : state === "selecting_project" ? (
-        projectsQuery.isLoading ? (
-          <View style={styles.skeletons}>
-            <Skeleton width="100%" height={60} borderRadius={radii.md} />
-            <Skeleton width="100%" height={60} borderRadius={radii.md} />
-          </View>
-        ) : (
-          <FlatList
-            data={projects}
-            keyExtractor={(p) => p.id}
-            contentContainerStyle={styles.list}
-            renderItem={({ item }) => (
-              <ListRow
-                title={item.name}
-                subtitle={item.description ?? undefined}
-                onPress={() => handleSelectProject(item)}
-                testID="project-picker-row"
+      ) : (
+        <>
+          {state === "selecting_project" ? (
+            projectsQuery.isLoading ? (
+              <View style={styles.skeletons}>
+                <Skeleton width="100%" height={60} borderRadius={radii.md} />
+                <Skeleton width="100%" height={60} borderRadius={radii.md} />
+              </View>
+            ) : (
+              <FlatList
+                data={projects}
+                keyExtractor={(p) => p.id}
+                contentContainerStyle={styles.list}
+                renderItem={({ item }) => (
+                  <ListRow
+                    title={item.name}
+                    subtitle={item.description ?? undefined}
+                    onPress={() => handleSelectProject(item)}
+                    testID="project-picker-row"
+                  />
+                )}
               />
-            )}
-          />
-        )
-      ) : null}
+            )
+          ) : null}
 
-      {state === "idle" ? (
-        <View style={styles.center}>
-          <View style={styles.micCircle}>
-            <Ionicons name="mic-outline" size={iconSize.display} color={colors.text} />
-          </View>
-          {recordError ? (
-            <>
-              <Text style={styles.errorMessage} testID="record-error">
-                {recordErrorMessage}
-              </Text>
-              <Button label="Retry" onPress={handleStartRecording} />
-            </>
-          ) : (
-            <>
-              <Text style={styles.hint}>Tap to record</Text>
+          {state === "idle" ? (
+            <View style={styles.center}>
+              <View style={styles.micCircle}>
+                <Ionicons name="mic-outline" size={iconSize.display} color={colors.text} />
+              </View>
+              {recordError ? (
+                <>
+                  <Text style={styles.errorMessage} testID="record-error">
+                    {recordErrorMessage}
+                  </Text>
+                  <Button label="Retry" onPress={handleStartRecording} />
+                </>
+              ) : (
+                <>
+                  <Text style={styles.hint}>Tap to record</Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Start recording"
+                    onPress={handleStartRecording}
+                    style={({ pressed }) => [styles.recordButton, pressed && styles.pressed]}
+                    testID="record-start"
+                  >
+                    <Text style={styles.recordButtonLabel}>Record</Text>
+                  </Pressable>
+                </>
+              )}
+            </View>
+          ) : null}
+
+          {state === "recording" ? (
+            <View style={styles.center}>
+              <Text style={styles.timer}>{formatDuration(durationSeconds)}</Text>
+              <View style={styles.recordingDot} />
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Start recording"
-                onPress={handleStartRecording}
-                style={({ pressed }) => [styles.recordButton, pressed && styles.pressed]}
-                testID="record-start"
+                accessibilityLabel="Stop recording"
+                onPress={handleStop}
+                style={({ pressed }) => [styles.stopButton, pressed && styles.pressed]}
+                testID="record-stop"
               >
-                <Text style={styles.recordButtonLabel}>Record</Text>
+                <Text style={styles.stopButtonLabel}>Stop</Text>
               </Pressable>
-            </>
-          )}
-        </View>
-      ) : null}
+            </View>
+          ) : null}
 
-      {state === "recording" ? (
-        <View style={styles.center}>
-          <Text style={styles.timer}>{formatDuration(durationSeconds)}</Text>
-          <View style={styles.recordingDot} />
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Stop recording"
-            onPress={handleStop}
-            style={({ pressed }) => [styles.stopButton, pressed && styles.pressed]}
-            testID="record-stop"
-          >
-            <Text style={styles.stopButtonLabel}>Stop</Text>
-          </Pressable>
-        </View>
-      ) : null}
-
-      {state === "uploading" ? (
-        <View style={styles.center}>
-          <Text style={styles.timer}>{formatDuration(durationSeconds)}</Text>
-          {uploadMutation.isError ? (
-            <>
-              <Text style={styles.errorMessage}>{uploadErrorMessage}</Text>
-              <Button
-                label="Retry"
-                onPress={handleRetryUpload}
-                loading={uploadMutation.isPending}
-              />
-            </>
-          ) : (
-            <Text style={styles.processingLabel}>Processing…</Text>
-          )}
-        </View>
-      ) : null}
+          {state === "uploading" ? (
+            <View style={styles.center}>
+              <Text style={styles.timer}>{formatDuration(durationSeconds)}</Text>
+              {uploadMutation.isError ? (
+                <>
+                  <Text style={styles.errorMessage}>{uploadErrorMessage}</Text>
+                  <Button
+                    label="Retry"
+                    onPress={handleRetryUpload}
+                    loading={uploadMutation.isPending}
+                  />
+                </>
+              ) : (
+                <Text style={styles.processingLabel}>Processing…</Text>
+              )}
+            </View>
+          ) : null}
+        </>
+      )}
     </View>
   );
 }
