@@ -3,52 +3,48 @@ import path from "path";
 import { createProjectViaApi, generateUser, loginViaUi, registerUserViaApi } from "./helpers";
 
 const AUDIO_FIXTURE = path.join(__dirname, "fixtures/test-audio.wav");
+const PROJECT_NAME = "Tickets Test Project";
+const PIPELINE_TIMEOUT_MS = 120_000;
 
-test.describe("Tickets Actions", () => {
-  // This test calls OpenAI (Whisper + GPT) so it needs extra time
-  test.setTimeout(180_000); // 3 minutes
+test.describe("Tickets from a processed audio", () => {
+  test.setTimeout(PIPELINE_TIMEOUT_MS + 60_000);
 
   const user = generateUser();
-  let accessToken: string;
 
   test.beforeAll(async () => {
-    const data = await registerUserViaApi(user);
-    accessToken = data.accessToken;
-
+    const { accessToken } = await registerUserViaApi(user);
     await createProjectViaApi(accessToken, {
-      name: "Tickets Test Project",
-      context: "Testing ticket approval flow",
+      name: PROJECT_NAME,
+      context: "Testing the ticket pipeline",
     });
   });
 
-  test("should upload audio and see it processed", async ({ page }) => {
+  test("uploads an audio file, sees its tickets appear without a click, and opens one", async ({
+    page,
+  }) => {
     await loginViaUi(page, user.email);
 
-    // 1. Upload audio
-    await page.getByRole("link", { name: /audios/i }).click();
-    await page.waitForURL(/audios/);
+    await page.getByRole("link", { name: PROJECT_NAME }).click();
+    await page.waitForURL(/\/dashboard\/projects\/(?!new$)[a-z0-9]+$/);
 
-    const fileInput = page.locator('input[type="file"]');
-    await fileInput.setInputFiles(AUDIO_FIXTURE);
+    await page.getByRole("button", { name: "Record", exact: true }).click();
+    await expect(page.getByRole("dialog", { name: "Record", exact: true })).toBeVisible();
 
-    // 2. Wait for audio to appear in list
-    await expect(page.getByText("test-audio.wav")).toBeVisible({ timeout: 10_000 });
+    await page.getByRole("tab", { name: "Upload" }).click();
+    await page.getByLabel("Audio file input").setInputFiles(AUDIO_FIXTURE);
 
-    // 3. Wait for processing — status should change from Pending
-    // With a silence file, it may complete quickly or fail
-    await page.waitForTimeout(5_000); // Give pipeline time to start
+    await expect(page.getByRole("dialog", { name: "Record", exact: true })).toBeHidden({
+      timeout: PIPELINE_TIMEOUT_MS,
+    });
 
-    // 4. Verify audio is in the list (any status)
-    await expect(page.getByText("test-audio.wav")).toBeVisible();
-  });
+    await expect(page.getByRole("button", { name: /test-audio\.wav/ })).toBeVisible();
 
-  test("should navigate to tickets page", async ({ page }) => {
-    await loginViaUi(page, user.email);
+    await expect(page.getByRole("button", { name: "Add login button" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByRole("button", { name: "Fix header layout" })).toBeVisible();
 
-    await page.getByRole("link", { name: /tickets/i }).click();
-    await page.waitForURL(/tickets/);
-
-    // Verify the tickets page loads (may or may not have tickets from the audio)
-    await expect(page.getByText(/tickets/i).first()).toBeVisible();
+    await page.getByRole("button", { name: "Add login button" }).click();
+    await expect(page.getByRole("dialog", { name: "Ticket detail" })).toBeVisible();
   });
 });

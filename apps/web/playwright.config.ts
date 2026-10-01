@@ -38,6 +38,7 @@ export default defineConfig({
     {
       command: "pnpm start:e2e",
       cwd: "../api",
+      env: { FRONTEND_URL: WEB_URL },
       url: `${API_URL}/health`,
       reuseExistingServer: false,
       timeout: 120_000,

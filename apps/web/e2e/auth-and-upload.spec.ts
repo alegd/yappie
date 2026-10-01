@@ -1,43 +1,29 @@
 import { expect, test } from "@playwright/test";
-import path from "path";
 import { generateUser, loginViaUi, registerUserViaApi } from "./helpers";
 
-const AUDIO_FIXTURE = path.join(__dirname, "fixtures/test-audio.wav");
+const PROJECT_NAME = "E2E Test Project";
+const PROJECT_DETAIL_URL = /\/dashboard\/projects\/(?!new$)[a-z0-9]+$/;
 
-test.describe("Auth and Upload Flow", () => {
+test.describe("Auth and project creation", () => {
   const user = generateUser();
 
-  test("should register, login, create project, and upload audio", async ({ page }) => {
-    // 1. Register via API (OTP flow through Redis)
+  test("registers, logs in, and creates a project from the sidebar", async ({ page }) => {
     await registerUserViaApi(user);
 
-    // 2. Login via UI (OTP flow)
     await loginViaUi(page, user.email);
-    await expect(page).toHaveURL(/audios/);
+    await expect(page).toHaveURL(/\/dashboard$/);
 
-    // 3. Create a project
-    await page.getByRole("link", { name: /projects/i }).click();
-    await page.waitForURL(/projects/);
+    await page.getByRole("link", { name: "New project" }).click();
+    await page.waitForURL(/\/dashboard\/projects\/new$/);
 
-    await page.getByRole("button", { name: /new project/i }).click();
-    await page.waitForURL(/projects\/new/);
+    await page.getByLabel("Name", { exact: true }).fill(PROJECT_NAME);
+    await page.getByLabel("Description", { exact: true }).fill("A project for E2E testing");
+    await page.getByLabel(/AI Context/).fill("React frontend with a NestJS API.");
 
-    await page.getByLabel(/name/i).fill("E2E Test Project");
-    await page.getByLabel(/description/i).fill("A project for E2E testing");
-    await page.getByRole("button", { name: /create|save/i }).click();
+    await page.getByRole("button", { name: "Create project" }).click();
+    await page.waitForURL(PROJECT_DETAIL_URL);
 
-    await page.waitForURL(/projects/);
-    await expect(page.getByText("E2E Test Project")).toBeVisible();
-
-    // 4. Go to audios and upload
-    await page.getByRole("link", { name: /audios/i }).click();
-    await page.waitForURL(/audios/);
-
-    // Upload audio file
-    const fileInput = page.locator('input[type="file"]');
-    await fileInput.setInputFiles(AUDIO_FIXTURE);
-
-    // 5. Wait for the audio to appear in the list (processing takes time)
-    await expect(page.getByText("test-audio.wav")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("heading", { name: PROJECT_NAME })).toBeVisible();
+    await expect(page.getByRole("link", { name: PROJECT_NAME })).toBeVisible();
   });
 });

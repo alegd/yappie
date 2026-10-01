@@ -1,58 +1,39 @@
 import { expect, test } from "@playwright/test";
 import { generateUser, loginViaUi, registerUserViaApi } from "./helpers";
 
-test.describe("Projects CRUD", () => {
+const ORIGINAL_NAME = "My E2E Project";
+const RENAMED_NAME = "Renamed E2E Project";
+const PROJECT_DETAIL_URL = /\/dashboard\/projects\/(?!new$)[a-z0-9]+$/;
+
+test.describe("Projects", () => {
   const user = generateUser();
 
   test.beforeAll(async () => {
     await registerUserViaApi(user);
   });
 
-  test("should create, edit, and delete a project", async ({ page }) => {
+  test("creates a project and renames it through the edit form", async ({ page }) => {
     await loginViaUi(page, user.email);
 
-    // Navigate to projects
-    await page.getByRole("link", { name: /projects/i }).click();
-    await page.waitForURL(/projects/);
+    await page.getByRole("link", { name: "New project" }).click();
+    await page.waitForURL(/\/dashboard\/projects\/new$/);
 
-    // 1. Create project
-    await page.getByRole("button", { name: /new project/i }).click();
-    await page.waitForURL(/projects\/new/);
+    await page.getByLabel("Name", { exact: true }).fill(ORIGINAL_NAME);
+    await page.getByLabel("Description", { exact: true }).fill("Testing create and edit");
+    await page.getByRole("button", { name: "Create project" }).click();
 
-    await page.getByLabel(/name/i).fill("My E2E Project");
-    await page.getByLabel(/description/i).fill("Testing CRUD operations");
+    await page.waitForURL(PROJECT_DETAIL_URL);
+    await expect(page.getByRole("heading", { name: ORIGINAL_NAME })).toBeVisible();
 
-    const contextField = page.getByLabel(/context/i);
-    if (await contextField.isVisible()) {
-      await contextField.fill("React + NestJS e-commerce app");
-    }
+    await page.getByRole("link", { name: /edit context/i }).click();
+    await page.waitForURL(/\/dashboard\/projects\/[a-z0-9]+\/edit$/);
 
-    await page.getByRole("button", { name: /create|save/i }).click();
-    await page.waitForURL(/projects/);
+    await page.getByLabel("Name", { exact: true }).fill(RENAMED_NAME);
+    await page.getByRole("button", { name: "Save changes" }).click();
 
-    await expect(page.getByText("My E2E Project")).toBeVisible();
-
-    // 2. Edit project
-    await page.getByText("My E2E Project").click();
-    await page.waitForURL(/projects\/.*\/edit/);
-
-    await page.getByLabel(/name/i).clear();
-    await page.getByLabel(/name/i).fill("Renamed Project");
-    await page.getByRole("button", { name: /save|update/i }).click();
-
-    await page.waitForURL(/projects/);
-    await expect(page.getByText("Renamed Project")).toBeVisible();
-
-    // 3. Delete project
-    // Register dialog handler BEFORE the action that triggers it
-    page.once("dialog", (dialog) => dialog.accept());
-
-    // Use the specific aria-label
-    await page.getByRole("button", { name: /delete renamed project/i }).click();
-
-    // Reload to see the updated list (SWR cache may delay)
-    await page.waitForTimeout(1_000);
-    await page.reload();
-    await expect(page.getByText("Renamed Project")).toBeHidden({ timeout: 10_000 });
+    await page.waitForURL(PROJECT_DETAIL_URL);
+    await expect(page.getByRole("heading", { name: RENAMED_NAME })).toBeVisible();
+    await expect(page.getByRole("link", { name: RENAMED_NAME })).toBeVisible();
+    await expect(page.getByRole("link", { name: ORIGINAL_NAME })).toBeHidden();
   });
 });
