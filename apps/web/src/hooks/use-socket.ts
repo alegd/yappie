@@ -27,7 +27,7 @@ export function useSocket({ token }: UseSocketOptions) {
     async function connect() {
       const { io } = await import("socket.io-client");
 
-      socket = io(window.location.origin, {
+      socket = io(process.env.NEXT_PUBLIC_API_URL, {
         auth: { token },
         transports: ["websocket"],
       });

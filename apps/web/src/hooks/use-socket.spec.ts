@@ -74,12 +74,15 @@ describe("useSocket", () => {
     expect(mockIo).not.toHaveBeenCalled();
   });
 
-  it("should connect with token in auth", async () => {
+  it("connects to the API origin with the token in auth, not to the app origin", async () => {
+    vi.stubEnv("NEXT_PUBLIC_API_URL", "http://api.example.test:3011");
+
     await act(async () => {
       renderHook(() => useSocket({ token: "jwt-123" }));
     });
+
     expect(mockIo).toHaveBeenCalledWith(
-      expect.any(String),
+      "http://api.example.test:3011",
       expect.objectContaining({
         auth: { token: "jwt-123" },
         transports: ["websocket"],
