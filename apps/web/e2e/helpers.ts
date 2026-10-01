@@ -1,12 +1,22 @@
 import { Page } from "@playwright/test";
 import Redis from "ioredis";
 
-const API_URL = "http://localhost:3001/api/v1";
-const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
+const API_PORT = process.env.PORT;
+const REDIS_URL = process.env.REDIS_URL;
+
+if (!API_PORT || !REDIS_URL) {
+  throw new Error(
+    `Web e2e helpers need PORT and REDIS_URL (got PORT=${API_PORT}, REDIS_URL=${REDIS_URL}). ` +
+      `Run through "pnpm e2e:web", which loads apps/api/.env.e2e.`,
+  );
+}
+
+const API_URL = `http://localhost:${API_PORT}/api/v1`;
+const OTP_POLL_ATTEMPTS = 10;
+const OTP_POLL_INTERVAL_MS = 500;
 
 let userCounter = 0;
 
-/** Generate unique user credentials for each test */
 export function generateUser() {
   userCounter++;
   const timestamp = Date.now();
@@ -16,25 +26,24 @@ export function generateUser() {
   };
 }
 
-/** Read OTP code from Redis for a given email (retries until available) */
-async function getOtpFromRedis(email: string, maxRetries = 10): Promise<string> {
-  const redis = new Redis(REDIS_URL);
-  try {
-    for (let i = 0; i < maxRetries; i++) {
-      const raw = await redis.get(`otp:${email}`);
-      if (raw) {
-        const data = JSON.parse(raw);
-        return data.code;
-      }
-      await new Promise((r) => setTimeout(r, 500));
+async function readOtp(email: string): Promise<string> {
+  const endpoint = `${API_URL}/auth/_test/last-otp?email=${encodeURIComponent(email)}`;
+
+  for (let attempt = 0; attempt < OTP_POLL_ATTEMPTS; attempt++) {
+    const response = await fetch(endpoint);
+    if (response.ok) {
+      const { code } = (await response.json()) as { code: string };
+      return code;
     }
-    throw new Error(`No OTP found in Redis for ${email} after ${maxRetries} retries`);
-  } finally {
-    await redis.quit();
+    await new Promise((resolve) => setTimeout(resolve, OTP_POLL_INTERVAL_MS));
   }
+
+  throw new Error(
+    `No OTP available for ${email} after ${OTP_POLL_ATTEMPTS} attempts against ${endpoint}. ` +
+      `The endpoint 404s unless E2E_TEST_ENDPOINTS=true on the API.`,
+  );
 }
 
-/** Clear all OTP rate limits in Redis for a given email */
 async function clearOtpLimits(email: string) {
   const redis = new Redis(REDIS_URL);
   try {
@@ -46,11 +55,9 @@ async function clearOtpLimits(email: string) {
   }
 }
 
-/** Register a user via API using the OTP flow */
 export async function registerUserViaApi(user: { name: string; email: string }) {
   await clearOtpLimits(user.email);
 
-  // 1. Request OTP
   const otpRes = await fetch(`${API_URL}/auth/request-otp`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -61,10 +68,8 @@ export async function registerUserViaApi(user: { name: string; email: string }) 
     throw new Error(`Request OTP failed: ${otpRes.status} ${await otpRes.text()}`);
   }
 
-  // 2. Read OTP from Redis
-  const code = await getOtpFromRedis(user.email);
+  const code = await readOtp(user.email);
 
-  // 3. Verify OTP (new user → isNewUser: true)
   const verifyRes = await fetch(`${API_URL}/auth/verify-otp`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -75,7 +80,6 @@ export async function registerUserViaApi(user: { name: string; email: string }) 
     throw new Error(`Verify OTP failed: ${verifyRes.status} ${await verifyRes.text()}`);
   }
 
-  // 4. Complete registration
   const registerRes = await fetch(`${API_URL}/auth/complete-register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -89,22 +93,17 @@ export async function registerUserViaApi(user: { name: string; email: string }) 
   return registerRes.json();
 }
 
-/** Login through the UI using the passwordless OTP flow */
 export async function loginViaUi(page: Page, email: string) {
-  // Clear Redis OTP limits (NestJS throttle is relaxed in test via NODE_ENV=test)
   await clearOtpLimits(email);
 
   await page.goto("/auth");
 
-  // Step 1: Enter email and submit
   await page.getByPlaceholder("you@example.com").fill(email);
   await page.getByRole("button", { name: "Continue" }).click();
 
-  // Step 2: Wait for OTP inputs to appear (confirms API processed the request)
   await page.locator('input[maxlength="1"]').first().waitFor({ timeout: 15_000 });
 
-  // Step 3: Read OTP from Redis and enter digits
-  const code = await getOtpFromRedis(email);
+  const code = await readOtp(email);
   const digits = code.split("");
 
   const otpInputs = page.locator('input[maxlength="1"]');
@@ -112,11 +111,9 @@ export async function loginViaUi(page: Page, email: string) {
     await otpInputs.nth(i).fill(digits[i]);
   }
 
-  // Step 4: Wait for redirect to dashboard (auto-submits when all 4 digits filled)
   await page.waitForURL(/dashboard|audios/, { timeout: 15_000 });
 }
 
-/** Create a project via API */
 export async function createProjectViaApi(
   accessToken: string,
   data: { name: string; description?: string; context?: string },

@@ -8,7 +8,7 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
-    include: ["src/**/*.spec.{ts,tsx}", "src/**/*.test.{ts,tsx}"],
+    include: ["src/**/*.spec.{ts,tsx}", "src/**/*.test.{ts,tsx}", "e2e/guard.spec.ts"],
     exclude: ["node_modules", ".next"],
     testTimeout: 10000,
     coverage: {

@@ -304,6 +304,9 @@ importers:
       babel-plugin-react-compiler:
         specifier: ^1.0.0
         version: 1.0.0
+      dotenv-cli:
+        specifier: ^11.0.0
+        version: 11.0.0
       ioredis:
         specifier: ^5.10.1
         version: 5.10.1

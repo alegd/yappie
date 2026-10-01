@@ -1,16 +1,25 @@
 import { defineConfig, devices } from "@playwright/test";
+import { assertE2eTarget } from "./e2e/guard";
 
-const WEB_URL = "http://localhost:3000";
-const API_URL = "http://localhost:3001";
+assertE2eTarget(process.env);
+
+const WEB_PORT = 3100;
+
+const inheritedEnv = Object.fromEntries(
+  Object.entries(process.env).filter(([, value]) => value !== undefined),
+) as Record<string, string>;
+const API_URL = `http://localhost:${process.env.PORT}`;
+const WEB_URL = `http://localhost:${WEB_PORT}`;
 
 export default defineConfig({
   testDir: "./e2e",
-  fullyParallel: false, // Sequential — tests share DB state
+  testIgnore: ["**/guard.spec.ts"],
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers: 1,
   reporter: "html",
-  timeout: 60_000, // 60s per test (audio processing takes time)
+  timeout: 60_000,
 
   use: {
     baseURL: WEB_URL,
@@ -27,16 +36,26 @@ export default defineConfig({
 
   webServer: [
     {
-      command: "cd ../api && pnpm dev",
+      command: "pnpm start:e2e",
+      cwd: "../api",
       url: `${API_URL}/health`,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
       timeout: 120_000,
     },
     {
-      command: "pnpm dev",
+      command: "pnpm build && pnpm start",
+      cwd: ".",
       url: WEB_URL,
-      reuseExistingServer: !process.env.CI,
-      timeout: 120_000,
+      env: {
+        ...inheritedEnv,
+        AUTH_TRUST_HOST: "true",
+        NODE_ENV: "production",
+        PORT: String(WEB_PORT),
+        NEXT_PUBLIC_API_URL: API_URL,
+        NEXT_PUBLIC_HOST_URL: WEB_URL,
+      },
+      reuseExistingServer: false,
+      timeout: 300_000,
     },
   ],
 });
