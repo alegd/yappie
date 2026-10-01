@@ -10,6 +10,8 @@ import type { ApiErrorBody, ApiFetcherArgs } from "./api-fetcher.types";
 
 const baseUrl = process.env.NEXT_PUBLIC_HOST_URL + "/api/data";
 
+const FALLBACK_ERROR_MESSAGE = "Something went wrong";
+
 export const apiFetcher = createServerAction(async (url: string, args: ApiFetcherArgs = {}) => {
   const session = await auth();
 
@@ -65,9 +67,9 @@ export const apiFetcher = createServerAction(async (url: string, args: ApiFetche
 
   if (!res.ok) {
     const errorData = response;
-    const statusCode = errorData?.statusCode ?? res.status;
+    const statusCode = res.status;
 
-    if (statusCode === 401 && errorData?.key !== "invalid_credentials") {
+    if (statusCode === 401) {
       redirect(LOGOUT_PAGE);
     }
 
@@ -79,17 +81,16 @@ export const apiFetcher = createServerAction(async (url: string, args: ApiFetche
   return response;
 });
 
+const parseMessage = (message: string | string[] | undefined) => {
+  if (Array.isArray(message)) return message.join("\n") || FALLBACK_ERROR_MESSAGE;
+  return message || FALLBACK_ERROR_MESSAGE;
+};
+
 const parseError = (error: ApiErrorBody | undefined, statusCode: number) => {
-  const message = error?.message || error?.message?.[0] || "Something went wrong";
+  const message = parseMessage(error?.message);
   switch (statusCode) {
     case 400:
       return { message, statusCode: statusCode };
-    case 401:
-      if (error?.key === "invalid_credentials") {
-        return { message, statusCode: statusCode };
-      } else {
-        return redirect(LOGOUT_PAGE);
-      }
     case 403:
       return { message: "Forbidden", statusCode: statusCode };
     case 404:

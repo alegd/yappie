@@ -80,8 +80,7 @@ describe("apiFetcher", () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 400,
-      text: async () =>
-        JSON.stringify({ statusCode: 400, error: { message: "Validation failed" } }),
+      text: async () => JSON.stringify({ error: { message: "Validation failed" } }),
     });
 
     const result = await apiFetcher("/v1/tickets");
@@ -94,40 +93,71 @@ describe("apiFetcher", () => {
     );
   });
 
+  it("keeps every message on its own line when a 400 body carries an array", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 400,
+      text: async () =>
+        JSON.stringify({
+          error: { message: ["email must be an email", "password too short"] },
+        }),
+    });
+
+    const result = await apiFetcher("/v1/auth/register");
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        success: false,
+        error: "email must be an email\npassword too short",
+      }),
+    );
+  });
+
+  it("falls back to a generic message when a 400 body carries an empty array", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 400,
+      text: async () => JSON.stringify({ error: { message: [] } }),
+    });
+
+    const result = await apiFetcher("/v1/auth/register");
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        success: false,
+        error: "Something went wrong",
+      }),
+    );
+  });
+
   it("should redirect on 401 response", async () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 401,
-      text: async () => JSON.stringify({ statusCode: 401, error: { message: "Unauthorized" } }),
+      text: async () => JSON.stringify({ error: { message: "Unauthorized" } }),
     });
 
     await expect(apiFetcher("/v1/tickets")).rejects.toThrow("NEXT_REDIRECT:/logout");
     expect(mockRedirect).toHaveBeenCalledWith("/logout");
   });
 
-  it("should not redirect on 401 with invalid_credentials key", async () => {
+  it("redirects on 401 even when the body carries an invalid_credentials key", async () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 401,
       text: async () =>
         JSON.stringify({
-          statusCode: 401,
-          key: "invalid_credentials",
           error: { message: "Wrong password", key: "invalid_credentials" },
         }),
     });
 
-    const result = await apiFetcher("/v1/auth/login", {
-      method: "POST",
-      data: { email: "test@test.com", password: "wrong" },
-    });
-
-    expect(mockRedirect).not.toHaveBeenCalled();
-    expect(result).toEqual(
-      expect.objectContaining({
-        success: false,
+    await expect(
+      apiFetcher("/v1/auth/login", {
+        method: "POST",
+        data: { email: "test@test.com", password: "wrong" },
       }),
-    );
+    ).rejects.toThrow("NEXT_REDIRECT:/logout");
+    expect(mockRedirect).toHaveBeenCalledWith("/logout");
   });
 
   it("should use custom token when provided", async () => {
@@ -175,7 +205,7 @@ describe("apiFetcher", () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 403,
-      text: async () => JSON.stringify({ statusCode: 403, error: { message: "No access" } }),
+      text: async () => JSON.stringify({ error: { message: "No access" } }),
     });
 
     const result = await apiFetcher("/v1/admin");
@@ -192,7 +222,7 @@ describe("apiFetcher", () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 404,
-      text: async () => JSON.stringify({ statusCode: 404, error: { message: "Missing" } }),
+      text: async () => JSON.stringify({ error: { message: "Missing" } }),
     });
 
     const result = await apiFetcher("/v1/tickets/nonexistent");
@@ -209,7 +239,7 @@ describe("apiFetcher", () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 422,
-      text: async () => JSON.stringify({ statusCode: 422, error: { message: "Invalid input" } }),
+      text: async () => JSON.stringify({ error: { message: "Invalid input" } }),
     });
 
     const result = await apiFetcher("/v1/tickets");
@@ -226,8 +256,7 @@ describe("apiFetcher", () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 500,
-      text: async () =>
-        JSON.stringify({ statusCode: 500, error: { message: "Internal server error" } }),
+      text: async () => JSON.stringify({ error: { message: "Internal server error" } }),
     });
 
     const result = await apiFetcher("/v1/tickets");
@@ -332,26 +361,11 @@ describe("apiFetcher", () => {
     expect(formData.get("notes")).toBeNull();
   });
 
-  it("should redirect on 401 without invalid_credentials key via parseError", async () => {
-    mockFetch.mockResolvedValue({
-      ok: false,
-      status: 401,
-      text: async () =>
-        JSON.stringify({
-          statusCode: 401,
-          error: { message: "Session expired" },
-        }),
-    });
-
-    await expect(apiFetcher("/v1/tickets")).rejects.toThrow("NEXT_REDIRECT:/logout");
-    expect(mockRedirect).toHaveBeenCalledWith("/logout");
-  });
-
   it("should return error for unknown status code (default case)", async () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 418,
-      text: async () => JSON.stringify({ statusCode: 418, error: { message: "I'm a teapot" } }),
+      text: async () => JSON.stringify({ error: { message: "I'm a teapot" } }),
     });
 
     const result = await apiFetcher("/v1/tickets");

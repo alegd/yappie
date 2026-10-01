@@ -45,6 +45,7 @@ export function Providers({
               toastOptions={{
                 style: {
                   fontSize: "14px",
+                  whiteSpace: "pre-line",
                 },
               }}
             />
