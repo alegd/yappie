@@ -72,7 +72,7 @@ const slides = [
       </svg>
       <h1
         style={{
-          fontFamily: "'Sora',sans-serif",
+          fontFamily: "var(--font-sora), sans-serif",
           fontSize: 48,
           fontWeight: 800,
           color: COLORS.text,
@@ -1131,7 +1131,7 @@ const slides = [
       </svg>
       <h2
         style={{
-          fontFamily: "'Sora',sans-serif",
+          fontFamily: "var(--font-sora), sans-serif",
           fontSize: 28,
           fontWeight: 700,
           color: COLORS.text,
@@ -1168,7 +1168,7 @@ function Slide({ title, children }: { title: string; children: React.ReactNode }
       >
         <h2
           style={{
-            fontFamily: "'Sora',sans-serif",
+            fontFamily: "var(--font-sora), sans-serif",
             fontSize: 24,
             fontWeight: 700,
             color: COLORS.text,
@@ -1200,7 +1200,7 @@ function StatCard({ number, label }: { number: string; label: string }) {
           fontWeight: 700,
           color: COLORS.orange,
           margin: "0 0 4px",
-          fontFamily: "'Sora',sans-serif",
+          fontFamily: "var(--font-sora), sans-serif",
         }}
       >
         {number}
@@ -1298,15 +1298,11 @@ export default function Presentation() {
         position: "fixed",
         top: 0,
         left: 0,
-        fontFamily: "'DM Sans',sans-serif",
+        fontFamily: "var(--font-dm-sans), sans-serif",
         display: "flex",
         flexDirection: "column",
       }}
     >
-      <link
-        href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap"
-        rel="stylesheet"
-      />
       <style>{`
         @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

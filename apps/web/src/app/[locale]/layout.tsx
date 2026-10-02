@@ -4,19 +4,21 @@ import { ThemeWrapper } from "@/components/theme-wrapper";
 import { getUmamiConfig } from "@/lib/umami";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, Sora } from "next/font/google";
+import localFont from "next/font/local";
 import Script from "next/script";
 
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
+const dmSans = localFont({
+  src: "../../fonts/dm-sans-latin-variable.woff2",
+  weight: "400 700",
+  style: "normal",
   variable: "--font-dm-sans",
   display: "swap",
 });
 
-const sora = Sora({
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
+const sora = localFont({
+  src: "../../fonts/sora-latin-variable.woff2",
+  weight: "500 800",
+  style: "normal",
   variable: "--font-sora",
   display: "swap",
 });
