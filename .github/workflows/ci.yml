@@ -181,9 +181,6 @@ jobs:
           for _ in $(seq 1 90); do curl -sf "http://127.0.0.1:$PORT/health" >/dev/null && break; sleep 2; done
           curl -sf "http://127.0.0.1:$PORT/health"
 
-      - name: Resolve the host address the simulator will use
-        run: echo "HOST_IP=$(ipconfig getifaddr en0)" >> "$GITHUB_ENV"
-
       - name: Boot an iOS simulator
         run: |
           DEVICE_UDID=$(xcrun simctl list devices available --json \
@@ -205,15 +202,20 @@ jobs:
         working-directory: apps/mobile
         env:
           NODE_ENV: production
-          EXPO_PUBLIC_API_URL: http://${{ env.HOST_IP }}:3011
+          EXPO_PUBLIC_API_URL: http://127.0.0.1:3011
         run: npx expo run:ios --configuration Release --no-bundler --device "$DEVICE_UDID"
 
       - name: Grant the microphone permission
         run: xcrun simctl privacy "$DEVICE_UDID" grant microphone com.gueden.yappie
 
+      - name: Check the simulator can reach the API
+        run: |
+          xcrun simctl spawn "$DEVICE_UDID" curl -sf --max-time 10 \
+            "http://127.0.0.1:$PORT/health"
+
       - name: Mobile UI smoke
         working-directory: apps/mobile
-        run: npm run e2e:ui
+        run: npm run e2e:ui -- -e API_URL=http://127.0.0.1:3011
 
       - name: Upload the Maestro output
         if: failure()
