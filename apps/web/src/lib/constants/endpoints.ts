@@ -24,8 +24,9 @@ export const ticketExport = (id: string) => `${API_V1}/integrations/jira/export/
 export const TICKETS_EXPORT_BULK = `${API_V1}/integrations/jira/export-bulk`;
 
 // ─── Projects ────────────────────────────────────────────
-export const PROJECTS_LIST = `${API_V1}/projects?limit=50`;
-export const PROJECTS_CREATE = `${API_V1}/projects`;
+export const PROJECTS_PREFIX = `${API_V1}/projects`;
+export const PROJECTS_LIST = `${PROJECTS_PREFIX}?limit=50`;
+export const PROJECTS_CREATE = PROJECTS_PREFIX;
 export const projectDetail = (id: string) => `${API_V1}/projects/${id}`;
 
 // ─── Templates ───────────────────────────────────────────

@@ -5,9 +5,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast/Toast";
-import { invalidateQuery } from "@/hooks/use-query";
+import { invalidateQuery, invalidateQueryPrefix } from "@/hooks/use-query";
 import { apiFetcher } from "@/lib/api-fetcher";
-import { audioDetail, ticketApprove, TICKETS_EXPORT_BULK } from "@/lib/constants/endpoints";
+import {
+  audioDetail,
+  PROJECTS_PREFIX,
+  ticketApprove,
+  TICKETS_EXPORT_BULK,
+} from "@/lib/constants/endpoints";
 import { POST } from "@/lib/constants/http";
 import { SETTINGS_PAGE } from "@/lib/constants/pages";
 import type { Ticket } from "@/features/tickets/types";
@@ -44,6 +49,7 @@ export function BulkActionBar({
         return;
       }
       await invalidateQuery(audioDetail(audioId));
+      await invalidateQueryPrefix(PROJECTS_PREFIX);
       onCleared();
     } finally {
       setActing(null);
@@ -58,6 +64,7 @@ export function BulkActionBar({
         method: POST,
       });
       await invalidateQuery(audioDetail(audioId));
+      await invalidateQueryPrefix(PROJECTS_PREFIX);
       onCleared();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
