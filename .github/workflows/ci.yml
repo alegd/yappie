@@ -116,6 +116,7 @@ jobs:
   mobile-ui:
     name: Mobile UI Smoke (iOS)
     runs-on: macos-26
+    timeout-minutes: 45
 
     env:
       NODE_ENV: test
@@ -205,7 +206,7 @@ jobs:
         env:
           NODE_ENV: production
           EXPO_PUBLIC_API_URL: http://${{ env.HOST_IP }}:3011
-        run: npx expo run:ios --configuration Release --device "$DEVICE_UDID"
+        run: npx expo run:ios --configuration Release --no-bundler --device "$DEVICE_UDID"
 
       - name: Grant the microphone permission
         run: xcrun simctl privacy "$DEVICE_UDID" grant microphone com.gueden.yappie
