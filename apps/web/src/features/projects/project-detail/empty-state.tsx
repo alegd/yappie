@@ -18,7 +18,7 @@ export function EmptyState({ projectId }: EmptyStateProps) {
       <p className="text-muted-foreground text-sm mb-6">
         Yappie will transcribe it and generate Jira tickets automatically.
       </p>
-      <Button onClick={() => open(projectId)} aria-label="Record first audio">
+      <Button onClick={() => open(projectId)} aria-label="Record">
         <Mic size={16} />
         Record
       </Button>
