@@ -115,7 +115,7 @@ jobs:
 
   mobile-ui:
     name: Mobile UI Smoke (iOS)
-    runs-on: macos-15
+    runs-on: macos-26
 
     env:
       NODE_ENV: test
@@ -141,6 +141,11 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+
+      - name: Report the toolchain
+        run: |
+          xcodebuild -version
+          swift --version
 
       - name: Start PostgreSQL and Redis
         run: |
