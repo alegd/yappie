@@ -198,8 +198,8 @@ jobs:
       - name: Build and install the Release app
         working-directory: apps/mobile
         env:
+          NODE_ENV: production
           EXPO_PUBLIC_API_URL: http://${{ env.HOST_IP }}:3011
-          EXPO_ROUTER_APP_ROOT: ${{ github.workspace }}/apps/mobile/src/app
         run: npx expo run:ios --configuration Release --device "$DEVICE_UDID"
 
       - name: Grant the microphone permission
