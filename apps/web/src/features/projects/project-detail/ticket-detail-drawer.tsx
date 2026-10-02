@@ -11,9 +11,14 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast/Toast";
 import { priorityVariants, ticketStatusVariants } from "@/features/tickets/badge-variants";
 import type { Ticket } from "@/features/tickets/types";
-import { invalidateQuery, useQuery } from "@/hooks/use-query";
+import { invalidateQuery, invalidateQueryPrefix, useQuery } from "@/hooks/use-query";
 import { apiFetcher } from "@/lib/api-fetcher";
-import { audioDetail, ticketDetail, ticketExport } from "@/lib/constants/endpoints";
+import {
+  audioDetail,
+  PROJECTS_PREFIX,
+  ticketDetail,
+  ticketExport,
+} from "@/lib/constants/endpoints";
 import { DELETE, PATCH, POST } from "@/lib/constants/http";
 import { audioDetailPage } from "@/lib/constants/pages";
 
@@ -92,6 +97,7 @@ export function TicketDetailDrawer({
     try {
       await apiFetcher(ticketDetail(ticket.id), { method: DELETE });
       await invalidateQuery(audioDetail(audioId));
+      await invalidateQueryPrefix(PROJECTS_PREFIX);
       onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
@@ -107,6 +113,7 @@ export function TicketDetailDrawer({
       await apiFetcher(ticketExport(ticket.id), { method: POST });
       await invalidateQuery(ticketDetail(ticket.id));
       await invalidateQuery(audioDetail(audioId));
+      await invalidateQueryPrefix(PROJECTS_PREFIX);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {

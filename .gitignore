@@ -21,6 +21,7 @@ out/
 !.env.e2e.example
 
 # E2E artifacts
+uploads-e2e/
 .e2e-uploads/
 
 # IDE

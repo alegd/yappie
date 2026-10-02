@@ -4,11 +4,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BulkActionBar } from "./bulk-action-bar";
 import type { Ticket } from "@/features/tickets/types";
 
-const { mockApiFetcher, mockInvalidateQuery, mockToastError } = vi.hoisted(() => ({
-  mockApiFetcher: vi.fn(),
-  mockInvalidateQuery: vi.fn(),
-  mockToastError: vi.fn(),
-}));
+const { mockApiFetcher, mockInvalidateQuery, mockInvalidateQueryPrefix, mockToastError } =
+  vi.hoisted(() => ({
+    mockApiFetcher: vi.fn(),
+    mockInvalidateQuery: vi.fn(),
+    mockInvalidateQueryPrefix: vi.fn(),
+    mockToastError: vi.fn(),
+  }));
 
 vi.mock("@/lib/api-fetcher", () => ({
   apiFetcher: mockApiFetcher,
@@ -16,6 +18,7 @@ vi.mock("@/lib/api-fetcher", () => ({
 
 vi.mock("@/hooks/use-query", () => ({
   invalidateQuery: mockInvalidateQuery,
+  invalidateQueryPrefix: mockInvalidateQueryPrefix,
 }));
 
 vi.mock("@/components/ui/toast/Toast", () => ({
@@ -128,6 +131,7 @@ describe("BulkActionBar", () => {
       expect(mockApiFetcher).toHaveBeenCalledWith("/v1/tickets/t-2/approve", { method: "POST" });
     });
     expect(mockInvalidateQuery).toHaveBeenCalledWith("/v1/audio/a-9");
+    expect(mockInvalidateQueryPrefix).toHaveBeenCalledWith("/v1/projects");
     expect(onCleared).toHaveBeenCalled();
   });
 
@@ -172,6 +176,7 @@ describe("BulkActionBar", () => {
       });
     });
     expect(mockInvalidateQuery).toHaveBeenCalledWith("/v1/audio/a-9");
+    expect(mockInvalidateQueryPrefix).toHaveBeenCalledWith("/v1/projects");
     expect(onCleared).toHaveBeenCalled();
   });
 

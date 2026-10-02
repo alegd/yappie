@@ -12,6 +12,9 @@ function createMockPrisma() {
       delete: vi.fn(),
       count: vi.fn(),
     },
+    ticket: {
+      count: vi.fn(),
+    },
   };
 }
 
@@ -101,11 +104,20 @@ describe("ProjectsService", () => {
 
   describe("findOne", () => {
     it("should return a project owned by the user", async () => {
-      mockPrisma.project.findUnique.mockResolvedValue(mockProject);
+      mockPrisma.project.findUnique.mockResolvedValue({
+        ...mockProject,
+        _count: { audioRecordings: 0, tickets: 0 },
+      });
+      mockPrisma.ticket.count.mockResolvedValue(0);
 
       const result = await service.findOne("proj-1", userId);
 
-      expect(result).toEqual(mockProject);
+      expect(result).toEqual({
+        ...mockProject,
+        audioCount: 0,
+        ticketCount: 0,
+        exportedTicketCount: 0,
+      });
     });
 
     it("should throw NotFoundException if project does not exist", async () => {
@@ -121,6 +133,37 @@ describe("ProjectsService", () => {
       });
 
       await expect(service.findOne("proj-1", userId)).rejects.toThrow(ForbiddenException);
+    });
+
+    it("should return audio, ticket and exported ticket counts", async () => {
+      mockPrisma.project.findUnique.mockResolvedValue({
+        ...mockProject,
+        _count: { audioRecordings: 9, tickets: 7 },
+      });
+      mockPrisma.ticket.count.mockResolvedValue(3);
+
+      const result = await service.findOne("proj-1", userId);
+
+      expect(result).toMatchObject({
+        audioCount: 9,
+        ticketCount: 7,
+        exportedTicketCount: 3,
+      });
+      expect(mockPrisma.ticket.count).toHaveBeenCalledWith({
+        where: { projectId: "proj-1", jiraIssueKey: { not: null } },
+      });
+    });
+
+    it("should not expose the raw prisma _count envelope", async () => {
+      mockPrisma.project.findUnique.mockResolvedValue({
+        ...mockProject,
+        _count: { audioRecordings: 9, tickets: 7 },
+      });
+      mockPrisma.ticket.count.mockResolvedValue(0);
+
+      const result = await service.findOne("proj-1", userId);
+
+      expect(result).not.toHaveProperty("_count");
     });
   });
 

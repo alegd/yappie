@@ -3,18 +3,26 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TicketDetailDrawer } from "./ticket-detail-drawer";
 
-const { mockUseQuery, mockApiFetcher, mockInvalidateQuery, mockToastError, mockToastSuccess } =
-  vi.hoisted(() => ({
-    mockUseQuery: vi.fn(),
-    mockApiFetcher: vi.fn(),
-    mockInvalidateQuery: vi.fn(),
-    mockToastError: vi.fn(),
-    mockToastSuccess: vi.fn(),
-  }));
+const {
+  mockUseQuery,
+  mockApiFetcher,
+  mockInvalidateQuery,
+  mockInvalidateQueryPrefix,
+  mockToastError,
+  mockToastSuccess,
+} = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(),
+  mockApiFetcher: vi.fn(),
+  mockInvalidateQuery: vi.fn(),
+  mockInvalidateQueryPrefix: vi.fn(),
+  mockToastError: vi.fn(),
+  mockToastSuccess: vi.fn(),
+}));
 
 vi.mock("@/hooks/use-query", () => ({
   useQuery: mockUseQuery,
   invalidateQuery: mockInvalidateQuery,
+  invalidateQueryPrefix: mockInvalidateQueryPrefix,
 }));
 
 vi.mock("@/lib/api-fetcher", () => ({
@@ -217,6 +225,7 @@ describe("TicketDetailDrawer", () => {
         expect.objectContaining({ method: "DELETE" }),
       );
     });
+    expect(mockInvalidateQueryPrefix).toHaveBeenCalledWith("/v1/projects");
     expect(onClose).toHaveBeenCalled();
   });
 
@@ -255,6 +264,7 @@ describe("TicketDetailDrawer", () => {
         expect.objectContaining({ method: "POST" }),
       );
     });
+    expect(mockInvalidateQueryPrefix).toHaveBeenCalledWith("/v1/projects");
   });
 
   it("shows exported Jira link when ticket is already exported", () => {

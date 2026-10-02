@@ -9,7 +9,7 @@ import { useSocketEvents } from "@/hooks/use-socket-events";
 import { audioByProject, JIRA_STATUS, projectDetail } from "@/lib/constants/endpoints";
 import { projectDetailPage } from "@/lib/constants/pages";
 import type { AudioListResponse, AudioRecording } from "@/features/audio/types";
-import type { Project } from "@/features/projects/types";
+import type { ProjectWithStats } from "@/features/projects/types";
 import { AudioAccordion } from "./audio-accordion";
 import { EmptyState } from "./empty-state";
 import { ProjectHeader } from "./project-header";
@@ -30,7 +30,7 @@ export function ProjectDetail({ id }: ProjectDetailProps) {
     data: project,
     isLoading: projectLoading,
     error: projectError,
-  } = useQuery<Project>(projectDetail(id));
+  } = useQuery<ProjectWithStats>(projectDetail(id));
   const { data: audioData } = useQuery<AudioListResponse>(audioByProject(id));
   const { data: jiraStatus } = useQuery<JiraStatus>(JIRA_STATUS);
 
@@ -117,7 +117,11 @@ export function ProjectDetail({ id }: ProjectDetailProps) {
         </Accordion.Root>
       )}
 
-      <StatsFooter audios={audios} />
+      <StatsFooter
+        audioCount={project.audioCount}
+        ticketCount={project.ticketCount}
+        exportedTicketCount={project.exportedTicketCount}
+      />
       <TicketDetailDrawer
         ticketId={openTicketId}
         audioId={openTicketAudioId}

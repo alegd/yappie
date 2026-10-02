@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { useCreateProject, useDeleteProject, useUpdateProject } from "./useProjects";
+import { useCreateProject, useUpdateProject } from "./useProjects";
 
 const mockUseMutation = vi.fn().mockReturnValue({
   mutate: vi.fn(),
@@ -32,17 +32,6 @@ describe("useProjects hooks", () => {
         method: "PATCH",
         queryKey: "/v1/projects/proj-1",
         invalidateKeys: ["/v1/projects?limit=50"],
-      });
-    });
-  });
-
-  describe("useDeleteProject", () => {
-    it("should call useMutation with DELETE and list endpoint", () => {
-      useDeleteProject();
-
-      expect(mockUseMutation).toHaveBeenCalledWith({
-        method: "DELETE",
-        queryKey: "/v1/projects?limit=50",
       });
     });
   });

@@ -10,6 +10,12 @@ export interface Project {
   pendingTicketCount?: number;
 }
 
+export interface ProjectWithStats extends Project {
+  audioCount: number;
+  ticketCount: number;
+  exportedTicketCount: number;
+}
+
 export interface ProjectListResponse {
   data: Project[];
   total: number;
