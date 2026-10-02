@@ -15,8 +15,8 @@ import { invalidateQuery, invalidateQueryPrefix } from "./use-query";
 
 type KeyPredicate = (key: unknown) => boolean;
 
-function capturePredicate(prefix: string): KeyPredicate {
-  invalidateQueryPrefix(prefix);
+function capturePredicate(...prefixes: [string, ...string[]]): KeyPredicate {
+  invalidateQueryPrefix(...prefixes);
   return mockGlobalMutate.mock.calls[0][0] as KeyPredicate;
 }
 
@@ -46,6 +46,16 @@ describe("invalidateQueryPrefix", () => {
 
     expect(matches("/v1/audio?limit=50")).toBe(false);
     expect(matches("/v1/tickets/t-1")).toBe(false);
+  });
+
+  it("matches any of several prefixes in one pass", () => {
+    const matches = capturePredicate("/v1/audio", "/v1/projects", "/v1/activity");
+
+    expect(matches("/v1/audio?limit=50&projectId=p-1")).toBe(true);
+    expect(matches("/v1/projects/p-1")).toBe(true);
+    expect(matches("/v1/activity?limit=10")).toBe(true);
+    expect(matches("/v1/tickets?limit=50")).toBe(false);
+    expect(mockGlobalMutate).toHaveBeenCalledTimes(1);
   });
 
   it("rejects non-string keys instead of throwing", () => {

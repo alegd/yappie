@@ -10,8 +10,9 @@ export const ACCOUNT_DELETE_REQUEST = `${API_V1}/auth/account/delete/request`;
 export const ACCOUNT_DELETE_CONFIRM = `${API_V1}/auth/account/delete/confirm`;
 
 // ─── Audio ───────────────────────────────────────────────
-export const AUDIO_LIST = `${API_V1}/audio?limit=50`;
-export const AUDIO_UPLOAD = `${API_V1}/audio/upload`;
+export const AUDIO_PREFIX = `${API_V1}/audio`;
+export const AUDIO_LIST = `${AUDIO_PREFIX}?limit=50`;
+export const AUDIO_UPLOAD = `${AUDIO_PREFIX}/upload`;
 export const audioDetail = (id: string) => `${API_V1}/audio/${id}`;
 export const audioByProject = (projectId: string) =>
   `${API_V1}/audio?limit=50&projectId=${projectId}`;
@@ -42,7 +43,8 @@ export const analyticsOverview = (from: string, to: string) =>
 export const QUOTAS = `${API_V1}/quotas`;
 
 // ─── Activity ───────────────────────────────────────────
-export const ACTIVITY_FEED = `${API_V1}/activity?limit=10`;
+export const ACTIVITY_PREFIX = `${API_V1}/activity`;
+export const ACTIVITY_FEED = `${ACTIVITY_PREFIX}?limit=10`;
 
 // ─── Billing ────────────────────────────────────────────
 export const BILLING_STATUS = `${API_V1}/billing/status`;

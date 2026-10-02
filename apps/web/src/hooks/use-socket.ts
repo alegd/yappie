@@ -1,20 +1,20 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { mutate as globalMutate } from "swr";
 import type { Socket } from "socket.io-client";
 import { toast } from "@/components/ui/toast/Toast";
-import { TICKETS_LIST } from "@/lib/constants/endpoints";
-import { invalidateQuery } from "./use-query";
+import {
+  ACTIVITY_PREFIX,
+  AUDIO_PREFIX,
+  PROJECTS_PREFIX,
+  TICKETS_LIST,
+} from "@/lib/constants/endpoints";
+import { invalidateQuery, invalidateQueryPrefix } from "./use-query";
 import { useSocketEvents } from "./use-socket-events";
 
 interface UseSocketOptions {
   token: string | null;
 }
-
-const isAudioOrProjectsOrActivityKey = (key: unknown): boolean =>
-  typeof key === "string" &&
-  (key.startsWith("/v1/audio") || key.startsWith("/v1/projects") || key.startsWith("/v1/activity"));
 
 export function useSocket({ token }: UseSocketOptions) {
   const socketRef = useRef<Socket | null>(null);
@@ -41,7 +41,7 @@ export function useSocket({ token }: UseSocketOptions) {
         };
         const message = labels[data.status] || data.status;
         toast.info(message, { id: `progress-${data.audioId}` });
-        globalMutate(isAudioOrProjectsOrActivityKey);
+        invalidateQueryPrefix(AUDIO_PREFIX, PROJECTS_PREFIX, ACTIVITY_PREFIX);
       });
 
       socket.on("audio:completed", (data: { audioId: string; ticketCount: number }) => {
@@ -49,7 +49,7 @@ export function useSocket({ token }: UseSocketOptions) {
           `Done! ${data.ticketCount} ticket${data.ticketCount !== 1 ? "s" : ""} generated.`,
           { id: `progress-${data.audioId}` },
         );
-        globalMutate(isAudioOrProjectsOrActivityKey);
+        invalidateQueryPrefix(AUDIO_PREFIX, PROJECTS_PREFIX, ACTIVITY_PREFIX);
         invalidateQuery(TICKETS_LIST);
         useSocketEvents.getState().emitAudioCompleted({
           audioId: data.audioId,
@@ -61,7 +61,7 @@ export function useSocket({ token }: UseSocketOptions) {
         toast.error(`Processing failed: ${data.error}`, {
           id: `progress-${data.audioId}`,
         });
-        globalMutate(isAudioOrProjectsOrActivityKey);
+        invalidateQueryPrefix(AUDIO_PREFIX, PROJECTS_PREFIX, ACTIVITY_PREFIX);
         useSocketEvents.getState().emitAudioFailed({
           audioId: data.audioId,
           error: data.error,
