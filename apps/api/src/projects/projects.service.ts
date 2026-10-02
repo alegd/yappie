@@ -45,9 +45,7 @@ export class ProjectsService {
     return { data, total, page: pagination.page, limit: pagination.limit };
   }
 
-  async findOne(id: string, userId: string) {
-    const project = await this.prisma.project.findUnique({ where: { id } });
-
+  private assertOwnership<T extends { userId: string }>(project: T | null, userId: string): T {
     if (!project) {
       throw new NotFoundException("Project not found");
     }
@@ -59,12 +57,38 @@ export class ProjectsService {
     return project;
   }
 
+  private async findOwned(id: string, userId: string) {
+    const row = await this.prisma.project.findUnique({ where: { id } });
+
+    return this.assertOwnership(row, userId);
+  }
+
+  async findOne(id: string, userId: string) {
+    const row = await this.prisma.project.findUnique({
+      where: { id },
+      include: { _count: { select: { audioRecordings: true, tickets: true } } },
+    });
+
+    const { _count, ...project } = this.assertOwnership(row, userId);
+
+    const exportedTicketCount = await this.prisma.ticket.count({
+      where: { projectId: id, jiraIssueKey: { not: null } },
+    });
+
+    return {
+      ...project,
+      audioCount: _count.audioRecordings,
+      ticketCount: _count.tickets,
+      exportedTicketCount,
+    };
+  }
+
   async update(
     id: string,
     userId: string,
     data: { name?: string; description?: string; context?: string; jiraProjectKey?: string },
   ) {
-    await this.findOne(id, userId);
+    await this.findOwned(id, userId);
 
     return this.prisma.project.update({
       where: { id },
@@ -73,7 +97,7 @@ export class ProjectsService {
   }
 
   async remove(id: string, userId: string) {
-    await this.findOne(id, userId);
+    await this.findOwned(id, userId);
 
     return this.prisma.project.delete({ where: { id } });
   }

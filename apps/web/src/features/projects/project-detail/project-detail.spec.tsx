@@ -29,12 +29,6 @@ vi.mock("./project-header", () => ({
   ),
 }));
 
-vi.mock("./stats-footer", () => ({
-  StatsFooter: ({ audios }: { audios: unknown[] }) => (
-    <div data-testid="stats-footer" data-count={audios.length} />
-  ),
-}));
-
 vi.mock("./empty-state", () => ({
   EmptyState: ({ projectId }: { projectId: string }) => (
     <div data-testid="empty-state">{projectId}</div>
@@ -89,6 +83,9 @@ const project = {
   userId: "u-1",
   createdAt: "",
   updatedAt: "",
+  audioCount: 0,
+  ticketCount: 0,
+  exportedTicketCount: 0,
 };
 
 function setupQueries(opts: {
@@ -158,7 +155,7 @@ describe("ProjectDetail", () => {
     expect(screen.getByTestId("empty-state")).toHaveTextContent("p-1");
   });
 
-  it("renders one accordion per audio plus the stats footer", () => {
+  it("renders one accordion per audio", () => {
     setupQueries({
       project,
       audios: [
@@ -169,7 +166,17 @@ describe("ProjectDetail", () => {
     render(<ProjectDetail id="p-1" />);
     expect(screen.getByTestId("accordion-a-1")).toBeInTheDocument();
     expect(screen.getByTestId("accordion-a-2")).toBeInTheDocument();
-    expect(screen.getByTestId("stats-footer")).toHaveAttribute("data-count", "2");
+  });
+
+  it("shows the project's own totals in the footer, not what the audio page happens to carry", () => {
+    setupQueries({
+      project: { ...project, audioCount: 9, ticketCount: 7, exportedTicketCount: 3 },
+      audios: [{ id: "a-1", fileName: "rec1.webm" }],
+    });
+    render(<ProjectDetail id="p-1" />);
+    expect(screen.getByText("9 audios")).toBeInTheDocument();
+    expect(screen.getByText("7 tickets")).toBeInTheDocument();
+    expect(screen.getByText("3 exported")).toBeInTheDocument();
   });
 
   it("auto-expands an audio when useSocketEvents emits a completion for that audioId", () => {
