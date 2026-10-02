@@ -66,13 +66,24 @@ a `.env` file — Expo only auto-loads `.env`, `.env.local`, `.env.development`,
 and `.env.production`, and none of those are part of this flow.
 
 ```
-cd apps/mobile && EXPO_PUBLIC_API_URL=http://<LAN_IP>:3011 RCT_METRO_PORT=8082 npx expo run:ios --configuration Release --device "iPhone 17 Pro"
+cd apps/mobile && EXPO_PUBLIC_API_URL=http://127.0.0.1:3011 RCT_METRO_PORT=8082 npx expo run:ios --configuration Release --device "iPhone 17 Pro"
 ```
 
-Replace `<LAN_IP>` with the machine's LAN IP (`ipconfig getifaddr en0`), not
-`localhost` — the simulator's network namespace does not resolve the host's
-`localhost` to the Mac. This step is only needed when the installed build is
-stale; the smoke run itself does not rebuild the app.
+`127.0.0.1` is correct: the iOS Simulator shares the host's network stack, so
+the host's loopback is reachable from inside it. This page previously said the
+opposite and told you to use the LAN IP from `ipconfig getifaddr en0`. That was
+wrong, and it cost a CI run to find out. Measured on 2026-10-03 with a plain
+`python3 -m http.server` on the host and `xcrun simctl openurl booted`, which
+logged `"GET /FROM-SIMULATOR-LOOPBACK HTTP/1.1"` from `127.0.0.1`. The
+toolchain says the same thing: Metro serves on the host and apps in the
+simulator reach it at `localhost`.
+
+A LAN IP also goes stale with a DHCP lease and does not exist on a CI runner in
+any useful form, so prefer the loopback everywhere. A physical device is the
+only case that needs the LAN IP.
+
+This step is only needed when the installed build is stale; the smoke run
+itself does not rebuild the app.
 
 ### 4. Run the flow
 

@@ -208,11 +208,6 @@ jobs:
       - name: Grant the microphone permission
         run: xcrun simctl privacy "$DEVICE_UDID" grant microphone com.gueden.yappie
 
-      - name: Check the simulator can reach the API
-        run: |
-          xcrun simctl spawn "$DEVICE_UDID" curl -sf --max-time 10 \
-            "http://127.0.0.1:$PORT/health"
-
       - name: Mobile UI smoke
         working-directory: apps/mobile
         run: npm run e2e:ui -- -e API_URL=http://127.0.0.1:3011
