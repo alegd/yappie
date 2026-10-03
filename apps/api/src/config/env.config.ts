@@ -16,79 +16,79 @@ export function e2eFlagsSafe(input: {
   return !(input.NODE_ENV === "production" && (input.E2E_TEST_ENDPOINTS || input.E2E_MOCK_AI));
 }
 
-const envSchema = z
-  .object({
-    // Server
-    NODE_ENV: z.enum(["development", "production", "test"]),
-    PORT: z.coerce.number(),
+export const envObjectSchema = z.object({
+  // Server
+  NODE_ENV: z.enum(["development", "production", "test"]),
+  PORT: z.coerce.number(),
 
-    // Database
-    DB_HOST: z.string().min(1),
-    DB_PORT: z.coerce.number(),
-    DB_USER: z.string().min(1),
-    DB_PASSWORD: z.string().min(1),
-    DB_NAME: z.string().min(1),
+  // Database
+  DB_HOST: z.string().min(1),
+  DB_PORT: z.coerce.number(),
+  DB_USER: z.string().min(1),
+  DB_PASSWORD: z.string().min(1),
+  DB_NAME: z.string().min(1),
 
-    // Redis
-    REDIS_URL: z.string().min(1),
+  // Redis
+  REDIS_URL: z.string().min(1),
 
-    // JWT
-    JWT_SECRET: z.string().min(1),
-    JWT_EXPIRATION: z.string().min(1),
-    JWT_REFRESH_EXPIRATION: z.string().min(1),
+  // JWT
+  JWT_SECRET: z.string().min(1),
+  JWT_EXPIRATION: z.string().min(1),
+  JWT_REFRESH_EXPIRATION: z.string().min(1),
 
-    // OpenAI
-    OPENAI_API_KEY: z.string().min(1),
-    AI_TRANSCRIPTION_MODEL: z.string().min(1),
-    AI_DECOMPOSITION_MODEL: z.string().min(1),
-    AI_GENERATION_MODEL: z.string().min(1),
+  // OpenAI
+  OPENAI_API_KEY: z.string().min(1),
+  AI_TRANSCRIPTION_MODEL: z.string().min(1),
+  AI_DECOMPOSITION_MODEL: z.string().min(1),
+  AI_GENERATION_MODEL: z.string().min(1),
 
-    // Storage
-    UPLOAD_PATH: z.string().min(1),
+  // Storage
+  UPLOAD_PATH: z.string().min(1),
 
-    // Frontend
-    FRONTEND_URL: z.string().min(1),
+  // Frontend
+  FRONTEND_URL: z.string().min(1),
 
-    // Jira OAuth
-    JIRA_CLIENT_ID: z.string().optional(),
-    JIRA_CLIENT_SECRET: z.string().optional(),
-    JIRA_CALLBACK_URL: z.string().optional(),
+  // Jira OAuth
+  JIRA_CLIENT_ID: z.string().optional(),
+  JIRA_CLIENT_SECRET: z.string().optional(),
+  JIRA_CALLBACK_URL: z.string().optional(),
 
-    // Sentry (optional — disabled in dev if not set)
-    SENTRY_DSN: z.string().optional(),
+  // Sentry (optional — disabled in dev if not set)
+  SENTRY_DSN: z.string().optional(),
 
-    // Encryption
-    ENCRYPTION_KEY: z
-      .string()
-      .length(ENCRYPTION_KEY_HEX_LENGTH, "must be 64 hexadecimal characters (32 bytes)")
-      .regex(HEX_PATTERN, "must be hexadecimal"),
+  // Encryption
+  ENCRYPTION_KEY: z
+    .string()
+    .length(ENCRYPTION_KEY_HEX_LENGTH, "must be 64 hexadecimal characters (32 bytes)")
+    .regex(HEX_PATTERN, "must be hexadecimal"),
 
-    // Email
-    RESEND_API_KEY: z.string().min(1),
-    EMAIL_FROM: z.string().min(1),
+  // Email
+  RESEND_API_KEY: z.string().min(1),
+  EMAIL_FROM: z.string().min(1),
 
-    // Quotas
-    QUOTA_FREE_MINUTES: z.coerce.number(),
-    QUOTA_PRO_MINUTES: z.coerce.number(),
+  // Quotas
+  QUOTA_FREE_MINUTES: z.coerce.number(),
+  QUOTA_PRO_MINUTES: z.coerce.number(),
 
-    // Stripe (optional — billing is a post-MVP feature)
-    STRIPE_SECRET_KEY: z.string().optional(),
-    STRIPE_WEBHOOK_SECRET: z.string().optional(),
-    STRIPE_PRO_PRICE_ID: z.string().optional(),
-    STRIPE_SUCCESS_URL: z.string().optional(),
-    STRIPE_CANCEL_URL: z.string().optional(),
+  // Stripe (optional — billing is a post-MVP feature)
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_PRO_PRICE_ID: z.string().optional(),
+  STRIPE_SUCCESS_URL: z.string().optional(),
+  STRIPE_CANCEL_URL: z.string().optional(),
 
-    E2E_TEST_ENDPOINTS: boolFromEnv,
-    E2E_MOCK_AI: boolFromEnv,
-  })
-  .superRefine((env, ctx) => {
-    if (!e2eFlagsSafe(env)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "E2E_TEST_ENDPOINTS and E2E_MOCK_AI must be false when NODE_ENV=production",
-      });
-    }
-  });
+  E2E_TEST_ENDPOINTS: boolFromEnv,
+  E2E_MOCK_AI: boolFromEnv,
+});
+
+const envSchema = envObjectSchema.superRefine((env, ctx) => {
+  if (!e2eFlagsSafe(env)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "E2E_TEST_ENDPOINTS and E2E_MOCK_AI must be false when NODE_ENV=production",
+    });
+  }
+});
 
 export type Env = z.infer<typeof envSchema>;
 

@@ -64,6 +64,9 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
       # Encryption
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      # Email
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
       # Quotas
       QUOTA_FREE_MINUTES: ${QUOTA_FREE_MINUTES}
       QUOTA_PRO_MINUTES: ${QUOTA_PRO_MINUTES}
