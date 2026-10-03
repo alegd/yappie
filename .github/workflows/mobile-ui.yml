@@ -1,0 +1,132 @@
+name: Mobile UI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "apps/api/**"
+      - "packages/shared/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/mobile-ui.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "apps/api/**"
+      - "packages/shared/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/mobile-ui.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mobile-ui:
+    name: Mobile UI Smoke (iOS)
+    runs-on: macos-26
+    timeout-minutes: 45
+
+    env:
+      NODE_ENV: test
+      PORT: 3011
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USER: yappie
+      DB_PASSWORD: yappie_ci
+      DB_NAME: yappie_e2e
+      REDIS_URL: redis://127.0.0.1:6379/15
+      AUTH_SECRET: e2e-only-not-a-real-secret
+      FRONTEND_URL: http://127.0.0.1:3100
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Report the toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Start PostgreSQL and Redis
+        run: |
+          brew install postgresql@16 redis
+          echo "$(brew --prefix)/opt/postgresql@16/bin" >> "$GITHUB_PATH"
+          brew services start postgresql@16
+          brew services start redis
+
+      - name: Create the e2e role and database
+        run: |
+          for _ in $(seq 1 30); do pg_isready -h 127.0.0.1 -p 5432 -q && break; sleep 2; done
+          pg_isready -h 127.0.0.1 -p 5432
+          redis-cli ping
+          psql -h 127.0.0.1 -d postgres -c "CREATE ROLE $DB_USER LOGIN SUPERUSER PASSWORD '$DB_PASSWORD';"
+          createdb -h 127.0.0.1 -O "$DB_USER" "$DB_NAME"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Seed the e2e env file
+        run: cp apps/api/.env.e2e.example apps/api/.env.e2e
+
+      - name: Apply migrations to the e2e database
+        run: pnpm --filter api exec prisma migrate deploy
+
+      - name: Seed the UI fixtures
+        run: pnpm --filter api run e2e:seed:ui
+
+      - name: Start the API
+        run: |
+          pnpm --filter api run start:e2e > /tmp/api-e2e.log 2>&1 &
+          for _ in $(seq 1 90); do curl -sf "http://127.0.0.1:$PORT/health" >/dev/null && break; sleep 2; done
+          curl -sf "http://127.0.0.1:$PORT/health"
+
+      - name: Boot an iOS simulator
+        run: |
+          DEVICE_UDID=$(xcrun simctl list devices available --json \
+            | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];print(next(x['udid'] for rt in sorted(d, reverse=True) if 'iOS' in rt for x in d[rt] if x['name'].startswith('iPhone')))")
+          echo "DEVICE_UDID=$DEVICE_UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$DEVICE_UDID"
+          xcrun simctl bootstatus "$DEVICE_UDID"
+
+      - name: Install Maestro
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Install mobile dependencies
+        working-directory: apps/mobile
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and install the Release app
+        working-directory: apps/mobile
+        env:
+          NODE_ENV: production
+          EXPO_PUBLIC_API_URL: http://127.0.0.1:3011
+        run: npx expo run:ios --configuration Release --no-bundler --device "$DEVICE_UDID"
+
+      - name: Grant the microphone permission
+        run: xcrun simctl privacy "$DEVICE_UDID" grant microphone com.gueden.yappie
+
+      - name: Mobile UI smoke
+        working-directory: apps/mobile
+        run: npm run e2e:ui -- -e API_URL=http://127.0.0.1:3011
+
+      - name: Upload the Maestro output
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-output
+          path: |
+            ~/.maestro/tests
+            /tmp/api-e2e.log
