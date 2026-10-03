@@ -504,5 +504,32 @@ describe("RecordingModal", () => {
       const resetOrder = mockSetAudioModeAsync.mock.invocationCallOrder[resetCallIndex];
       expect(resetOrder).toBeGreaterThan(stopOrder);
     });
+
+    it("releases the audio session when closing before the recording state is reached", async () => {
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+      mockRecorderHandle.prepareToRecordAsync.mockReturnValue(new Promise(() => {}));
+
+      const { findByLabelText } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+      await waitFor(() => {
+        expect(mockSetAudioModeAsync).toHaveBeenCalledWith({
+          allowsRecording: true,
+          playsInSilentMode: true,
+        });
+      });
+
+      fireEvent.press(await findByLabelText("Close recorder"));
+
+      await waitFor(() => {
+        expect(mockSetAudioModeAsync).toHaveBeenCalledWith({ allowsRecording: false });
+      });
+      expect(mockRecorderHandle.stop).toHaveBeenCalled();
+    });
   });
 });

@@ -69,6 +69,7 @@ export function RecordingModal() {
   const [durationSeconds, setDurationSeconds] = useState(0);
   const [recordError, setRecordError] = useState<Error | null>(null);
   const [recordErrorContext, setRecordErrorContext] = useState<"start" | "stop" | null>(null);
+  const audioSessionRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const projectsQuery = useQuery({
@@ -113,6 +114,11 @@ export function RecordingModal() {
     setState("idle");
   };
 
+  const releaseAudioSession = () => {
+    audioSessionRef.current = false;
+    setAudioModeAsync({ allowsRecording: false }).catch(() => undefined);
+  };
+
   const handleStartRecording = async () => {
     if (!selectedProjectId) return;
     if (!permission?.granted) {
@@ -120,11 +126,12 @@ export function RecordingModal() {
       if (!result.granted) return;
     }
     try {
+      audioSessionRef.current = true;
       await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
       await recorder.prepareToRecordAsync();
       recorder.record();
     } catch (error) {
-      setAudioModeAsync({ allowsRecording: false }).catch(() => undefined);
+      releaseAudioSession();
       setRecordErrorContext("start");
       setRecordError(error instanceof Error ? error : new Error(String(error)));
       return;
@@ -146,13 +153,13 @@ export function RecordingModal() {
     try {
       await recorder.stop();
     } catch (error) {
-      setAudioModeAsync({ allowsRecording: false }).catch(() => undefined);
+      releaseAudioSession();
       setRecordErrorContext("stop");
       setRecordError(error instanceof Error ? error : new Error(String(error)));
       setState("idle");
       return;
     }
-    setAudioModeAsync({ allowsRecording: false }).catch(() => undefined);
+    releaseAudioSession();
     setState("uploading");
     uploadMutation.mutate();
   };
@@ -170,9 +177,9 @@ export function RecordingModal() {
 
   const handleClose = () => {
     if (timerRef.current) clearInterval(timerRef.current);
-    if (state === "recording") {
+    if (audioSessionRef.current) {
       recorder.stop().catch(() => undefined);
-      setAudioModeAsync({ allowsRecording: false }).catch(() => undefined);
+      releaseAudioSession();
     }
     router.dismiss();
   };
