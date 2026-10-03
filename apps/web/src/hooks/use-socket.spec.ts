@@ -31,9 +31,15 @@ vi.mock("swr", async () => {
   };
 });
 
-vi.mock("./use-query", () => ({
-  invalidateQuery: mockInvalidateQuery,
-}));
+vi.mock("@/lib/api-fetcher", () => ({ apiFetcher: vi.fn() }));
+
+vi.mock("./use-query", async () => {
+  const actual = await vi.importActual<typeof import("./use-query")>("./use-query");
+  return {
+    ...actual,
+    invalidateQuery: mockInvalidateQuery,
+  };
+});
 
 vi.mock("./use-socket-events", () => ({
   useSocketEvents: {

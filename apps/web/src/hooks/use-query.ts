@@ -89,5 +89,10 @@ export function useMutation<T>({
 
 export const invalidateQuery = (key: string): Promise<unknown> => globalMutate(key);
 
-export const invalidateQueryPrefix = (prefix: string): Promise<unknown> =>
-  globalMutate((key) => typeof key === "string" && key.startsWith(prefix));
+export const invalidateQueryPrefix = (first: string, ...rest: string[]): Promise<unknown> => {
+  const prefixes = [first, ...rest];
+
+  return globalMutate(
+    (key) => typeof key === "string" && prefixes.some((prefix) => key.startsWith(prefix)),
+  );
+};

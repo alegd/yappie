@@ -15,6 +15,11 @@ export default [
               message:
                 "Fonts are self-hosted from src/fonts via next/font/local. next/font/google fetches from fonts.gstatic.com at BUILD time, which made the web-e2e job non-deterministic.",
             },
+            {
+              name: "swr",
+              message:
+                "Go through the data-fetching facade in src/hooks/use-query.ts (useQuery, useMutation, invalidateQuery, invalidateQueryPrefix) so swapping the library stays a one-file change.",
+            },
           ],
         },
       ],
@@ -26,6 +31,12 @@ export default [
             "Do not reference Google's font CDN. Fonts are self-hosted from src/fonts; use var(--font-dm-sans) or var(--font-sora).",
         },
       ],
+    },
+  },
+  {
+    files: ["apps/web/src/hooks/use-query.ts", "apps/web/src/config/swr.config.tsx"],
+    rules: {
+      "no-restricted-imports": "off",
     },
   },
 ];
