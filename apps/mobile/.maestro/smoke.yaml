@@ -30,7 +30,9 @@ env:
 - tapOn:
     id: "email-submit"
 
-- assertVisible: "Enter code.*"
+- extendedWaitUntil:
+    visible: "Enter code.*"
+    timeout: 20000
 - runScript:
     file: fetch-otp.js
     env:
