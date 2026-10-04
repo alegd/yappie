@@ -29,7 +29,7 @@ env:
 - waitForAnimationToEnd:
     timeout: 5000
 - repeat:
-    maxRuns: 3
+    times: 3
     while:
       notVisible: "${EMAIL}"
     commands:
@@ -52,7 +52,7 @@ env:
 - waitForAnimationToEnd:
     timeout: 5000
 - repeat:
-    maxRuns: 3
+    times: 3
     while:
       notVisible: "${output.otp}"
     commands:
