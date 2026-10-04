@@ -28,7 +28,13 @@ env:
     id: "email-input"
 - waitForAnimationToEnd:
     timeout: 5000
-- inputText: ${EMAIL}
+- repeat:
+    maxRuns: 3
+    while:
+      notVisible: "${EMAIL}"
+    commands:
+      - eraseText: 50
+      - inputText: ${EMAIL}
 - assertVisible: "${EMAIL}"
 - tapOn:
     id: "email-submit"
@@ -45,7 +51,13 @@ env:
     id: "otp-input"
 - waitForAnimationToEnd:
     timeout: 5000
-- inputText: ${output.otp}
+- repeat:
+    maxRuns: 3
+    while:
+      notVisible: "${output.otp}"
+    commands:
+      - eraseText: 20
+      - inputText: ${output.otp}
 - assertVisible: "${output.otp}"
 - tapOn:
     id: "otp-submit"
