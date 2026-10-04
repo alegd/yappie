@@ -51,6 +51,12 @@ env:
 - tapOn:
     id: "record-fab"
 - assertVisible: "Choose a project.*"
+- tapOn:
+    text: "Grant microphone access"
+    optional: true
+- tapOn:
+    text: "Allow|OK"
+    optional: true
 - extendedWaitUntil:
     visible:
       id: "project-picker-row"
