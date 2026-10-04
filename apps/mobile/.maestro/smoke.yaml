@@ -26,7 +26,10 @@ env:
 
 - tapOn:
     id: "email-input"
+- waitForAnimationToEnd:
+    timeout: 5000
 - inputText: ${EMAIL}
+- assertVisible: "${EMAIL}"
 - tapOn:
     id: "email-submit"
 
@@ -40,7 +43,10 @@ env:
       EMAIL: ${EMAIL}
 - tapOn:
     id: "otp-input"
+- waitForAnimationToEnd:
+    timeout: 5000
 - inputText: ${output.otp}
+- assertVisible: "${output.otp}"
 - tapOn:
     id: "otp-submit"
 
