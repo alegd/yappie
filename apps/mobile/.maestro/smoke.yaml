@@ -26,11 +26,16 @@ env:
 
 - tapOn:
     id: "email-input"
+- waitForAnimationToEnd:
+    timeout: 5000
 - inputText: ${EMAIL}
+- assertVisible: "${EMAIL}"
 - tapOn:
     id: "email-submit"
 
-- assertVisible: "Enter code.*"
+- extendedWaitUntil:
+    visible: "Enter code.*"
+    timeout: 20000
 - runScript:
     file: fetch-otp.js
     env:
@@ -38,7 +43,10 @@ env:
       EMAIL: ${EMAIL}
 - tapOn:
     id: "otp-input"
+- waitForAnimationToEnd:
+    timeout: 5000
 - inputText: ${output.otp}
+- assertVisible: "${output.otp}"
 - tapOn:
     id: "otp-submit"
 
@@ -49,6 +57,12 @@ env:
 - tapOn:
     id: "record-fab"
 - assertVisible: "Choose a project.*"
+- tapOn:
+    text: "Grant microphone access"
+    optional: true
+- tapOn:
+    text: "Allow|OK"
+    optional: true
 - extendedWaitUntil:
     visible:
       id: "project-picker-row"
