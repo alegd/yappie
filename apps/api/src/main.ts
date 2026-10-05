@@ -1,5 +1,6 @@
 import { config } from "dotenv";
-config();
+import { resolveEnvFile } from "./config/env-file.js";
+config({ path: resolveEnvFile(process.env) });
 
 import "reflect-metadata";
 import "./instrument.js";
