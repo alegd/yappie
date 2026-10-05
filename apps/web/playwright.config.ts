@@ -38,7 +38,11 @@ export default defineConfig({
     {
       command: "pnpm start:e2e",
       cwd: "../api",
-      env: { FRONTEND_URL: WEB_URL },
+      env: {
+        FRONTEND_URL: WEB_URL,
+        E2E_MOCK_JIRA: "true",
+        JIRA_CALLBACK_URL: `${API_URL}/api/v1/integrations/jira/callback`,
+      },
       url: `${API_URL}/health`,
       reuseExistingServer: false,
       timeout: 120_000,

@@ -32,5 +32,6 @@ describe("docker-compose.prod.yaml", () => {
     expect(keysRequiredToBoot()).toContain("ENCRYPTION_KEY");
     expect(keysRequiredToBoot()).not.toContain("SENTRY_DSN");
     expect(keysRequiredToBoot()).not.toContain("E2E_MOCK_AI");
+    expect(keysRequiredToBoot()).not.toContain("E2E_MOCK_JIRA");
   });
 });

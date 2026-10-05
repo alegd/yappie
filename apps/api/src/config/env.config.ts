@@ -12,8 +12,10 @@ export function e2eFlagsSafe(input: {
   NODE_ENV: string;
   E2E_TEST_ENDPOINTS: boolean;
   E2E_MOCK_AI: boolean;
+  E2E_MOCK_JIRA: boolean;
 }): boolean {
-  return !(input.NODE_ENV === "production" && (input.E2E_TEST_ENDPOINTS || input.E2E_MOCK_AI));
+  const anyFlagOn = input.E2E_TEST_ENDPOINTS || input.E2E_MOCK_AI || input.E2E_MOCK_JIRA;
+  return !(input.NODE_ENV === "production" && anyFlagOn);
 }
 
 export const envObjectSchema = z.object({
@@ -79,13 +81,15 @@ export const envObjectSchema = z.object({
 
   E2E_TEST_ENDPOINTS: boolFromEnv,
   E2E_MOCK_AI: boolFromEnv,
+  E2E_MOCK_JIRA: boolFromEnv,
 });
 
 const envSchema = envObjectSchema.superRefine((env, ctx) => {
   if (!e2eFlagsSafe(env)) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "E2E_TEST_ENDPOINTS and E2E_MOCK_AI must be false when NODE_ENV=production",
+      message:
+        "E2E_TEST_ENDPOINTS, E2E_MOCK_AI and E2E_MOCK_JIRA must be false when NODE_ENV=production",
     });
   }
 });
