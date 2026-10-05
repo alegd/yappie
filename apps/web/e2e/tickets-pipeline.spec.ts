@@ -49,6 +49,6 @@ test.describe("Tickets from a processed audio", () => {
     await expect(page.getByText("0 exported", { exact: true })).toBeVisible();
 
     await page.getByRole("button", { name: "Add login button" }).click();
-    await expect(page.getByRole("dialog", { name: "Ticket detail" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Add login button", exact: true })).toBeVisible();
   });
 });
