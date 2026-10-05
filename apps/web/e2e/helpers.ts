@@ -1,4 +1,5 @@
-import { Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
+import path from "path";
 import Redis from "ioredis";
 
 const API_PORT = process.env.PORT;
@@ -132,4 +133,40 @@ export async function createProjectViaApi(
   }
 
   return response.json();
+}
+
+const AUDIO_FIXTURE = path.join(__dirname, "fixtures/test-audio.wav");
+const PIPELINE_TIMEOUT_MS = 120_000;
+const TICKET_APPEAR_TIMEOUT_MS = 15_000;
+
+export const FAKE_TICKETS = ["Add login button", "Fix header layout"] as const;
+
+export function ticketDrawer(page: Page) {
+  return page
+    .getByRole("dialog")
+    .filter({ has: page.getByRole("button", { name: "Close drawer" }) });
+}
+
+export async function uploadFixtureAndWaitForTickets(page: Page) {
+  await page.getByRole("button", { name: "Record", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Record", exact: true })).toBeVisible();
+
+  await page.getByRole("tab", { name: "Upload" }).click();
+  await page.getByLabel("Audio file input").setInputFiles(AUDIO_FIXTURE);
+
+  await expect(page.getByRole("dialog", { name: "Record", exact: true })).toBeHidden({
+    timeout: PIPELINE_TIMEOUT_MS,
+  });
+
+  await expect(page.getByRole("button", { name: FAKE_TICKETS[0] })).toBeVisible({
+    timeout: TICKET_APPEAR_TIMEOUT_MS,
+  });
+  await expect(page.getByRole("button", { name: FAKE_TICKETS[1] })).toBeVisible();
+}
+
+export async function connectJiraViaUi(page: Page) {
+  await page.goto("/dashboard/settings");
+  await page.getByRole("tab", { name: "Integrations" }).click();
+  await page.getByRole("button", { name: "Connect Jira" }).click();
+  await page.waitForURL(/jira=connected/);
 }
