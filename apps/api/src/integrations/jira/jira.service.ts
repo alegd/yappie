@@ -268,7 +268,7 @@ export class JiraService {
     return { ...integration, accessToken: this.crypto.decrypt(integration.accessToken) };
   }
 
-  private async postJson<T>(
+  protected async postJson<T>(
     url: string,
     body: unknown,
     token: string | undefined,
@@ -296,7 +296,7 @@ export class JiraService {
     return parsed.data;
   }
 
-  private async getJson<T>(url: string, token: string, schema: ZodType<T>): Promise<T> {
+  protected async getJson<T>(url: string, token: string, schema: ZodType<T>): Promise<T> {
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
     });
