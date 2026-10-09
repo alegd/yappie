@@ -53,6 +53,7 @@ const projectsApi = require("@/lib/api/projects") as typeof import("@/lib/api/pr
 const audiosApi = require("@/lib/api/audios") as typeof import("@/lib/api/audios");
 const { ApiError } = require("@/lib/api-error") as typeof import("@/lib/api-error");
 const { RecordingModal } = require("./recording-modal") as typeof import("./recording-modal");
+const expoAudio = require("expo-audio") as { getRecordingPermissionsAsync: jest.Mock };
 
 const listProjectsMock = projectsApi.listProjects as jest.Mock;
 const uploadAudioMock = audiosApi.uploadAudio as jest.Mock;
@@ -235,6 +236,27 @@ describe("RecordingModal", () => {
         expect(mockRequestPermission).toHaveBeenCalled();
       });
       expect(await findByText(/tap to record/i)).toBeTruthy();
+    });
+
+    it("surfaces an error instead of doing nothing when the permission request throws", async () => {
+      expoAudio.getRecordingPermissionsAsync.mockRejectedValueOnce(new Error("unavailable"));
+      mockRequestPermission.mockRejectedValueOnce(new Error("Permission service unavailable"));
+      mockParams = { projectId: "p1" };
+      listProjectsMock.mockResolvedValueOnce({
+        data: [buildProject()],
+        total: 1,
+        page: 1,
+        limit: 50,
+      });
+
+      const { findByLabelText, findByTestId } = renderWithClient(<RecordingModal />);
+      fireEvent.press(await findByLabelText("Start recording"));
+
+      const errorMessage = await findByTestId("record-error");
+      expect(errorMessage.props.children).toEqual(
+        expect.stringContaining("Permission service unavailable"),
+      );
+      expect(mockRecorderHandle.record).not.toHaveBeenCalled();
     });
 
     it("calls prepareToRecordAsync and record when Record is pressed", async () => {
