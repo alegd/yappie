@@ -1,40 +1,21 @@
 import { expect, test, type Page } from "@playwright/test";
-import path from "path";
-import { createProjectViaApi, generateUser, loginViaUi, registerUserViaApi } from "./helpers";
+import {
+  createProjectViaApi,
+  FAKE_TICKETS,
+  generateUser,
+  loginViaUi,
+  registerUserViaApi,
+  ticketDrawer,
+  uploadFixtureAndWaitForTickets,
+} from "./helpers";
 
-const AUDIO_FIXTURE = path.join(__dirname, "fixtures/test-audio.wav");
 const PROJECT_NAME = "Lifecycle Audit Project";
 const PIPELINE_TIMEOUT_MS = 120_000;
-const TICKET_APPEAR_TIMEOUT_MS = 15_000;
-const FIRST_TICKET = "Add login button";
-const SECOND_TICKET = "Fix header layout";
+const [FIRST_TICKET, SECOND_TICKET] = FAKE_TICKETS;
 const EDITED_TITLE = "Add login button with SSO";
 
 function sidebarProjectLink(page: Page) {
   return page.getByRole("complementary").getByRole("link", { name: PROJECT_NAME });
-}
-
-function ticketDrawer(page: Page) {
-  return page
-    .getByRole("dialog")
-    .filter({ has: page.getByRole("button", { name: "Close drawer" }) });
-}
-
-async function uploadFixtureAndWaitForTickets(page: Page) {
-  await page.getByRole("button", { name: "Record", exact: true }).click();
-  await expect(page.getByRole("dialog", { name: "Record", exact: true })).toBeVisible();
-
-  await page.getByRole("tab", { name: "Upload" }).click();
-  await page.getByLabel("Audio file input").setInputFiles(AUDIO_FIXTURE);
-
-  await expect(page.getByRole("dialog", { name: "Record", exact: true })).toBeHidden({
-    timeout: PIPELINE_TIMEOUT_MS,
-  });
-
-  await expect(page.getByRole("button", { name: FIRST_TICKET })).toBeVisible({
-    timeout: TICKET_APPEAR_TIMEOUT_MS,
-  });
-  await expect(page.getByRole("button", { name: SECOND_TICKET })).toBeVisible();
 }
 
 test.describe("Ticket lifecycle without Jira", () => {
@@ -66,7 +47,7 @@ test.describe("Ticket lifecycle without Jira", () => {
 
     await page.getByRole("button", { name: "Approve 2" }).click();
 
-    await expect(page.getByText("APPROVED")).toHaveCount(2);
+    await expect(page.getByText("APPROVED", { exact: true })).toHaveCount(2);
     await expect(sidebarProjectLink(page)).toHaveText(PROJECT_NAME);
 
     await page.getByRole("button", { name: FIRST_TICKET }).click();

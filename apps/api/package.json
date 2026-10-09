@@ -10,7 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "dotenv -e .env.e2e -- vitest run --config vitest.e2e.config.ts",
+    "test:e2e": "prisma generate && dotenv -e .env.e2e -- vitest run --config vitest.e2e.config.ts",
     "type-check": "prisma generate && tsc --noEmit -p tsconfig.build.json",
     "clean": "rm -rf dist",
     "verify:prisma": "prisma generate && node scripts/verify-prisma-resolution.mjs",

@@ -178,6 +178,9 @@ jobs:
       - name: Install Playwright chromium
         run: pnpm --filter web exec playwright install --with-deps chromium
 
+      - name: API E2E
+        run: pnpm e2e:api
+
       - name: Web E2E
         run: pnpm e2e:web
 
