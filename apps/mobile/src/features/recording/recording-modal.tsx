@@ -122,8 +122,14 @@ export function RecordingModal() {
   const handleStartRecording = async () => {
     if (!selectedProjectId) return;
     if (!permission?.granted) {
-      const result = await requestPermission();
-      if (!result.granted) return;
+      try {
+        const result = await requestPermission();
+        if (!result.granted) return;
+      } catch (error) {
+        setRecordErrorContext("start");
+        setRecordError(error instanceof Error ? error : new Error(String(error)));
+        return;
+      }
     }
     try {
       audioSessionRef.current = true;
