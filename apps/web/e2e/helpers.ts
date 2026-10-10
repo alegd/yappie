@@ -27,8 +27,9 @@ export function generateUser() {
   };
 }
 
-async function readOtp(email: string): Promise<string> {
-  const endpoint = `${API_URL}/auth/_test/last-otp?email=${encodeURIComponent(email)}`;
+async function readOtp(email: string, purpose?: string): Promise<string> {
+  const purposeParam = purpose ? `&purpose=${encodeURIComponent(purpose)}` : "";
+  const endpoint = `${API_URL}/auth/_test/last-otp?email=${encodeURIComponent(email)}${purposeParam}`;
 
   for (let attempt = 0; attempt < OTP_POLL_ATTEMPTS; attempt++) {
     const response = await fetch(endpoint);
@@ -169,4 +170,8 @@ export async function connectJiraViaUi(page: Page) {
   await page.getByRole("tab", { name: "Integrations" }).click();
   await page.getByRole("button", { name: "Connect Jira" }).click();
   await page.waitForURL(/jira=connected/);
+}
+
+export function readAccountDeletionOtp(email: string) {
+  return readOtp(email, "account-deletion");
 }

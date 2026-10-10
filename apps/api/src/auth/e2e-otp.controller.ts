@@ -3,6 +3,7 @@ import { ApiExcludeController } from "@nestjs/swagger";
 import type { Redis } from "ioredis";
 import { REDIS_CLIENT } from "../redis/redis.constants.js";
 import { Public } from "./decorators/public.decorator.js";
+import { keysFor, type OtpPurpose } from "./otp.service.js";
 
 @ApiExcludeController()
 @Controller("auth/_test")
@@ -11,11 +12,14 @@ export class E2eOtpController {
 
   @Public()
   @Get("last-otp")
-  async lastOtp(@Query("email") email?: string): Promise<{ code: string }> {
+  async lastOtp(
+    @Query("email") email?: string,
+    @Query("purpose") purpose?: OtpPurpose,
+  ): Promise<{ code: string }> {
     if (process.env.E2E_TEST_ENDPOINTS !== "true" || !email) {
       throw new NotFoundException();
     }
-    const raw = await this.redis.get(`otp:${email}`);
+    const raw = await this.redis.get(keysFor(email, purpose).otpKey);
     if (!raw) {
       throw new NotFoundException();
     }
