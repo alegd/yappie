@@ -21,8 +21,16 @@ env:
     visible:
       id: "welcome-get-started"
     timeout: 30000
-- tapOn:
-    id: "welcome-get-started"
+- repeat:
+    times: 3
+    while:
+      notVisible:
+        id: "email-input"
+    commands:
+      - tapOn:
+          id: "welcome-get-started"
+- assertVisible:
+    id: "email-input"
 
 - tapOn:
     id: "email-input"
