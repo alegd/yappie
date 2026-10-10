@@ -18,7 +18,7 @@ const RATE_WINDOW_TTL = 3600;
 const MAX_ATTEMPTS = 3;
 const MAX_RATE = 5;
 
-function keysFor(email: string, purpose?: OtpPurpose) {
+export function keysFor(email: string, purpose?: OtpPurpose) {
   const suffix = purpose ? `${purpose}:${email}` : email;
   return {
     otpKey: `otp:${suffix}`,
