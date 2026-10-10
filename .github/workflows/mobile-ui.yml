@@ -123,7 +123,7 @@ jobs:
         run: npm run e2e:ui -- -e API_URL=http://127.0.0.1:3011
 
       - name: Collect the debug output
-        if: failure()
+        if: ${{ failure() || cancelled() }}
         run: |
           mkdir -p maestro-debug
           cp -R "$HOME/.maestro/tests" maestro-debug/ 2>/dev/null || true
@@ -131,7 +131,7 @@ jobs:
           ls -R maestro-debug
 
       - name: Upload the Maestro output
-        if: failure()
+        if: ${{ failure() || cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: maestro-output

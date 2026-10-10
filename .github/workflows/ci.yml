@@ -185,7 +185,7 @@ jobs:
         run: pnpm e2e:web
 
       - name: Upload the playwright report
-        if: failure()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
