@@ -12,7 +12,7 @@
     "test:coverage": "vitest run --coverage",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf .next out",
-    "e2e": "dotenv -e ../api/.env.e2e -- playwright test",
+    "e2e": "dotenv -e ../api/.env.e2e -- playwright test --fail-on-flaky-tests",
     "e2e:ui": "dotenv -e ../api/.env.e2e -- playwright test --ui"
   },
   "dependencies": {
