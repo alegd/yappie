@@ -8,6 +8,6 @@ export async function createE2eApp(): Promise<{ app: INestApplication; http: Ser
   const app = moduleRef.createNestApplication();
   app.setGlobalPrefix("api/v1", { exclude: ["api/docs", "api/docs-json", "health"] });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  await app.init();
+  await app.listen(0);
   return { app, http: app.getHttpServer() as Server };
 }
