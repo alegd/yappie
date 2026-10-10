@@ -175,3 +175,23 @@ export async function connectJiraViaUi(page: Page) {
 export function readAccountDeletionOtp(email: string) {
   return readOtp(email, "account-deletion");
 }
+
+export async function createTemplateViaApi(
+  accessToken: string,
+  data: { name: string; content: string },
+) {
+  const response = await fetch(`${API_URL}/templates`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Create template failed: ${response.status} ${await response.text()}`);
+  }
+
+  return response.json();
+}
