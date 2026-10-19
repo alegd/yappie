@@ -108,7 +108,7 @@ export function AudioDetail() {
       <TranscriptionBlock text={audio.transcription} />
       <View style={styles.ticketsHeader}>
         <Text testID="tickets-header" style={styles.ticketsTitle}>
-          Tickets ({audio.tickets.length})
+          Tickets ({audio.tickets.length - 1})
         </Text>
         {audio.tickets.length > 0 ? (
           <Pressable
