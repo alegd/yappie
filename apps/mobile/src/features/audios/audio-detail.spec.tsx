@@ -130,10 +130,23 @@ describe("AudioDetail", () => {
     expect(await findByText(/no tickets/i)).toBeTruthy();
   });
 
-  it("exposes a testID on the tickets header", async () => {
+  it("counts every generated ticket in the header", async () => {
+    getAudioMock.mockResolvedValueOnce(
+      buildAudio({
+        tickets: [
+          buildTicket({ id: "t1", title: "Ticket A" }),
+          buildTicket({ id: "t2", title: "Ticket B" }),
+        ],
+      }),
+    );
+    const { findByTestId } = renderWithClient(<AudioDetail />);
+    expect(await findByTestId("tickets-header")).toHaveTextContent("Tickets (2)");
+  });
+
+  it("counts zero in the header when the audio produced no tickets", async () => {
     getAudioMock.mockResolvedValueOnce(buildAudio({ tickets: [] }));
     const { findByTestId } = renderWithClient(<AudioDetail />);
-    expect(await findByTestId("tickets-header")).toBeTruthy();
+    expect(await findByTestId("tickets-header")).toHaveTextContent("Tickets (0)");
   });
 
   describe("bulk export", () => {
