@@ -6,15 +6,12 @@ on:
     paths:
       - "apps/mobile/**"
       - "apps/api/**"
-      - "packages/shared/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/mobile-ui.yml"
   pull_request:
     branches: [main]
     paths:
       - "apps/mobile/**"
-      - "apps/api/**"
-      - "packages/shared/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/mobile-ui.yml"
 
