@@ -26,7 +26,7 @@ jobs:
   mobile-ui:
     name: Mobile UI Smoke (iOS)
     runs-on: macos-26
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     env:
       NODE_ENV: test
@@ -104,16 +104,43 @@ jobs:
           curl -fsSL "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
+      - name: Install ccache
+        run: |
+          brew list ccache >/dev/null 2>&1 || brew install ccache
+          echo "CCACHE_DIR=$HOME/.cache/ccache" >> "$GITHUB_ENV"
+          echo "CCACHE_MAXSIZE=6G" >> "$GITHUB_ENV"
+          command -v ccache
+          ccache --version | head -1
+
+      - name: Restore the ccache directory
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-ios-${{ hashFiles('apps/mobile/pnpm-lock.yaml') }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-ios-${{ hashFiles('apps/mobile/pnpm-lock.yaml') }}-
+            ccache-ios-
+
       - name: Install mobile dependencies
         working-directory: apps/mobile
         run: pnpm install --frozen-lockfile
+
+      - name: Zero the ccache statistics
+        run: ccache --zero-stats
 
       - name: Build and install the Release app
         working-directory: apps/mobile
         env:
           NODE_ENV: production
           EXPO_PUBLIC_API_URL: http://127.0.0.1:3011
+          USE_CCACHE: "1"
         run: npx expo run:ios --configuration Release --no-bundler --device "$DEVICE_UDID"
+
+      - name: Report the ccache statistics
+        if: ${{ !cancelled() }}
+        run: |
+          ccache --show-stats --verbose
+          du -sh "$CCACHE_DIR"
 
       - name: Grant the microphone permission
         run: xcrun simctl privacy "$DEVICE_UDID" grant microphone com.gueden.yappie
