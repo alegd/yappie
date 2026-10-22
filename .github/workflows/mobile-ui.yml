@@ -8,12 +8,7 @@ on:
       - "apps/api/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/mobile-ui.yml"
-  pull_request:
-    branches: [main]
-    paths:
-      - "apps/mobile/**"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/mobile-ui.yml"
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
